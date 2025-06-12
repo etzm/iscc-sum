@@ -28,6 +28,11 @@ __pycache__/
 # C extensions
 *.so
 
+# PyO3/Maturin
+.maturin/
+*.pyd
+*.dylib
+
 # Distribution / packaging
 .Python
 build/
