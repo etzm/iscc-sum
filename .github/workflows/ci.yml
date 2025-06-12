@@ -61,25 +61,28 @@ jobs:
         with:
           version: "latest"
       
+      - name: Create virtual environment
+        run: uv venv
+      
       - name: Install dependencies
         run: |
-          uv pip install --system -e .[dev]
-          uv pip install --system maturin
+          uv pip install -e .[dev]
+          uv pip install maturin
       
       - name: Build Rust extension
-        run: maturin develop
+        run: uv run maturin develop
       
       - name: Run linting
-        run: ruff check .
+        run: uv run ruff check .
       
       - name: Check formatting
-        run: ruff format --check .
+        run: uv run ruff format --check .
       
       - name: Run type checking
-        run: mypy src
+        run: uv run mypy src
       
       - name: Run tests
-        run: pytest -v
+        run: uv run pytest -v
 
   build-rust-binary:
     name: Build Rust Binary on ${{ matrix.os }}
