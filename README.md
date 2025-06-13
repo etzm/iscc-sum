@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/bio-codes/iscc-sum/actions/workflows/ci.yml/badge.svg)](https://github.com/bio-codes/iscc-sum/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/iscc-sum.svg)](https://pypi.org/project/iscc-sum/)
-[![Crates.io](https://img.shields.io/crates/v/iscc_sum.svg)](https://crates.io/crates/iscc_sum)
+[![Crates.io](https://img.shields.io/crates/v/iscc-sum.svg)](https://crates.io/crates/iscc-sum)
 
 High-performance ISCC Data-Code and Instance-Code hashing tool, implemented in Rust with Python bindings.
 
@@ -27,7 +27,7 @@ pip install iscc-sum
 Install from crates.io:
 
 ```bash
-cargo install iscc_sum
+cargo install iscc-sum
 ```
 
 Or download pre-built binaries from the [releases page](https://github.com/bio-codes/iscc-sum/releases).
