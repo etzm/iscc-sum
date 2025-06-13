@@ -72,6 +72,9 @@ jobs:
       - name: Build Rust extension
         run: uv run maturin develop
       
+      - name: Build Rust binary for tests
+        run: cargo build --release --bin iscc-sum
+      
       - name: Run linting
         run: uv run ruff check .
       
@@ -110,4 +113,63 @@ jobs:
           else
             ./target/release/iscc-sum
           fi
+        shell: bash
+
+  test-wheel-install:
+    name: Test Wheel Installation on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.13"]  # Test oldest and newest supported
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build maturin wheel
+      
+      - name: Build wheel
+        run: python -m build --wheel
+      
+      - name: Create test environment
+        run: |
+          python -m venv test_env
+      
+      - name: Activate and install wheel (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          source test_env/bin/activate
+          pip install dist/*.whl
+          # Test that the package is installed and works
+          python -c "import iscc_sum; print(iscc_sum.hello_from_bin())"
+          python -m iscc_sum
+          # Test that py.typed is installed
+          test -f test_env/lib/python*/site-packages/iscc_sum/py.typed || exit 1
+      
+      - name: Activate and install wheel (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          test_env\Scripts\Activate.ps1
+          pip install (Get-ChildItem dist\*.whl).FullName
+          # Test that the package is installed and works
+          python -c "import iscc_sum; print(iscc_sum.hello_from_bin())"
+          python -m iscc_sum
+          # Test that py.typed is installed
+          $pyTypedPath = Get-ChildItem -Path test_env\Lib\site-packages\iscc_sum\py.typed -ErrorAction SilentlyContinue
+          if (-not $pyTypedPath) { exit 1 }
+      
+      - name: Test source distribution build
+        run: |
+          python -m build --sdist
+          ls -la dist/
         shell: bash

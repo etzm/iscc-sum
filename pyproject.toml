@@ -51,6 +51,7 @@ dev-dependencies = [
     "mdformat>=0.7.22",
     "mdformat-gfm>=0.4.1",
     "mdformat-gfm-alerts>=2.0.0",
+    "build>=1.0",
 ]
 
 [tool.ruff]
@@ -68,6 +69,9 @@ warn_unused_configs = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "slow: marks tests as slow (deselected by default)"
+]
 
 [tool.coverage.run]
 source = ["iscc_sum"]
@@ -82,8 +86,10 @@ check-rust = { shell = "rustup --version && cargo --version && echo 'Rust toolch
 py-format = { shell = "ruff format . && ruff check --fix ." }
 py-format-check = { shell = "ruff format --check . && ruff check ." }
 py-typecheck = "mypy src"
-py-test = "pytest -v"
-py-coverage = "pytest --cov=iscc_sum --cov-report=term-missing"
+py-test = "pytest -v -m 'not slow'"
+py-test-all = "pytest -v"
+py-coverage = "pytest --cov=iscc_sum --cov-report=term-missing -m 'not slow'"
+py-coverage-all = "pytest --cov=iscc_sum --cov-report=term-missing"
 
 # Markdown formatting
 md-format = { shell = "mdformat --wrap 112 --end-of-line lf docs README.md CHANGELOG.md ", help = "Markdown formating with mdformat" }
@@ -101,8 +107,11 @@ build-ext = "maturin develop"
 # Combined commands
 format = ["rust-format", "py-format", "md-format"]
 test = ["rust-test", "py-test"]
+test-all = ["rust-test", "py-test-all"]
 typecheck = "mypy src"
-coverage = "pytest --cov=iscc_sum --cov-report=term-missing"
+coverage = "pytest --cov=iscc_sum --cov-report=term-missing -m 'not slow'"
 
 # Pre-commit all-in-one command
 all = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-test"]
+# CI command that includes slow tests
+ci = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-test-all"]
