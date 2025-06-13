@@ -290,8 +290,3 @@ def alg_minhash_compress(mhash, lsb=4):
         for h in mhash:
             bits += str(h >> bitpos & 1)
     return int(bits, 2).to_bytes((len(bits) + 7) // 8, "big")
-
-
-if __name__ == "__main__":
-    # Reference implementation entry point
-    pass

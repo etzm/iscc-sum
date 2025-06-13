@@ -143,8 +143,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
         run: uv run mypy src/iscc_sum
       
-      - name: Run tests
-        run: uv run pytest -v
+      - name: Run tests with coverage
+        run: uv run pytest -v --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100
 
   # Wheel installation test - one Python version per OS
   test-wheel-install:

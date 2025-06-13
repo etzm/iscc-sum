@@ -81,6 +81,11 @@ markers = [
 source = ["iscc_sum"]
 omit = ["tests/*"]
 
+[tool.coverage.report]
+fail_under = 100
+show_missing = true
+skip_covered = false
+
 [tool.poe.tasks]
 # Developer setup - requires Rust to be installed first
 setup = { shell = "rustup component add rustfmt clippy && echo 'Rust components installed successfully!'" }
@@ -92,8 +97,8 @@ py-format-check = { shell = "ruff format --check . && ruff check ." }
 py-typecheck = "mypy src"
 py-test = "pytest -v -m 'not slow'"
 py-test-all = "pytest -v"
-py-coverage = "pytest --cov=iscc_sum --cov-report=term-missing -m 'not slow'"
-py-coverage-all = "pytest --cov=iscc_sum --cov-report=term-missing"
+py-coverage = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100 -m 'not slow'"
+py-coverage-all = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100"
 
 # Markdown formatting
 md-format = { shell = "mdformat --wrap 112 --end-of-line lf docs README.md CHANGELOG.md ", help = "Markdown formating with mdformat" }
@@ -113,9 +118,9 @@ format = ["rust-format", "py-format", "md-format"]
 test = ["rust-test", "py-test"]
 test-all = ["rust-test", "py-test-all"]
 typecheck = "mypy src"
-coverage = "pytest --cov=iscc_sum --cov-report=term-missing -m 'not slow'"
+coverage = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100 -m 'not slow'"
 
 # Pre-commit all-in-one command
-all = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-test"]
+all = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-coverage"]
 # CI command that includes slow tests
 ci = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-test-all"]
