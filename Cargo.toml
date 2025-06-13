@@ -16,7 +16,7 @@ name = "_core"
 crate-type = ["cdylib"]
 
 [[bin]]
-name = "iscc-sum"
+name = "iscc-sum-rs"
 path = "src/main.rs"
 
 [dependencies]

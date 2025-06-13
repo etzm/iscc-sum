@@ -37,11 +37,13 @@ Or download pre-built binaries from the [releases page](https://github.com/bio-c
 ### Command Line
 
 ```bash
-# Using the installed command
-iscc-sum
+# Using the Rust CLI tool
+iscc-sum-rs
 
-# Using Python module
+# Using Python module (provides iscc-sum command)
 python -m iscc_sum
+# or if installed:
+iscc-sum
 ```
 
 ### Python API
@@ -120,7 +122,7 @@ uv run pytest     # Python tests
 ### Building
 
 ```bash
-# Build Rust binary
+# Build Rust binary (creates iscc-sum-rs executable)
 cargo build --release
 
 # Build Python wheels

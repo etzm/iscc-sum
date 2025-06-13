@@ -42,14 +42,14 @@ jobs:
         run: cargo test --verbose
       
       - name: Build binary
-        run: cargo build --release --bin iscc-sum
+        run: cargo build --release --bin iscc-sum-rs
       
       - name: Test binary
         run: |
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            ./target/release/iscc-sum.exe
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            ./target/release/iscc-sum-rs.exe
           else
-            ./target/release/iscc-sum
+            ./target/release/iscc-sum-rs
           fi
         shell: bash
       
@@ -57,10 +57,9 @@ jobs:
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
-          name: iscc-sum-${{ matrix.os }}
+          name: iscc-sum-rs-${{ matrix.os }}
           path: |
-            target/release/iscc-sum
-            target/release/iscc-sum.exe
+            target/release/iscc-sum-rs${{ matrix.os == 'windows-latest' && '.exe' || '' }}
 
   # Python checks - strategic matrix coverage
   python-checks:
@@ -113,7 +112,7 @@ jobs:
       - name: Download Rust binary
         uses: actions/download-artifact@v4
         with:
-          name: iscc-sum-${{ matrix.os }}
+          name: iscc-sum-rs-${{ matrix.os }}
           path: target/release/
       
       - name: Create virtual environment
@@ -138,7 +137,7 @@ jobs:
       
       - name: Run type checking
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
-        run: uv run mypy src
+        run: uv run mypy src/iscc_sum
       
       - name: Run tests
         run: uv run pytest -v
@@ -160,6 +159,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"  # Use latest Python for wheel tests
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
       
       - name: Install build dependencies
         run: |
