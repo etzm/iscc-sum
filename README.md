@@ -1,10 +1,16 @@
 # iscc-sum
 
-[![CI](https://github.com/iscc/iscc-sum/actions/workflows/ci.yml/badge.svg)](https://github.com/iscc/iscc-sum/actions/workflows/ci.yml)
+[![CI](https://github.com/bio-codes/iscc-sum/actions/workflows/ci.yml/badge.svg)](https://github.com/bio-codes/iscc-sum/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/iscc-sum.svg)](https://pypi.org/project/iscc-sum/)
 [![Crates.io](https://img.shields.io/crates/v/iscc_sum.svg)](https://crates.io/crates/iscc_sum)
 
 High-performance ISCC Data-Code and Instance-Code hashing tool, implemented in Rust with Python bindings.
+
+## Project Status
+
+> [!CAUTION]
+> **Early Alpha Release** — This project is in its early development stage. The current release is primarily for
+> testing the release infrastructure. The tool does not yet implement any functional ISCC hashing capabilities.
 
 ## Installation
 
@@ -24,7 +30,7 @@ Install from crates.io:
 cargo install iscc_sum
 ```
 
-Or download pre-built binaries from the [releases page](https://github.com/iscc/iscc-sum/releases).
+Or download pre-built binaries from the [releases page](https://github.com/bio-codes/iscc-sum/releases).
 
 ## Usage
 
@@ -59,7 +65,7 @@ print(hello_from_bin())  # prints: hello iscc-sum
 ```bash
 # Clone the repository
 
-git clone https://github.com/iscc/iscc-sum.git
+git clone https://github.com/bio-codes/iscc-sum.git
 cd iscc-sum
 
 # Install Python dependencies
@@ -123,6 +129,4 @@ maturin build --release
 
 ## License
 
-This project is licensed under
-
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](LICENSE) file for details.

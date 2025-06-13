@@ -216,4 +216,7 @@ cython_debug/
 
 # Claude Code
 CLAUDE.local.md
+.claude
+
+# Aider
 .aider*

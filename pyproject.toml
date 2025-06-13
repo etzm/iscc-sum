@@ -11,7 +11,6 @@ requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -32,15 +31,6 @@ Issues = "https://github.com/bio-codes/iscc-sum/issues"
 [project.scripts]
 iscc-sum = "iscc_sum:main"
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=8.0",
-    "pytest-cov>=4.0",
-    "ruff>=0.5.0",
-    "mypy>=1.0",
-    "poethepoet>=0.25.0",
-]
-
 [tool.maturin]
 module-name = "iscc_sum._core"
 python-packages = ["iscc_sum"]
@@ -53,10 +43,18 @@ build-backend = "maturin"
 [tool.uv]
 dev-dependencies = [
     "maturin>=1.0",
+    "pytest>=8.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.5.0",
+    "mypy>=1.0",
+    "poethepoet>=0.25.0",
+    "mdformat>=0.7.22",
+    "mdformat-gfm>=0.4.1",
+    "mdformat-gfm-alerts>=2.0.0",
 ]
 
 [tool.ruff]
-line-length = 100
+line-length = 112
 target-version = "py310"
 
 [tool.ruff.lint]
@@ -87,6 +85,9 @@ py-typecheck = "mypy src"
 py-test = "pytest -v"
 py-coverage = "pytest --cov=iscc_sum --cov-report=term-missing"
 
+# Markdown formatting
+md-format = { shell = "mdformat --wrap 112 --end-of-line lf docs README.md CHANGELOG.md ", help = "Markdown formating with mdformat" }
+
 # Rust formatting and linting
 rust-format = "cargo fmt"
 rust-format-check = "cargo fmt -- --check"
@@ -98,10 +99,10 @@ rust-build = "cargo build --release --bin iscc-sum"
 build-ext = "maturin develop"
 
 # Combined commands
-format = { shell = "cargo fmt && ruff format . && ruff check --fix ." }
-test = { shell = "cargo test --verbose && pytest -v" }
+format = ["rust-format", "py-format", "md-format"]
+test = ["rust-test", "py-test"]
 typecheck = "mypy src"
 coverage = "pytest --cov=iscc_sum --cov-report=term-missing"
 
 # Pre-commit all-in-one command
-all = { shell = "cargo fmt && cargo clippy --all-targets --all-features -- -D warnings && cargo test --verbose && ruff format . && ruff check --fix . && mypy src && maturin develop && pytest -v" }
+all = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-test"]
