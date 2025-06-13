@@ -51,10 +51,9 @@ def gen_data_code(stream, bits=DATA_BITS):
     """
     Create an ISCC Data-Code with algorithm v0.
 
-    :param Stream stream: Input data stream.
-    :param int bits: Bit-length of ISCC Data-Code (default 64).
-    :return: ISCC object with Data-Code
-    :rtype: dict
+    :param stream: Input data stream (file-like object, mmap, BytesIO, or BufferedReader).
+    :param bits: Bit-length of ISCC Data-Code (32, 64, 96, 128, 160, 192, 224, or 256).
+    :return: Dictionary with 'iscc' key containing the ISCC Data-Code string.
     """
 
     hasher = DataHasher()
@@ -75,9 +74,9 @@ class DataHasher:
     def __init__(self, data=None):
         # type: (Optional[Data]) -> None
         """
-        Create a DataHasher
+        Create a DataHasher for incremental Data-Code generation.
 
-        :param Optional[Data] data: initial payload for hashing.
+        :param data: Initial payload for hashing (bytes, bytearray, or memoryview).
         """
         self.chunk_features = []  # type: List[int]
         self.chunk_sizes = []  # type: List[int]
@@ -87,7 +86,13 @@ class DataHasher:
 
     def push(self, data):
         # type: (Data) -> None
-        """Push data to the Data-Hash generator."""
+        """
+        Push data to the Data-Hash generator.
+
+        Processes data using content-defined chunking and updates internal state.
+
+        :param data: Data chunk to process (bytes, bytearray, or memoryview).
+        """
         if self.tail:
             data = self.tail + data
 
@@ -101,7 +106,11 @@ class DataHasher:
 
     def digest(self):
         # type: () -> bytes
-        """Calculate 256-bit minhash digest from feature hashes."""
+        """
+        Calculate 256-bit minhash digest from accumulated chunk features.
+
+        :return: 256-bit binary digest.
+        """
         self._finalize()
         return alg_minhash_256(self.chunk_features)
 
@@ -110,9 +119,8 @@ class DataHasher:
         """
         Encode digest as an ISCC Data-Code unit.
 
-        :param int bits: Number of bits for the ISCC Data-Code
-        :return: ISCC Data-Code
-        :rtype: str
+        :param bits: Number of bits for the ISCC Data-Code (32, 64, 96, 128, 160, 192, 224, or 256).
+        :return: Base32-encoded ISCC Data-Code string with header.
         """
         length = BIT_LEN_MAP[bits]
         header = int(DATA_MAINTYPE + DATA_SUBTYPE + DATA_VERSION + length, 2).to_bytes(2, byteorder="big")
@@ -132,8 +140,8 @@ def encode_base32(data):
     """
     Standard RFC4648 base32 encoding without padding.
 
-    :param bytes data: Data for base32 encoding
-    :return: Base32 encoded str
+    :param data: Binary data to encode.
+    :return: Base32-encoded string without padding characters.
     """
     return b32encode(data).decode("ascii").rstrip("=")
 
@@ -146,20 +154,19 @@ def encode_base32(data):
 def alg_cdc_chunks(data, utf32, avg_chunk_size=DATA_AVG_CHUNK_SIZE):
     # type: (Data, bool, int) -> Generator[bytes, None, None]
     """
-    A generator that yields data-dependent chunks for `data`.
+    Generate content-defined chunks using a rolling hash algorithm.
 
     Usage Example:
 
     ```python
-    for chunk in cdc_data_chunks(data):
+    for chunk in alg_cdc_chunks(data, utf32=False):
         hash(chunk)
     ```
 
-    :param bytes data: Raw data for variable sized chunking.
-    :param bool utf32: If true assume we are chunking text that is utf32 encoded.
-    :param int avg_chunk_size: Target chunk size in number of bytes.
-    :return: A generator that yields data chunks of variable sizes.
-    :rtype: Generator[bytes]
+    :param data: Raw data for variable-sized chunking (bytes, bytearray, or memoryview).
+    :param utf32: If True, ensure chunk boundaries align to 4-byte UTF-32 boundaries.
+    :param avg_chunk_size: Target average chunk size in bytes.
+    :return: Generator yielding variable-sized data chunks.
     """
 
     stream = BytesIO(data)
@@ -185,10 +192,10 @@ def alg_cdc_chunks(data, utf32, avg_chunk_size=DATA_AVG_CHUNK_SIZE):
 
 def alg_cdc_params(avg_size: int) -> tuple:
     """
-    Calculate CDC parameters
+    Calculate content-defined chunking parameters.
 
-    :param int avg_size: Target average size of chunks in number of bytes.
-    :returns: Tuple of (min_size, max_size, center_size, mask_s, mask_l).
+    :param avg_size: Target average chunk size in bytes.
+    :return: Tuple of (min_size, max_size, center_size, mask_s, mask_l).
     """
 
     def ceil_div(x, y):
@@ -210,16 +217,15 @@ def alg_cdc_params(avg_size: int) -> tuple:
 def alg_cdc_offset(buffer, mi, ma, cs, mask_s, mask_l):
     # type: (Data, int, int, int, int, int) -> int
     """
-    Find breakpoint offset for a given buffer.
+    Find chunk boundary offset using Gear-based rolling hash.
 
-    :param Data buffer: The data to be chunked.
-    :param int mi: Minimum chunk size.
-    :param int ma: Maximung chunk size.
-    :param int cs: Center size.
-    :param int mask_s: Small mask.
-    :param int mask_l: Large mask.
-    :return: Offset of dynamic cutpoint in number of bytes.
-    :rtype: int
+    :param buffer: Data buffer to analyze.
+    :param mi: Minimum chunk size in bytes.
+    :param ma: Maximum chunk size in bytes.
+    :param cs: Center size threshold in bytes.
+    :param mask_s: Small mask for early boundary detection.
+    :param mask_l: Large mask for late boundary detection.
+    :return: Offset of chunk boundary in bytes.
     """
 
     pattern = 0
@@ -248,11 +254,10 @@ def alg_cdc_offset(buffer, mi, ma, cs, mask_s, mask_l):
 def alg_minhash_256(features):
     # type: (List[int]) -> bytes
     """
-    Create 256-bit minimum hash digest.
+    Create 256-bit minhash digest from feature list.
 
-    :param List[int] features: List of integer features
-    :return: 256-bit binary from the least significant bits of the minhash values
-    :rtype: bytes
+    :param features: List of integer feature hashes.
+    :return: 256-bit binary digest.
     """
     return alg_minhash_compress(alg_minhash(features), 4)
 
@@ -260,11 +265,10 @@ def alg_minhash_256(features):
 def alg_minhash(features):
     # type: (List[int]) -> List[int]
     """
-    Calculate a 64 dimensional minhash integer vector.
+    Calculate 64-dimensional minhash vector using universal hash functions.
 
-    :param List[int] features: List of integer features
-    :return: Minhash vector
-    :rtype: List[int]
+    :param features: List of integer feature hashes.
+    :return: List of 64 minimum hash values.
     """
     return [min([(((a * f + b) & MAXI64) % MPRIME) & MAXH for f in features]) for a, b in zip(MPA, MPB)]
 
@@ -272,16 +276,14 @@ def alg_minhash(features):
 def alg_minhash_compress(mhash, lsb=4):
     # type: (List[int], int) -> bytes
     """
-    Compress minhash vector to byte hash-digest.
+    Compress minhash vector to binary digest.
 
-    Concatenates `lsb` number of least-significant bits from each integer in `mhash`.
-    For example an `mhash` with 64 integers and `lsb=4` will produce a 256-bit summary
-    of the minhash vector.
+    Concatenates `lsb` least-significant bits from each minhash value.
+    Example: 64 values with lsb=4 produces 256-bit digest.
 
-    :param List[int] mhash: List of minhash integer features
-    :param int lsb: Number of the least significant bits to retain
-    :return: 256-bit binary from the least significant bits of the minhash values
-    :rtype: bytes
+    :param mhash: List of minhash values.
+    :param lsb: Number of least-significant bits per value.
+    :return: Binary digest of compressed minhash.
     """
     bits: str = ""
     for bitpos in range(lsb):

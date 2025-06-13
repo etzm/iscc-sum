@@ -37,10 +37,9 @@ def gen_instance_code(stream, bits=INSTANCE_BITS):
     """
     Create an ISCC Instance-Code with algorithm v0.
 
-    :param Stream stream: Binary data stream for Instance-Code generation
-    :param int bits: Bit-length of resulting Instance-Code (multiple of 64)
-    :return: ISCC object with Instance-Code and properties: datahash, filesize
-    :rtype: dict
+    :param stream: Binary data stream (file-like object, mmap, BytesIO, or BufferedReader).
+    :param bits: Bit-length of Instance-Code (32, 64, 96, 128, 160, 192, 224, or 256).
+    :return: Dictionary with 'iscc', 'datahash' (blake3 multihash), and 'filesize' keys.
     """
     hasher = InstanceHasher()
     data = stream.read(INSTANCE_IO_READ_SIZE)
@@ -67,6 +66,11 @@ class InstanceHasher:
 
     def __init__(self, data=None):
         # type: (Optional[Data]) -> None
+        """
+        Create an InstanceHasher for incremental Instance-Code generation.
+
+        :param data: Initial data to hash (bytes, bytearray, or memoryview).
+        """
         self.hasher = blake3(max_threads=blake3.AUTO)
         self.filesize = 0
         data = data or b""
@@ -77,7 +81,9 @@ class InstanceHasher:
         """
         Push data to the Instance-Hash generator.
 
-        :param Data data: Data to be hashed
+        Updates the hash state and tracks total file size.
+
+        :param data: Data chunk to process (bytes, bytearray, or memoryview).
         """
         self.filesize += len(data)
         self.hasher.update(data)
@@ -85,20 +91,18 @@ class InstanceHasher:
     def digest(self):
         # type: () -> bytes
         """
-        Return Instance-Hash
+        Return blake3 hash digest.
 
-        :return: Instance-Hash digest
-        :rtype: bytes
+        :return: 32-byte blake3 hash digest.
         """
         return self.hasher.digest()
 
     def multihash(self):
         # type: () -> str
         """
-        Return blake3 multihash
+        Return blake3 digest as multihash.
 
-        :return: Blake3 hash as 256-bit multihash
-        :rtype: str
+        :return: Hex-encoded multihash with blake3 prefix (0x1e20).
         """
         return (self.mh_prefix + self.digest()).hex()
 
@@ -107,9 +111,8 @@ class InstanceHasher:
         """
         Encode digest as an ISCC Instance-Code unit.
 
-        :param int bits: Number of bits for the ISCC Instance-Code
-        :return: ISCC Instance-Code
-        :rtype: str
+        :param bits: Number of bits for the Instance-Code (32, 64, 96, 128, 160, 192, 224, or 256).
+        :return: Base32-encoded ISCC Instance-Code string with header.
         """
         length = BIT_LEN_MAP[bits]
         header = int(INSTANCE_MAINTYPE + INSTANCE_SUBTYPE + INSTANCE_VERSION + length, 2).to_bytes(
@@ -125,7 +128,7 @@ def encode_base32(data):
     """
     Standard RFC4648 base32 encoding without padding.
 
-    :param bytes data: Data for base32 encoding
-    :return: Base32 encoded str
+    :param data: Binary data to encode.
+    :return: Base32-encoded string without padding characters.
     """
     return b32encode(data).decode("ascii").rstrip("=")
