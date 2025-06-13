@@ -10,9 +10,14 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
-  rust-checks:
-    name: Rust Checks
-    runs-on: ubuntu-latest
+  # Combined Rust checks and binary build for each OS
+  rust-build-and-check:
+    name: Rust Build & Check on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
     steps:
       - uses: actions/checkout@v4
       
@@ -24,23 +29,67 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
       
+      # Run all Rust checks - only on Ubuntu to avoid duplication
       - name: Check formatting
+        if: matrix.os == 'ubuntu-latest'
         run: cargo fmt -- --check
       
       - name: Run clippy
+        if: matrix.os == 'ubuntu-latest'
         run: cargo clippy --all-targets --all-features -- -D warnings
       
       - name: Run tests
         run: cargo test --verbose
+      
+      - name: Build binary
+        run: cargo build --release --bin iscc-sum
+      
+      - name: Test binary
+        run: |
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            ./target/release/iscc-sum.exe
+          else
+            ./target/release/iscc-sum
+          fi
+        shell: bash
+      
+      # Upload binary as artifact for other jobs
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: iscc-sum-${{ matrix.os }}
+          path: |
+            target/release/iscc-sum
+            target/release/iscc-sum.exe
 
+  # Python checks - strategic matrix coverage
   python-checks:
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    needs: rust-build-and-check
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        include:
+          # Test all Python versions on Ubuntu
+          - os: ubuntu-latest
+            python-version: "3.10"
+          - os: ubuntu-latest
+            python-version: "3.11"
+          - os: ubuntu-latest
+            python-version: "3.12"
+          - os: ubuntu-latest
+            python-version: "3.13"
+          # Test latest Python on all OS
+          - os: windows-latest
+            python-version: "3.13"
+          - os: macos-latest
+            python-version: "3.13"
+          # Test oldest Python on Windows and macOS for edge cases
+          - os: windows-latest
+            python-version: "3.10"
+          - os: macos-latest
+            python-version: "3.10"
     
     steps:
       - uses: actions/checkout@v4
@@ -61,6 +110,12 @@ jobs:
         with:
           version: "latest"
       
+      - name: Download Rust binary
+        uses: actions/download-artifact@v4
+        with:
+          name: iscc-sum-${{ matrix.os }}
+          path: target/release/
+      
       - name: Create virtual environment
         run: uv venv
       
@@ -72,57 +127,31 @@ jobs:
       - name: Build Rust extension
         run: uv run maturin develop
       
-      - name: Build Rust binary for tests
-        run: cargo build --release --bin iscc-sum
-      
+      # Run Python checks - only on one job to avoid duplication
       - name: Run linting
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
         run: uv run ruff check .
       
       - name: Check formatting
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
         run: uv run ruff format --check .
       
       - name: Run type checking
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
         run: uv run mypy src
       
       - name: Run tests
         run: uv run pytest -v
 
-  build-rust-binary:
-    name: Build Rust Binary on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-      
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-      
-      - name: Build binary
-        run: cargo build --release --bin iscc-sum
-      
-      - name: Test binary
-        run: |
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            ./target/release/iscc-sum.exe
-          else
-            ./target/release/iscc-sum
-          fi
-        shell: bash
-
+  # Wheel installation test - one Python version per OS
   test-wheel-install:
-    name: Test Wheel Installation on ${{ matrix.os }}
+    name: Test Wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    needs: rust-build-and-check
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.10", "3.13"]  # Test oldest and newest supported
     
     steps:
       - uses: actions/checkout@v4
@@ -130,7 +159,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.13"  # Use latest Python for wheel tests
       
       - name: Install build dependencies
         run: |
@@ -141,8 +170,7 @@ jobs:
         run: python -m build --wheel
       
       - name: Create test environment
-        run: |
-          python -m venv test_env
+        run: python -m venv test_env
       
       - name: Activate and install wheel (Unix)
         if: runner.os != 'Windows'
