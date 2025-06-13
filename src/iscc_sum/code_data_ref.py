@@ -1,4 +1,9 @@
-"""ISO Reference Implementation of ISCC Data-Code"""
+"""
+ISO Reference Implementation of ISCC Data-Code
+
+This module serves only as reference for correctness and performance of the actual Data-Code
+implementation. The library does not use this code.
+"""
 
 import mmap
 from base64 import b32encode
