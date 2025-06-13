@@ -76,7 +76,32 @@ source = ["iscc_sum"]
 omit = ["tests/*"]
 
 [tool.poe.tasks]
-format = { shell = "ruff format . && ruff check --fix ." }
-test = "pytest"
+# Developer setup - requires Rust to be installed first
+setup = { shell = "rustup component add rustfmt clippy && echo 'Rust components installed successfully!'" }
+check-rust = { shell = "rustup --version && cargo --version && echo 'Rust toolchain is ready!'" }
+
+# Python formatting and linting
+py-format = { shell = "ruff format . && ruff check --fix ." }
+py-format-check = { shell = "ruff format --check . && ruff check ." }
+py-typecheck = "mypy src"
+py-test = "pytest -v"
+py-coverage = "pytest --cov=iscc_sum --cov-report=term-missing"
+
+# Rust formatting and linting
+rust-format = "cargo fmt"
+rust-format-check = "cargo fmt -- --check"
+rust-clippy = "cargo clippy --all-targets --all-features -- -D warnings"
+rust-test = "cargo test --verbose"
+rust-build = "cargo build --release --bin iscc-sum"
+
+# Python extension building
+build-ext = "maturin develop"
+
+# Combined commands
+format = { shell = "cargo fmt && ruff format . && ruff check --fix ." }
+test = { shell = "cargo test --verbose && pytest -v" }
 typecheck = "mypy src"
 coverage = "pytest --cov=iscc_sum --cov-report=term-missing"
+
+# Pre-commit all-in-one command
+all = { shell = "cargo fmt && cargo clippy --all-targets --all-features -- -D warnings && cargo test --verbose && ruff format . && ruff check --fix . && mypy src && maturin develop && pytest -v" }
