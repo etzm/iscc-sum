@@ -106,8 +106,8 @@ md-format = { shell = "mdformat --wrap 112 --end-of-line lf docs README.md CHANG
 # Rust formatting and linting
 rust-format = "cargo fmt"
 rust-format-check = "cargo fmt -- --check"
-rust-clippy = "cargo clippy --all-targets --all-features -- -D warnings"
-rust-test = "cargo test --verbose"
+rust-clippy = "cargo clippy --quiet --all-targets --all-features -- -D warnings"
+rust-test = "cargo test"
 rust-build = "cargo build --release --bin iscc-sum"
 
 # Python extension building
