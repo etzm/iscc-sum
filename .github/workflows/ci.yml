@@ -115,6 +115,10 @@ jobs:
           name: iscc-sum-rs-${{ matrix.os }}
           path: target/release/
       
+      - name: Make binary executable (Unix)
+        if: runner.os != 'Windows'
+        run: chmod +x target/release/iscc-sum-rs
+      
       - name: Create virtual environment
         run: uv venv
       
