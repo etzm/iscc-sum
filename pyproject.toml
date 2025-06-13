@@ -3,7 +3,7 @@ name = "iscc-sum"
 version = "0.1.0-alpha.1"
 description = "High-performance ISCC Data-Code and Instance-Code hashing"
 readme = "README.md"
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 authors = [
     { name = "Titusz Pan", email = "titusz.pan@gmail.com" }
 ]
