@@ -113,6 +113,7 @@ rust-build = "cargo build --release --bin iscc-sum"
 
 # Python extension building
 build-ext = "maturin develop"
+build-ext-release = "maturin develop --release"
 
 # Combined commands
 format = ["rust-format", "py-format", "md-format"]
@@ -127,4 +128,4 @@ all = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "
 ci = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-test-all"]
 
 # Benchmarking
-benchmark = { cmd = "python scripts/benchmark.py", help = "Run performance benchmarks" }
+benchmark = { sequence = ["build-ext-release", { cmd = "python scripts/benchmark.py" }], help = "Run performance benchmarks with release build" }
