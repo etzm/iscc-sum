@@ -125,3 +125,6 @@ coverage = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100
 all = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-coverage"]
 # CI command that includes slow tests
 ci = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-test-all"]
+
+# Benchmarking
+benchmark = { cmd = "python scripts/benchmark.py", help = "Run performance benchmarks" }
