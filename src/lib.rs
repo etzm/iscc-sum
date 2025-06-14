@@ -4,6 +4,7 @@ use pyo3::prelude::*;
 
 pub mod cdc;
 pub mod constants;
+pub mod data;
 pub mod minhash;
 
 pub fn get_hello_message() -> String {
@@ -21,6 +22,7 @@ fn hello_from_bin() -> String {
 #[pymodule]
 fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(hello_from_bin, m)?)?;
+    m.add_class::<data::DataCodeProcessor>()?;
     Ok(())
 }
 

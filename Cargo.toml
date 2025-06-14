@@ -25,4 +25,4 @@ path = "src/main.rs"
 # "abi3-py310" tells pyo3 (and maturin) to build using the stable ABI with minimum Python version 3.10
 pyo3 = { version = "0.25.1", features = ["extension-module", "abi3-py310"] }
 rayon = "1.10.0"
-xxhash-rust = { version = "0.8.15", features = ["xxh3"] }
+xxhash-rust = { version = "0.8.15", features = ["xxh32", "xxh3"] }
