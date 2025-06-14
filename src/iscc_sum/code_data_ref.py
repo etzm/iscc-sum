@@ -13,7 +13,7 @@ from typing import BinaryIO, Generator, List, Optional, Union
 
 import xxhash
 
-from iscc_sum.contstants import (
+from iscc_sum.constants import (
     CDC_GEAR,  # List of 256 positive integers (max 31-bit)
     MPA,  # List of 64 positive integers (max 61-bit)
     MPB,  # List of 64 positive integers (max 61-bit)
