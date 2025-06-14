@@ -13,7 +13,8 @@ categories = ["command-line-utilities", "cryptography"]
 [lib]
 name = "_core"
 # "cdylib" is necessary to produce a shared library for Python to import from.
-crate-type = ["cdylib"]
+# "lib" is added to support benchmarks and tests
+crate-type = ["cdylib", "lib"]
 
 [[bin]]
 name = "iscc-sum-rs"

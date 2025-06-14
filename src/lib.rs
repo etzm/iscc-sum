@@ -2,6 +2,9 @@
 
 use pyo3::prelude::*;
 
+pub mod cdc;
+pub mod constants;
+
 pub fn get_hello_message() -> String {
     "hello iscc-sum".to_string()
 }
