@@ -26,3 +26,5 @@ path = "src/main.rs"
 pyo3 = { version = "0.25.1", features = ["extension-module", "abi3-py310"] }
 rayon = "1.10.0"
 xxhash-rust = { version = "0.8.15", features = ["xxh32"] }
+blake3 = "1.8.2"
+hex = "0.4.3"
