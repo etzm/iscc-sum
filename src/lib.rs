@@ -7,6 +7,7 @@ pub mod constants;
 pub mod data;
 pub mod instance;
 pub mod minhash;
+pub mod sum;
 
 pub fn get_hello_message() -> String {
     "hello iscc-sum".to_string()
@@ -25,6 +26,8 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(hello_from_bin, m)?)?;
     m.add_class::<data::DataCodeProcessor>()?;
     m.add_class::<instance::InstanceCodeProcessor>()?;
+    m.add_class::<sum::IsccSumProcessor>()?;
+    m.add_function(wrap_pyfunction!(sum::code_iscc_sum, m)?)?;
     Ok(())
 }
 

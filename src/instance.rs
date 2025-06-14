@@ -7,13 +7,19 @@ use pyo3::prelude::*;
 use pyo3::types::{PyBytes, PyDict};
 
 /// InstanceHasher collects data and computes BLAKE3 hash.
-struct InstanceHasher {
+pub struct InstanceHasher {
     hasher: blake3::Hasher,
     filesize: u64,
 }
 
+impl Default for InstanceHasher {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl InstanceHasher {
-    fn new() -> Self {
+    pub fn new() -> Self {
         let mut hasher = InstanceHasher {
             hasher: blake3::Hasher::new(),
             filesize: 0,
@@ -23,23 +29,28 @@ impl InstanceHasher {
         hasher
     }
 
-    fn push(&mut self, data: &[u8]) {
+    pub fn push(&mut self, data: &[u8]) {
         self.filesize += data.len() as u64;
         self.hasher.update(data);
     }
 
     /// Return blake3 hash digest.
-    fn digest(&self) -> Vec<u8> {
+    pub fn digest(&self) -> Vec<u8> {
         self.hasher.finalize().as_bytes().to_vec()
     }
 
     /// Return blake3 digest as multihash.
-    fn multihash(&self) -> String {
+    pub fn multihash(&self) -> String {
         let mh_prefix = vec![0x1e, 0x20]; // BLAKE3 multihash prefix
         let digest = self.digest();
         let mut result = mh_prefix;
         result.extend_from_slice(&digest);
         hex::encode(result)
+    }
+
+    /// Get the total filesize processed
+    pub fn filesize(&self) -> u64 {
+        self.filesize
     }
 }
 

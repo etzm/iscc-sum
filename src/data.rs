@@ -12,14 +12,20 @@ use crate::cdc::{cdc_chunks, DATA_AVG_CHUNK_SIZE};
 use crate::minhash::minhash_256;
 
 /// DataHasher collects xxhash32 digests of CDC chunks.
-struct DataHasher {
+pub struct DataHasher {
     chunk_features: Vec<u32>,
     tail: Vec<u8>,
     finalized: bool,
 }
 
+impl Default for DataHasher {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DataHasher {
-    fn new() -> Self {
+    pub fn new() -> Self {
         let mut hasher = DataHasher {
             chunk_features: Vec::new(),
             tail: Vec::new(),
@@ -30,7 +36,7 @@ impl DataHasher {
         hasher
     }
 
-    fn push(&mut self, data: &[u8]) {
+    pub fn push(&mut self, data: &[u8]) {
         // Prepend any tail carried over from previous push.
         let combined: Vec<u8> = if !self.tail.is_empty() {
             [self.tail.as_slice(), data].concat()
@@ -55,7 +61,7 @@ impl DataHasher {
     }
 
     /// Finalize and return the 256-bit (32-byte) digest.
-    fn digest(&mut self) -> Vec<u8> {
+    pub fn digest(&mut self) -> Vec<u8> {
         self.finalize();
         minhash_256(&self.chunk_features)
     }
