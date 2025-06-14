@@ -23,6 +23,7 @@ classifiers = [
 ]
 dependencies = [
     "blake3>=1.0.5",
+    "universal-pathlib>=0.2.6",
     "xxhash>=3.5.0",
 ]
 
