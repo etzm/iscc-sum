@@ -5,6 +5,9 @@ from importlib.metadata import PackageNotFoundError, version
 
 import click
 
+# Constants
+IO_READ_SIZE = 2097152  # 2MB chunk size
+
 # Exit codes
 EXIT_SUCCESS = 0
 EXIT_VERIFICATION_FAILURE = 1
@@ -141,16 +144,76 @@ def cli(check, tag, zero, quiet, status, warn, strict, narrow, units, similar, t
 def _handle_checksum_generation(files, narrow, units, tag, zero):
     # type: (tuple, bool, bool, bool, bool) -> None
     """Handle normal checksum generation mode."""
+    import os
+
+    from iscc_sum import IsccSumProcessor
+
     if not files:
         # Read from stdin
         files = ("-",)
 
-    for file in files:
-        if file == "-":
-            click.echo("iscc-sum: reading from stdin not yet implemented", err=True)
+    for filepath in files:
+        try:
+            processor = IsccSumProcessor()
+
+            # Handle stdin
+            if filepath == "-":
+                if hasattr(sys.stdin, "buffer"):
+                    # Python 3: Use binary buffer
+                    stdin = sys.stdin.buffer
+                else:
+                    # Python 2: stdin is already binary in binary mode
+                    stdin = sys.stdin
+
+                while True:
+                    chunk = stdin.read(IO_READ_SIZE)
+                    if not chunk:
+                        break
+                    processor.update(chunk)
+
+                display_name = "-"
+            else:
+                # Handle regular file
+                with open(filepath, "rb") as f:
+                    while True:
+                        chunk = f.read(IO_READ_SIZE)
+                        if not chunk:
+                            break
+                        processor.update(chunk)
+
+                display_name = filepath
+
+            # Get result
+            result = processor.result(wide=not narrow, add_units=units)
+
+            # Format output
+            terminator = "\0" if zero else "\n"
+
+            if tag:
+                # BSD-style output
+                output = "ISCC-SUM ({}) = {}".format(display_name, result.iscc)
+            else:
+                # Default output format
+                output = "{} *{}".format(result.iscc, display_name)
+
+            click.echo(output, nl=False)
+            click.echo(terminator, nl=False)
+
+            # Display units if requested
+            if units and result.units:
+                for unit in result.units:
+                    unit_output = "  {}".format(unit)
+                    click.echo(unit_output, nl=False)
+                    click.echo(terminator, nl=False)
+
+        except IOError as e:
+            error_msg = "iscc-sum: {}: {}".format(filepath, str(e))
+            click.echo(error_msg, err=True)
             sys.exit(EXIT_ERROR)
-        else:
-            click.echo(f"Processing: {file}")
+        except Exception as e:
+            error_msg = "iscc-sum: {}: unexpected error: {}".format(filepath, str(e))
+            click.echo(error_msg, err=True)
+            sys.exit(EXIT_ERROR)
 
 
 def _handle_verification(files, quiet, status, warn, strict):

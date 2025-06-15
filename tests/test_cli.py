@@ -37,29 +37,45 @@ def test_no_arguments():
     # type: () -> None
     """Test behavior when no arguments are provided (should read from stdin)."""
     runner = CliRunner()
-    result = runner.invoke(cli, [])
-    assert result.exit_code == 2
-    assert "reading from stdin not yet implemented" in result.output
+    test_input = b"Test data from stdin\n"
+    result = runner.invoke(cli, [], input=test_input)
+    assert result.exit_code == 0
+    assert "ISCC:" in result.output
+    assert " *-" in result.output  # stdin is shown as "-"
 
 
 def test_single_file_argument():
     # type: () -> None
     """Test processing a single file."""
     runner = CliRunner()
-    result = runner.invoke(cli, ["test.txt"])
-    assert result.exit_code == 0
-    assert "Processing: test.txt" in result.output
+    with runner.isolated_filesystem():
+        # Create a test file
+        with open("test.txt", "wb") as f:
+            f.write(b"Test content\n")
+
+        result = runner.invoke(cli, ["test.txt"])
+        assert result.exit_code == 0
+        assert "ISCC:" in result.output
+        assert " *test.txt" in result.output
 
 
 def test_multiple_file_arguments():
     # type: () -> None
     """Test processing multiple files."""
     runner = CliRunner()
-    result = runner.invoke(cli, ["file1.txt", "file2.txt", "file3.txt"])
-    assert result.exit_code == 0
-    assert "Processing: file1.txt" in result.output
-    assert "Processing: file2.txt" in result.output
-    assert "Processing: file3.txt" in result.output
+    with runner.isolated_filesystem():
+        # Create test files
+        for i in range(1, 4):
+            with open(f"file{i}.txt", "wb") as f:
+                f.write(f"Content of file {i}\n".encode())
+
+        result = runner.invoke(cli, ["file1.txt", "file2.txt", "file3.txt"])
+        assert result.exit_code == 0
+        assert " *file1.txt" in result.output
+        assert " *file2.txt" in result.output
+        assert " *file3.txt" in result.output
+        # Check we have 3 ISCC codes
+        assert result.output.count("ISCC:") == 3
 
 
 def test_check_mode():
@@ -82,39 +98,76 @@ def test_tag_option():
     # type: () -> None
     """Test BSD-style output with --tag."""
     runner = CliRunner()
-    result = runner.invoke(cli, ["--tag", "test.txt"])
-    assert result.exit_code == 0
-    # For now just checking it doesn't error
+    with runner.isolated_filesystem():
+        with open("test.txt", "wb") as f:
+            f.write(b"Test content\n")
+
+        result = runner.invoke(cli, ["--tag", "test.txt"])
+        assert result.exit_code == 0
+        assert "ISCC-SUM (test.txt) = ISCC:" in result.output
+        assert " *test.txt" not in result.output  # Should not have default format
 
 
 def test_zero_option():
     # type: () -> None
     """Test NUL-terminated output with -z/--zero."""
     runner = CliRunner()
+    with runner.isolated_filesystem():
+        with open("test.txt", "wb") as f:
+            f.write(b"Test content\n")
 
-    # Test with -z
-    result = runner.invoke(cli, ["-z", "test.txt"])
-    assert result.exit_code == 0
+        # Test with -z
+        result = runner.invoke(cli, ["-z", "test.txt"])
+        assert result.exit_code == 0
+        assert "\0" in result.output
+        assert "\n" not in result.output
 
-    # Test with --zero
-    result = runner.invoke(cli, ["--zero", "test.txt"])
-    assert result.exit_code == 0
+        # Test with --zero
+        result = runner.invoke(cli, ["--zero", "test.txt"])
+        assert result.exit_code == 0
+        assert "\0" in result.output
 
 
 def test_narrow_option():
     # type: () -> None
     """Test narrow format with --narrow."""
     runner = CliRunner()
-    result = runner.invoke(cli, ["--narrow", "test.txt"])
-    assert result.exit_code == 0
+    with runner.isolated_filesystem():
+        with open("test.txt", "wb") as f:
+            f.write(b"Test content\n")
+
+        # Get normal (wide) output
+        result_wide = runner.invoke(cli, ["test.txt"])
+        assert result_wide.exit_code == 0
+        wide_iscc = result_wide.output.split()[0]
+
+        # Get narrow output
+        result_narrow = runner.invoke(cli, ["--narrow", "test.txt"])
+        assert result_narrow.exit_code == 0
+        narrow_iscc = result_narrow.output.split()[0]
+
+        # Narrow should be shorter than wide
+        # Wide is ~54 chars (256-bit), narrow is ~29 chars (128-bit)
+        assert len(narrow_iscc) < len(wide_iscc)
+        assert len(narrow_iscc) < 35  # Should be around 29 chars
+        assert len(wide_iscc) > 45  # Should be around 54 chars
 
 
 def test_units_option():
     # type: () -> None
     """Test component units output with --units."""
     runner = CliRunner()
-    result = runner.invoke(cli, ["--units", "test.txt"])
-    assert result.exit_code == 0
+    with runner.isolated_filesystem():
+        with open("test.txt", "wb") as f:
+            f.write(b"Test content\n")
+
+        result = runner.invoke(cli, ["--units", "test.txt"])
+        assert result.exit_code == 0
+        lines = result.output.strip().split("\n")
+        assert len(lines) == 3  # Main ISCC + 2 units
+        assert "ISCC:" in lines[0]  # Main composite code
+        assert "  ISCC:" in lines[1]  # Data-Code (indented)
+        assert "  ISCC:" in lines[2]  # Instance-Code (indented)
 
 
 def test_similar_option():
@@ -179,9 +232,11 @@ def test_stdin_placeholder():
     # type: () -> None
     """Test that stdin placeholder '-' is recognized."""
     runner = CliRunner()
-    result = runner.invoke(cli, ["-"])
-    assert result.exit_code == 2
-    assert "reading from stdin not yet implemented" in result.output
+    test_input = b"Data from stdin\n"
+    result = runner.invoke(cli, ["-"], input=test_input)
+    assert result.exit_code == 0
+    assert "ISCC:" in result.output
+    assert " *-" in result.output
 
 
 def test_get_version_with_missing_package():

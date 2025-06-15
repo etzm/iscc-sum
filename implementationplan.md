@@ -35,28 +35,40 @@ implement the ISCC (International Standard Content Code) checksum functionality 
 - [x] Write unit tests for CLI structure and option parsing
 
 **Achievements**:
+
 - Created full CLI skeleton with all options from specification
 - Implemented proper error handling and exit codes
 - Added comprehensive test suite with 18 tests
 - Achieved 100% code coverage for CLI module
 - All tests passing (24 CLI-related tests total)
 
-### Checkpoint 2: Basic Checksum Generation
+### Checkpoint 2: Basic Checksum Generation ✅
 
 **Goal**: Implement core checksum generation functionality
 
+**Status**: COMPLETED (2025-06-15)
+
 **Tasks**:
 
-- [ ] Implement file reading with 2MB chunk size
-- [ ] Add stdin reading support when no files specified
-- [ ] Integrate with `IsccSumProcessor` from Rust bindings
-- [ ] Implement default output format: `<ISCC_CHECKSUM> *<FILENAME>`
-- [ ] Implement BSD-style output format with `--tag` option
-- [ ] Handle `--narrow` option for 128-bit format
-- [ ] Implement `--zero` option for NUL-terminated lines
-- [ ] Add progress indication for large files (if needed)
-- [ ] Handle file access errors gracefully
-- [ ] Write tests for checksum generation with various file types
+- [x] Implement file reading with 2MB chunk size
+- [x] Add stdin reading support when no files specified
+- [x] Integrate with `IsccSumProcessor` from Rust bindings
+- [x] Implement default output format: `<ISCC_CHECKSUM> *<FILENAME>`
+- [x] Implement BSD-style output format with `--tag` option
+- [x] Handle `--narrow` option for 128-bit format
+- [x] Implement `--zero` option for NUL-terminated lines
+- [x] Add progress indication for large files (not needed - fast enough)
+- [x] Handle file access errors gracefully
+- [x] Write tests for checksum generation with various file types
+
+**Achievements**:
+
+- Fully functional checksum generation for files and stdin
+- All output formats implemented (default, BSD, zero-terminated)
+- Narrow and wide format support
+- Comprehensive error handling for file I/O
+- Added 12 new tests covering various scenarios
+- Maintained 100% code coverage
 
 ### Checkpoint 3: Extended Output with Units
 
