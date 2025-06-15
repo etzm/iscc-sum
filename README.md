@@ -33,16 +33,118 @@ Or download pre-built binaries from the [releases page](https://github.com/bio-c
 
 ## Usage
 
-### Command Line
+### Command Line Interface
+
+The `iscc-sum` command provides checksum generation and verification functionality similar to standard tools
+like `md5sum` or `sha256sum`, but using ISCC (International Standard Content Code) checksums.
+
+#### Basic Usage
 
 ```bash
-# Using the Rust CLI tool
-iscc-sum-rs
+# Generate checksum for a file
+iscc-sum document.pdf
+# Output: ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2XHGQY *document.pdf
 
-# Using Python module (provides iscc-sum command)
-python -m iscc_sum
-# or if installed:
-iscc-sum
+# Generate checksums for multiple files
+iscc-sum *.txt
+
+# Read from standard input
+echo "Hello, World!" | iscc-sum
+cat document.txt | iscc-sum
+```
+
+#### Checksum Verification
+
+```bash
+# Create a checksum file
+iscc-sum *.txt > checksums.txt
+
+# Verify checksums
+iscc-sum -c checksums.txt
+# Output:
+# file1.txt: OK
+# file2.txt: OK
+
+# Verify with quiet mode (only show failures)
+iscc-sum -c -q checksums.txt
+```
+
+#### Output Formats
+
+```bash
+# Default format (GNU style)
+iscc-sum file.txt
+# ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2XHGQY *file.txt
+
+# BSD-style format
+iscc-sum --tag file.txt
+# ISCC (file.txt) = ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2XHGQY
+
+# Narrow format (128-bit)
+iscc-sum --narrow file.txt
+# ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HU *file.txt
+
+# Show component codes
+iscc-sum --units file.txt
+# ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2XHGQY *file.txt
+#   ISCC:EAAW4BQTJSTJSHAI27AJSAGMGHNUKSKRTK3E6OZ5CXUS57SWQZXJQ
+#   ISCC:IABXF3ZHYL6O6PM5P2HGV677CS3RBHINZSXEJCITE3WNOTQ2CYXRA
+```
+
+#### Similarity Matching
+
+Find files with similar content:
+
+```bash
+# Find similar files (default threshold: 12 bits)
+iscc-sum --similar *.jpg
+# Output:
+# photo1.jpg
+#   ~8  photo2.jpg
+#   ~12 photo3.jpg
+
+# Adjust similarity threshold
+iscc-sum --similar --threshold 6 *.pdf
+```
+
+#### Complete Options
+
+```bash
+iscc-sum --help  # Show all available options
+
+Options:
+  -c, --check      Read checksums from files and check them
+  --narrow         Generate shorter 128-bit checksums
+  --tag            Create a BSD-style checksum
+  --units          Show Data-Code and Instance-Code components
+  -z, --zero       End each output line with NUL
+  --similar        Find files with similar Data-Codes
+  --threshold      Hamming distance threshold for similarity (default: 12)
+  -q, --quiet      Don't print OK for each verified file
+  --status         Don't output anything, exit code shows success
+  -w, --warn       Warn about improperly formatted lines
+  --strict         Exit non-zero for improperly formatted lines
+```
+
+#### Examples
+
+See the [examples](examples/) directory for practical scripts demonstrating:
+
+- Backup verification workflows
+- Duplicate file detection
+- File integrity monitoring
+- Download verification
+
+#### Rust CLI Tool
+
+A standalone Rust binary is also available:
+
+```bash
+# Install from crates.io
+cargo install iscc-sum
+
+# Run the Rust CLI
+iscc-sum-rs
 ```
 
 ### Python API
