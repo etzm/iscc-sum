@@ -23,6 +23,7 @@ classifiers = [
 ]
 dependencies = [
     "blake3>=1.0.5",
+    "click>=8.0.0",
     "universal-pathlib>=0.2.6",
     "xxhash>=3.5.0",
 ]
@@ -33,7 +34,7 @@ Repository = "https://github.com/bio-codes/iscc-sum"
 Issues = "https://github.com/bio-codes/iscc-sum/issues"
 
 [project.scripts]
-iscc-sum = "iscc_sum:main"
+iscc-sum = "iscc_sum.cli:cli"
 
 [tool.maturin]
 module-name = "iscc_sum._core"
