@@ -57,6 +57,7 @@ dev-dependencies = [
     "mdformat-gfm>=0.4.1",
     "mdformat-gfm-alerts>=2.0.0",
     "build>=1.0",
+    "bandit>=1.8.3",
 ]
 
 [tool.ruff]
@@ -105,6 +106,9 @@ py-coverage-all = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-un
 # Markdown formatting
 md-format = { shell = "mdformat --wrap 112 --end-of-line lf *.md docs/*.md", help = "Markdown formating with mdformat" }
 
+# Check security
+check-security = { cmd = "uv run bandit -r src/ -q", help = "Run security check with bandit" }
+
 # Rust formatting and linting
 rust-format = "cargo fmt"
 rust-format-check = "cargo fmt -- --check"
@@ -124,7 +128,7 @@ typecheck = "mypy src"
 coverage = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100 -m 'not slow'"
 
 # Pre-commit all-in-one command
-all = ["md-format", "rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext-release", "py-coverage"]
+all = ["md-format", "rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext-release", "py-coverage", "check-security"]
 # CI command that includes slow tests
 ci = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-test-all"]
 

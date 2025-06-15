@@ -40,22 +40,22 @@ def create_checksums(directory):
     # Change to directory for consistent relative paths
     original_cwd = os.getcwd()
     os.chdir(directory)
-    
+
     try:
         # Make file paths relative to current directory
         rel_files = [os.path.relpath(f, directory) for f in files]
-        
+
         # Generate checksums
         result = subprocess.run(["iscc-sum"] + rel_files, capture_output=True, text=True, check=True)
 
         # Write to checksum file (now in current directory)
         Path(CHECKSUM_FILE).write_text(result.stdout)
-        
+
         # Count files processed
         file_count = len(files)
         print(f"Created checksums for {file_count} files")
         print(f"Checksums saved to: {Path.cwd() / CHECKSUM_FILE}")
-        
+
     except subprocess.CalledProcessError as e:
         print(f"Error generating checksums: {e.stderr}", file=sys.stderr)
         sys.exit(1)
