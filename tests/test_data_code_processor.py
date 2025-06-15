@@ -4,7 +4,7 @@ import io
 
 import pytest
 
-from iscc_sum._core import DataCodeProcessor
+from iscc_sum import DataCodeProcessor
 from iscc_sum.code_data_ref import DataHasher as RefDataHasher
 
 

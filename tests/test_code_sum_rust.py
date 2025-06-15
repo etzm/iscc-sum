@@ -5,7 +5,7 @@ import tempfile
 
 import pytest
 
-from iscc_sum._core import IsccSumProcessor, code_iscc_sum
+from iscc_sum import IsccSumProcessor, code_iscc_sum
 from iscc_sum.code_iscc_sum_ref import code_iscc_sum as code_iscc_sum_ref
 
 
