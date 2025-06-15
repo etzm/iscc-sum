@@ -123,7 +123,7 @@ typecheck = "mypy src"
 coverage = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100 -m 'not slow'"
 
 # Pre-commit all-in-one command
-all = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-coverage"]
+all = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext-release", "py-coverage"]
 # CI command that includes slow tests
 ci = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-test-all"]
 

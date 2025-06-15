@@ -9,8 +9,7 @@ High-performance ISCC Data-Code and Instance-Code hashing tool, implemented in R
 ## Project Status
 
 > [!CAUTION]
-> **Early Alpha Release** — This project is in its early development stage. The current release is primarily for
-> testing the release infrastructure. The tool does not yet implement any functional ISCC hashing capabilities.
+> **Early Release** — This project is in its early development stage.
 
 ## Installation
 
