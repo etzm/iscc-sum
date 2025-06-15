@@ -54,10 +54,10 @@ Generate ISCC-SUM codes for files:
 ```pycon
 >>> from iscc_sum import code_iscc_sum
 >>> 
->>> # Generate ISCC-SUM for a file
->>> result = code_iscc_sum("LICENSE")
+>>> # Generate extended ISCC-SUM for a file
+>>> result = code_iscc_sum("LICENSE", wide=True)
 >>> result.iscc
-'ISCC:KUAA2G6UMXGFJAO6HAZ7YPERUN476'
+'ISCC:K4AA2G6UMXGFJAO6ZOMIFZIYO6LYMOBT7Q6JDI3Z75IJWQY5WH372QA'
 >>> result.datahash
 '1e203833fc3c91a379ff509b431db1f7fd40dea69a6614249f420ec62398957087b1'
 >>> result.filesize
