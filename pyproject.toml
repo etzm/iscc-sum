@@ -102,7 +102,7 @@ py-coverage = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=
 py-coverage-all = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100"
 
 # Markdown formatting
-md-format = { shell = "mdformat --wrap 112 --end-of-line lf docs README.md CHANGELOG.md", help = "Markdown formating with mdformat" }
+md-format = { shell = "mdformat --wrap 112 --end-of-line lf docs/* README.md CHANGELOG.md", help = "Markdown formating with mdformat" }
 
 # Rust formatting and linting
 rust-format = "cargo fmt"
