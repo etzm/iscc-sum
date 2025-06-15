@@ -8,8 +8,7 @@ fsspec/upath while maintaining high performance for the core processing.
 
 from upath import UPath
 
-from iscc_sum import IsccSumProcessor
-from iscc_sum._core import IsccSumResult
+from iscc_sum import IsccSumProcessor, IsccSumResult
 
 # File I/O Configuration
 IO_READ_SIZE = 2097152  # 2MB chunks for efficient file reading
@@ -27,7 +26,7 @@ def code_iscc_sum(uri, wide=False, add_units=True):
     :param uri: Path or fsspec URL to the file to process
     :param wide: If True, generates 128-bit codes (256-bit total); if False, 64-bit codes (128-bit total)
     :param add_units: If True, includes individual Data-Code and Instance-Code units in the result
-    :return: Dictionary containing:
+    :return: Dictionary compatible object with following properties:
         - iscc: The composite ISCC-CODE SUM identifier
         - datahash: Blake3 multihash of the file content
         - filesize: Size of the file in bytes

@@ -47,10 +47,39 @@ iscc-sum
 
 ### Python API
 
-```python
-from iscc_sum import hello_from_bin
+#### Quick Start
 
-print(hello_from_bin())  # prints: hello iscc-sum
+Generate ISCC-SUM codes for files:
+
+```pycon
+>>> from iscc_sum import code_iscc_sum
+>>> 
+>>> # Generate ISCC-SUM for a file
+>>> result = code_iscc_sum("LICENSE")
+>>> result.iscc
+'ISCC:KUAA2G6UMXGFJAO6HAZ7YPERUN476'
+>>> result.datahash
+'1e203833fc3c91a379ff509b431db1f7fd40dea69a6614249f420ec62398957087b1'
+>>> result.filesize
+11357
+
+```
+
+#### Streaming API
+
+For large files or streaming data, use the processor classes:
+
+```python
+from iscc_sum import IsccSumProcessor
+
+processor = IsccSumProcessor()
+with open("large_file.bin", "rb") as f:
+    while chunk := f.read(1024 * 1024):  # Read in 1MB chunks
+        processor.update(chunk)
+
+result = processor.result(wide=False, add_units=True)
+print(f"ISCC: {result.iscc}")
+print(f"Units: {result.units}")  # Individual Data-Code and Instance-Code
 ```
 
 ## Development
