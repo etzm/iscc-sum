@@ -15,7 +15,16 @@ High-performance ISCC Data-Code and Instance-Code hashing tool, implemented in R
 
 ### Python Package
 
-Install from PyPI:
+The recommended way to install the iscc-sum CLI tool is using [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv tool install iscc-sum
+```
+
+**Note:** To install uv, run: `curl -LsSf https://astral.sh/uv/install.sh | sh` (or see
+[other installation methods](https://docs.astral.sh/uv/getting-started/installation/))
+
+Alternatively, install from PyPI:
 
 ```bash
 pip install iscc-sum

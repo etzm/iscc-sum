@@ -103,9 +103,16 @@ A Python script for verifying downloaded files using ISCC checksums.
 ## Running the Examples
 
 1. Ensure `iscc-sum` is installed:
-```bash
-pip install iscc-sum
-```
+
+   Using uv (recommended):
+   ```bash
+   uv tool install iscc-sum
+   ```
+   
+   Or using pip:
+   ```bash
+   pip install iscc-sum
+   ```
 
 2. Run scripts with Python:
 ```bash

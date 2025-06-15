@@ -17,16 +17,19 @@ Content Code) checksums according to ISO 24138:2024.
 
 ## Installation
 
-Install `iscc-sum` using pip:
+The recommended way to install the `iscc-sum` CLI tool is using [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv tool install iscc-sum
+```
+
+**Note:** To install uv, run: `curl -LsSf https://astral.sh/uv/install.sh | sh` (or see
+[other installation methods](https://docs.astral.sh/uv/getting-started/installation/))
+
+Alternatively, you can install using pip:
 
 ```bash
 pip install iscc-sum
-```
-
-Or using uv:
-
-```bash
-uv pip install iscc-sum
 ```
 
 Verify the installation:
