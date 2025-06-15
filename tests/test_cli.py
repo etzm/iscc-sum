@@ -83,15 +83,15 @@ def test_check_mode():
     """Test verification mode with -c/--check."""
     runner = CliRunner()
 
-    # Test with -c
+    # Test with -c (file not found)
     result = runner.invoke(cli, ["-c", "checksums.txt"])
     assert result.exit_code == 2
-    assert "verification mode not yet implemented" in result.output
+    assert "No such file or directory" in result.output
 
-    # Test with --check
+    # Test with --check (file not found)
     result = runner.invoke(cli, ["--check", "checksums.txt"])
     assert result.exit_code == 2
-    assert "verification mode not yet implemented" in result.output
+    assert "No such file or directory" in result.output
 
 
 def test_tag_option():

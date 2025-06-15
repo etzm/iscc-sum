@@ -212,11 +212,122 @@ def _handle_checksum_generation(files, narrow, units, tag, zero):
             sys.exit(EXIT_ERROR)
 
 
+def _parse_checksum_line(line):
+    # type: (str) -> tuple | None
+    """Parse a checksum line in either default or BSD format.
+
+    Returns (iscc_code, filename) tuple or None if invalid format.
+    """
+    import re
+
+    # BSD format: ISCC-SUM (filename) = ISCC:xxx
+    bsd_match = re.match(r"^ISCC-SUM \((.+)\) = (ISCC:[A-Z0-9]+)$", line)
+    if bsd_match:
+        return bsd_match.group(2), bsd_match.group(1)
+
+    # Default format: ISCC:xxx *filename
+    default_match = re.match(r"^(ISCC:[A-Z0-9]+) \*(.+)$", line)
+    if default_match:
+        return default_match.group(1), default_match.group(2)
+
+    return None
+
+
 def _handle_verification(files, quiet, status, warn, strict):
     # type: (tuple, bool, bool, bool, bool) -> None
     """Handle checksum verification mode."""
-    click.echo("iscc-sum: verification mode not yet implemented", err=True)
-    sys.exit(EXIT_ERROR)
+    import os
+
+    from iscc_sum import IsccSumProcessor
+
+    if not files:
+        click.echo("iscc-sum: no checksum file specified", err=True)
+        sys.exit(EXIT_ERROR)
+
+    total_files = 0
+    failed_files = 0
+    missing_files = 0
+    format_errors = 0
+
+    for checksum_file in files:
+        try:
+            with open(checksum_file, "r", encoding="utf-8") as f:
+                line_number = 0
+                for line in f:
+                    line_number += 1
+                    line = line.rstrip("\n\r")
+
+                    if not line:
+                        continue
+
+                    # Parse the checksum line
+                    parsed = _parse_checksum_line(line)
+                    if parsed is None:
+                        format_errors += 1
+                        if warn:
+                            click.echo(
+                                f"iscc-sum: {checksum_file}: {line_number}: "
+                                f"improperly formatted ISCC checksum line",
+                                err=True,
+                            )
+                        if strict:
+                            sys.exit(EXIT_ERROR)
+                        continue
+
+                    expected_iscc, filename = parsed
+                    total_files += 1
+
+                    # Check if file exists
+                    if not os.path.exists(filename):
+                        missing_files += 1
+                        if not status:
+                            click.echo(f"iscc-sum: {filename}: No such file or directory")
+                        failed_files += 1
+                        continue
+
+                    # Calculate actual checksum
+                    try:
+                        processor = IsccSumProcessor()
+                        with open(filename, "rb") as target_file:
+                            while True:
+                                chunk = target_file.read(IO_READ_SIZE)
+                                if not chunk:
+                                    break
+                                processor.update(chunk)
+
+                        # Determine if expected is narrow or wide format
+                        is_narrow = len(expected_iscc) < 35
+                        result = processor.result(wide=not is_narrow, add_units=False)
+                        actual_iscc = result.iscc
+
+                        # Compare checksums
+                        if actual_iscc == expected_iscc:
+                            if not quiet and not status:
+                                click.echo(f"{filename}: OK")
+                        else:
+                            failed_files += 1
+                            if not status:
+                                click.echo(f"{filename}: FAILED")
+
+                    except IOError as e:
+                        failed_files += 1
+                        if not status:
+                            click.echo(f"iscc-sum: {filename}: {e}")
+
+        except IOError as e:
+            click.echo(f"iscc-sum: {checksum_file}: {e}", err=True)
+            sys.exit(EXIT_ERROR)
+
+    # Display summary if there were any issues
+    if not status and (failed_files > 0 or format_errors > 0):
+        if format_errors > 0:
+            click.echo(f"iscc-sum: WARNING: {format_errors} line(s) improperly formatted", err=True)
+        if failed_files > 0:
+            click.echo(f"iscc-sum: WARNING: {failed_files} computed checksum(s) did NOT match", err=True)
+
+    # Exit with appropriate code
+    if failed_files > 0:
+        sys.exit(EXIT_VERIFICATION_FAILURE)
 
 
 def _handle_similarity(files, threshold, narrow, tag, zero):
