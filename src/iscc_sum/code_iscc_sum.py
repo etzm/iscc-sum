@@ -9,13 +9,14 @@ fsspec/upath while maintaining high performance for the core processing.
 from upath import UPath
 
 from iscc_sum import IsccSumProcessor
+from iscc_sum._core import IsccSumResult
 
 # File I/O Configuration
 IO_READ_SIZE = 2097152  # 2MB chunks for efficient file reading
 
 
 def code_iscc_sum(uri, wide=False, add_units=True):
-    # type: (str, bool, bool) -> dict
+    # type: (str, bool, bool) -> IsccSumResult
     """
     Generate an ISCC-CODE SUM for a file using Python I/O and Rust processing.
 

@@ -3,11 +3,69 @@
 use crate::data::DataHasher;
 use crate::instance::InstanceHasher;
 use base32;
+use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
+use pyo3::IntoPyObject;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
+
+/// Result object for ISCC-SUM operations
+#[pyclass(mapping)]
+#[derive(Clone)]
+pub struct IsccSumResult {
+    #[pyo3(get)]
+    pub iscc: String,
+    #[pyo3(get)]
+    pub datahash: String,
+    #[pyo3(get)]
+    pub filesize: u64,
+    #[pyo3(get)]
+    pub units: Option<Vec<String>>,
+}
+
+#[pymethods]
+impl IsccSumResult {
+    /// Create a new IsccSumResult
+    #[new]
+    fn new(iscc: String, datahash: String, filesize: u64, units: Option<Vec<String>>) -> Self {
+        Self {
+            iscc,
+            datahash,
+            filesize,
+            units,
+        }
+    }
+
+    /// String representation
+    fn __repr__(&self) -> String {
+        format!(
+            "IsccSumResult(iscc='{}', datahash='{}', filesize={}, units={:?})",
+            self.iscc, self.datahash, self.filesize, self.units
+        )
+    }
+
+    /// Dict-like getitem access for backward compatibility
+    fn __getitem__<'py>(&self, py: Python<'py>, key: &str) -> PyResult<Bound<'py, PyAny>> {
+        match key {
+            "iscc" => Ok(self.iscc.as_str().into_pyobject(py)?.into_any()),
+            "datahash" => Ok(self.datahash.as_str().into_pyobject(py)?.into_any()),
+            "filesize" => Ok(self.filesize.into_pyobject(py)?.into_any()),
+            "units" => Ok(self.units.as_ref().into_pyobject(py)?.into_any()),
+            _ => Err(PyKeyError::new_err(format!("Key '{}' not found", key))),
+        }
+    }
+
+    /// Dict-like contains check
+    fn __contains__(&self, key: &str) -> bool {
+        matches!(key, "iscc" | "datahash" | "filesize" | "units")
+    }
+
+    /// Length for dict-like behavior
+    fn __len__(&self) -> usize {
+        4
+    }
+}
 
 /// ISCC-SUM processor for generating combined Data-Code and Instance-Code
 #[pyclass]
@@ -34,12 +92,7 @@ impl IsccSumProcessor {
     }
 
     /// Get the final ISCC-SUM result
-    fn result<'py>(
-        &mut self,
-        py: Python<'py>,
-        wide: bool,
-        add_units: bool,
-    ) -> PyResult<Bound<'py, PyDict>> {
+    fn result(&mut self, wide: bool, add_units: bool) -> PyResult<IsccSumResult> {
         // Get digests
         let data_digest = self.data_hasher.digest();
         let instance_digest = self.instance_hasher.digest();
@@ -74,15 +127,13 @@ impl IsccSumProcessor {
         let iscc_code = base32::encode(base32::Alphabet::Rfc4648 { padding: false }, &iscc_bytes);
         let iscc = format!("ISCC:{}", iscc_code);
 
-        // Create result dictionary
-        let result_dict = PyDict::new(py);
-        result_dict.set_item("iscc", iscc)?;
-        result_dict.set_item("datahash", self.instance_hasher.multihash())?;
-        result_dict.set_item("filesize", self.instance_hasher.filesize())?;
+        // Get datahash and filesize
+        let datahash = self.instance_hasher.multihash();
+        let filesize = self.instance_hasher.filesize();
 
-        // Add units if requested
-        if add_units {
-            let units = PyList::empty(py);
+        // Build units if requested
+        let units = if add_units {
+            let mut unit_list = Vec::new();
 
             // Create full 256-bit Data-Code ISCC
             let data_header_byte1: u8 = 0b0011 << 4; // Data maintype (0011) + subtype (0000)
@@ -106,24 +157,22 @@ impl IsccSumProcessor {
             );
             let instance_iscc = format!("ISCC:{}", instance_iscc_code);
 
-            units.append(data_iscc)?;
-            units.append(instance_iscc)?;
-            result_dict.set_item("units", units)?;
-        }
+            unit_list.push(data_iscc);
+            unit_list.push(instance_iscc);
+            Some(unit_list)
+        } else {
+            None
+        };
 
-        Ok(result_dict)
+        // Create and return IsccSumResult
+        Ok(IsccSumResult::new(iscc, datahash, filesize, units))
     }
 }
 
 /// Generate ISCC-SUM from a file path (Python-exposed function)
 #[pyfunction]
 #[pyo3(signature = (filepath, wide=false, add_units=true))]
-pub fn code_iscc_sum<'py>(
-    py: Python<'py>,
-    filepath: &str,
-    wide: bool,
-    add_units: bool,
-) -> PyResult<Bound<'py, PyDict>> {
+pub fn code_iscc_sum(filepath: &str, wide: bool, add_units: bool) -> PyResult<IsccSumResult> {
     let path = Path::new(filepath);
     let mut file = File::open(path)
         .map_err(|e| pyo3::exceptions::PyIOError::new_err(format!("Failed to open file: {}", e)))?;
@@ -141,7 +190,7 @@ pub fn code_iscc_sum<'py>(
         processor.update(&buffer[..bytes_read]);
     }
 
-    processor.result(py, wide, add_units)
+    processor.result(wide, add_units)
 }
 
 #[cfg(test)]

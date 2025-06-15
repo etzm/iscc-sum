@@ -8,11 +8,19 @@ class InstanceCodeResult(TypedDict):
     multihash: str
     filesize: int
 
-class IsccSumResult(TypedDict):
+class IsccSumResult:
     iscc: str
     datahash: str
     filesize: int
-    units: list[tuple[str, str]] | None
+    units: list[str] | None
+
+    def __new__(
+        cls, iscc: str, datahash: str, filesize: int, units: list[str] | None = None
+    ) -> IsccSumResult: ...
+    def __getitem__(self, key: str) -> str | int | list[str] | None: ...
+    def __contains__(self, key: str) -> bool: ...
+    def __len__(self) -> int: ...
+    def __repr__(self) -> str: ...
 
 class DataCodeProcessor:
     def __new__(cls) -> DataCodeProcessor: ...

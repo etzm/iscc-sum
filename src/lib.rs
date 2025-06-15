@@ -27,6 +27,7 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<data::DataCodeProcessor>()?;
     m.add_class::<instance::InstanceCodeProcessor>()?;
     m.add_class::<sum::IsccSumProcessor>()?;
+    m.add_class::<sum::IsccSumResult>()?;
     m.add_function(wrap_pyfunction!(sum::code_iscc_sum, m)?)?;
     Ok(())
 }
