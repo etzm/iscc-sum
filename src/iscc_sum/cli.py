@@ -158,12 +158,8 @@ def _handle_checksum_generation(files, narrow, units, tag, zero):
 
             # Handle stdin
             if filepath == "-":
-                if hasattr(sys.stdin, "buffer"):
-                    # Python 3: Use binary buffer
-                    stdin = sys.stdin.buffer
-                else:
-                    # Python 2: stdin is already binary in binary mode
-                    stdin = sys.stdin
+                # Use binary buffer for stdin
+                stdin = sys.stdin.buffer
 
                 while True:
                     chunk = stdin.read(IO_READ_SIZE)

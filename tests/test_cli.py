@@ -278,3 +278,30 @@ def test_main_entry_point():
     result = subprocess.run([sys.executable, "-m", "iscc_sum.cli", "--version"], capture_output=True, text=True)
     assert result.returncode == 0
     assert "iscc-sum" in result.stdout
+
+
+def test_file_access_error():
+    # type: () -> None
+    """Test handling of file access errors."""
+    runner = CliRunner()
+
+    # Test with non-existent file
+    result = runner.invoke(cli, ["non_existent_file.txt"])
+    assert result.exit_code == 2
+    assert "iscc-sum: non_existent_file.txt:" in result.output
+    assert "No such file or directory" in result.output or "cannot find the file" in result.output
+
+
+def test_unexpected_error_during_processing():
+    # type: () -> None
+    """Test handling of unexpected errors during file processing."""
+    from unittest.mock import mock_open, patch
+
+    runner = CliRunner()
+
+    # Create a mock that raises an unexpected exception
+    with patch("builtins.open", mock_open()) as mock_file:
+        mock_file.return_value.read.side_effect = RuntimeError("Unexpected error")
+        result = runner.invoke(cli, ["test.txt"])
+        assert result.exit_code == 2
+        assert "iscc-sum: test.txt: unexpected error: Unexpected error" in result.output

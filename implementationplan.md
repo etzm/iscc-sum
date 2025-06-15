@@ -70,18 +70,28 @@ implement the ISCC (International Standard Content Code) checksum functionality 
 - Added 12 new tests covering various scenarios
 - Maintained 100% code coverage
 
-### Checkpoint 3: Extended Output with Units
+### Checkpoint 3: Extended Output with Units ✅
 
 **Goal**: Add support for displaying individual component codes
 
+**Status**: COMPLETED (2025-06-15)
+
 **Tasks**:
 
-- [ ] Implement `--units` option parsing
-- [ ] Extract Data-Code and Instance-Code from composite ISCC
-- [ ] Format unit output with proper indentation
-- [ ] Ensure units are displayed in ISCC format (with "ISCC:" prefix)
-- [ ] Test unit extraction for both narrow and extended formats
-- [ ] Verify unit display works with all output formats (default, BSD, zero-terminated)
+- [x] Implement `--units` option parsing
+- [x] Extract Data-Code and Instance-Code from composite ISCC
+- [x] Format unit output with proper indentation
+- [x] Ensure units are displayed in ISCC format (with "ISCC:" prefix)
+- [x] Test unit extraction for both narrow and extended formats
+- [x] Verify unit display works with all output formats (default, BSD, zero-terminated)
+
+**Achievements**:
+
+- Units option fully functional with proper 2-space indentation
+- Units display full 256-bit codes regardless of narrow/wide format selection
+- Works correctly with all output formats (default, BSD, zero-terminated)
+- Tests verify correct behavior with 3-line output (main + 2 units)
+- Integration with Rust processor's `add_units` parameter working perfectly
 
 ### Checkpoint 4: Checksum Verification Mode
 
@@ -222,7 +232,7 @@ implement the ISCC (International Standard Content Code) checksum functionality 
 
 ## Success Criteria
 
-1. Full compliance with `docs/cli-spec.md`
+1. Full compliance with `@docs/cli-spec.md`
 2. 100% test coverage
 3. Cross-platform compatibility (Linux, macOS, Windows)
 4. Performance comparable to standard checksum tools
