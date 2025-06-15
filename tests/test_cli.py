@@ -180,10 +180,10 @@ def test_similar_option():
     assert result.exit_code == 2
     assert "--similar requires at least 2 files" in result.output
 
-    # Test with 2 files
+    # Test with 2 non-existent files
     result = runner.invoke(cli, ["--similar", "file1.txt", "file2.txt"])
     assert result.exit_code == 2
-    assert "similarity mode not yet implemented" in result.output
+    assert "No such file or directory" in result.output
 
 
 def test_similar_with_threshold():
@@ -192,7 +192,7 @@ def test_similar_with_threshold():
     runner = CliRunner()
     result = runner.invoke(cli, ["--similar", "--threshold", "20", "file1.txt", "file2.txt"])
     assert result.exit_code == 2
-    assert "similarity mode not yet implemented" in result.output
+    assert "No such file or directory" in result.output
 
 
 def test_conflicting_options():

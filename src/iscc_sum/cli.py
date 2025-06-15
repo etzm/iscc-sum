@@ -330,11 +330,171 @@ def _handle_verification(files, quiet, status, warn, strict):
         sys.exit(EXIT_VERIFICATION_FAILURE)
 
 
+def _extract_data_code_bits(iscc_string, narrow):
+    # type: (str, bool) -> bytes
+    """Extract Data-Code bits from an ISCC string.
+
+    Args:
+        iscc_string: The ISCC string (e.g., "ISCC:KAD4...")
+        narrow: Whether this is a narrow format ISCC
+
+    Returns:
+        The raw Data-Code bits as bytes
+    """
+    import base64
+
+    # Remove ISCC: prefix and decode from base32
+    iscc_clean = iscc_string.replace("ISCC:", "")
+
+    # Pad to make length multiple of 8 for base32 decoding
+    padding = (8 - len(iscc_clean) % 8) % 8
+    iscc_padded = iscc_clean + "=" * padding
+
+    # Decode from base32 (RFC4648)
+    # ISCC codes should always decode properly with correct padding
+    decoded = base64.b32decode(iscc_padded)
+
+    # Skip the 2-byte header
+    # Data-Code is the first component after header
+    if narrow:
+        # Narrow format: 64-bit Data-Code (8 bytes)
+        return decoded[2:10]  # bytes 2-9
+    else:
+        # Extended format: 128-bit Data-Code (16 bytes)
+        return decoded[2:18]  # bytes 2-17
+
+
+def _hamming_distance(bits_a, bits_b):
+    # type: (bytes, bytes) -> int
+    """Calculate hamming distance between two byte sequences.
+
+    Args:
+        bits_a: First byte sequence
+        bits_b: Second byte sequence
+
+    Returns:
+        Number of differing bits
+    """
+    if len(bits_a) != len(bits_b):
+        raise ValueError("Byte sequences must have equal length")
+
+    distance = 0
+    for a, b in zip(bits_a, bits_b):
+        # XOR the bytes and count the number of 1 bits
+        xor_result = a ^ b
+        # Count bits set to 1 (Brian Kernighan's algorithm)
+        while xor_result:
+            distance += 1
+            xor_result &= xor_result - 1
+
+    return distance
+
+
 def _handle_similarity(files, threshold, narrow, tag, zero):
     # type: (tuple, int, bool, bool, bool) -> None
     """Handle similarity matching mode."""
-    click.echo("iscc-sum: similarity mode not yet implemented", err=True)
-    sys.exit(EXIT_ERROR)
+    from iscc_sum import IsccSumProcessor
+
+    # Process all files and compute their ISCCs
+    file_data = []  # List of (filepath, iscc, data_code_bits)
+
+    for filepath in files:
+        try:
+            # Process file to get ISCC
+            processor = IsccSumProcessor()
+            with open(filepath, "rb") as f:
+                while True:
+                    chunk = f.read(IO_READ_SIZE)
+                    if not chunk:
+                        break
+                    processor.update(chunk)
+
+            result = processor.result(wide=not narrow, add_units=False)
+
+            # Extract Data-Code bits from ISCC for comparison
+            data_code_bits = _extract_data_code_bits(result.iscc, narrow)
+            file_data.append((filepath, result.iscc, data_code_bits))
+
+        except IOError as e:
+            click.echo(f"iscc-sum: {filepath}: {e}", err=True)
+            sys.exit(EXIT_ERROR)
+
+    # The CLI already validates that we have at least 2 files,
+    # so we don't need to handle empty or single file cases
+
+    # Find similar files for each reference file
+    processed = set()  # Track which files have been output
+    group_count = 0
+
+    for i, (ref_path, ref_iscc, ref_bits) in enumerate(file_data):
+        if ref_path in processed:
+            continue
+
+        # Find all files similar to this reference file
+        similar_files = []
+
+        for j, (comp_path, comp_iscc, comp_bits) in enumerate(file_data):
+            if i == j:  # Skip self-comparison
+                continue
+
+            # Calculate hamming distance
+            distance = _hamming_distance(ref_bits, comp_bits)
+
+            if distance <= threshold:
+                similar_files.append((comp_path, comp_iscc, distance))
+                processed.add(comp_path)
+
+        # If this file has similar files, output the group
+        if similar_files:
+            # Add blank line between groups (except before first group)
+            if group_count > 0:
+                if not zero:
+                    click.echo()
+
+            group_count += 1
+
+            # Output reference file
+            _output_checksum(ref_iscc, ref_path, tag, zero)
+            processed.add(ref_path)
+
+            # Sort similar files by hamming distance (ascending)
+            similar_files.sort(key=lambda x: x[2])
+
+            # Output similar files with distance indicator
+            for sim_path, sim_iscc, distance in similar_files:
+                if tag:
+                    output = f"  ~{distance:02d} ISCC-SUM ({sim_path}) = {sim_iscc}"
+                else:
+                    output = f"  ~{distance:02d} {sim_iscc} *{sim_path}"
+
+                click.echo(output, nl=not zero)
+                if zero:
+                    click.echo("\0", nl=False)
+
+        # If this file has no similar files but hasn't been processed, output it alone
+        elif ref_path not in processed:
+            # Add blank line between groups (except before first group)
+            if group_count > 0:
+                if not zero:
+                    click.echo()
+
+            group_count += 1
+
+            _output_checksum(ref_iscc, ref_path, tag, zero)
+            processed.add(ref_path)
+
+
+def _output_checksum(iscc, filepath, tag, zero):
+    # type: (str, str, bool, bool) -> None
+    """Output a checksum in the specified format."""
+    if tag:
+        output = f"ISCC-SUM ({filepath}) = {iscc}"
+    else:
+        output = f"{iscc} *{filepath}"
+
+    click.echo(output, nl=not zero)
+    if zero:
+        click.echo("\0", nl=False)
 
 
 if __name__ == "__main__":
