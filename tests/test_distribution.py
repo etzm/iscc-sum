@@ -155,14 +155,13 @@ def test_package_installation_from_sdist():
 
         assert result.returncode == 0
 
-        # Test that installed package works
+        # Test that installed package works by importing a real class
         test_result = subprocess.run(
-            [str(venv_python), "-c", "import iscc_sum; print(iscc_sum.hello_from_bin())"],
+            [str(venv_python), "-c", "import iscc_sum; assert hasattr(iscc_sum, 'DataCodeProcessor')"],
             capture_output=True,
             text=True,
         )
         assert test_result.returncode == 0
-        assert test_result.stdout.strip() == "hello iscc-sum"
 
 
 @pytest.mark.slow
