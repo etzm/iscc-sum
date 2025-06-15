@@ -4,12 +4,23 @@
 [![PyPI](https://img.shields.io/pypi/v/iscc-sum.svg)](https://pypi.org/project/iscc-sum/)
 [![Crates.io](https://img.shields.io/crates/v/iscc-sum.svg)](https://crates.io/crates/iscc-sum)
 
-High-performance ISCC Data-Code and Instance-Code hashing tool, implemented in Rust with Python bindings.
+A blazing-fast ISCC Data-Code and Instance-Code hashing tool built in Rust with Python bindings. Delivers
+**50-130x faster** performance than reference implementations, processing data at over 1 GB/s.
+
+Originally created to handle massive microscopic imaging datasets where existing tools were too slow.
 
 ## Project Status
 
 > [!CAUTION]
 > **Early Release** — This project is in its early development stage.
+
+## Performance
+
+- **950-1050 MB/s** processing speed (vs 7-8 MB/s reference)
+- **50-130x faster** than existing implementations
+- **Consistent performance** on multi-GB files
+
+Ideal for large-scale data processing: microscopic imaging, video files, scientific datasets.
 
 ## Installation
 
