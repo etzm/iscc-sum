@@ -154,22 +154,7 @@ implement the ISCC (International Standard Content Code) checksum functionality 
 - Comprehensive test suite with 21 tests covering all scenarios
 - Maintained 100% code coverage
 
-### Checkpoint 6: Performance Optimization
-
-**Goal**: Ensure the tool performs efficiently for large-scale usage
-
-**Tasks**:
-
-- [ ] Profile the application for performance bottlenecks
-- [ ] Implement parallel processing for multiple files (if beneficial)
-- [ ] Optimize file I/O operations
-- [ ] Add caching for repeated file access (if needed)
-- [ ] Minimize memory usage for large file processing
-- [ ] Benchmark against reference implementations
-- [ ] Test with very large files (GB+ size)
-- [ ] Test with thousands of small files
-
-### Checkpoint 7: Cross-Platform Compatibility
+### Checkpoint 6: Cross-Platform Compatibility
 
 **Goal**: Ensure the tool works correctly on all target platforms
 
@@ -184,20 +169,16 @@ implement the ISCC (International Standard Content Code) checksum functionality 
 - [ ] Test with special characters in filenames
 - [ ] Verify proper binary mode handling on all platforms
 
-### Checkpoint 8: Integration and Polish
+### Checkpoint 7: Integration and Polish
 
 **Goal**: Final integration, documentation, and release preparation
 
 **Tasks**:
 
-- [ ] Create comprehensive CLI tests using Click's testing utilities
-- [ ] Add integration tests comparing output with reference implementation
-- [ ] Write user documentation (man page format)
+- [ ] Write user documentation
 - [ ] Create example scripts demonstrating common use cases
-- [ ] Add shell completion support (bash, zsh, fish)
 - [ ] Integrate with existing CI/CD pipeline
 - [ ] Ensure 100% test coverage requirement is met
-- [ ] Performance comparison with Rust CLI (when available)
 - [ ] Final code review and cleanup
 - [ ] Update README with CLI usage examples
 
