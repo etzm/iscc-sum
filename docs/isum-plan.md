@@ -21,15 +21,15 @@ lower resource usage compared to the Python-based `iscc-sum`.
 
 **Tasks**:
 
-- [ ] Add `clap` dependency to `Cargo.toml` for CLI parsing
-- [ ] Create basic CLI structure in `src/main.rs`
-- [ ] Implement command-line argument parsing:
-  - [ ] Positional `FILE` arguments (multiple files support)
-  - [ ] `--help` flag with usage information
-  - [ ] `--version` flag showing crate version
-  - [ ] `--narrow` flag for narrow format selection
-- [ ] Set up error handling structure with proper exit codes
-- [ ] Implement basic input validation
+- [x] Add `clap` dependency to `Cargo.toml` for CLI parsing
+- [x] Create basic CLI structure in `src/main.rs`
+- [x] Implement command-line argument parsing:
+  - [x] Positional `FILE` arguments (multiple files support)
+  - [x] `--help` flag with usage information
+  - [x] `--version` flag showing crate version
+  - [x] `--narrow` flag for narrow format selection
+- [x] Set up error handling structure with proper exit codes
+- [x] Implement basic input validation
 
 ### Checkpoint 2: File Processing Infrastructure
 

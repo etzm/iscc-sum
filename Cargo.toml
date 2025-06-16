@@ -17,7 +17,7 @@ name = "_core"
 crate-type = ["cdylib", "lib"]
 
 [[bin]]
-name = "iscc-sum-rs"
+name = "isum"
 path = "src/main.rs"
 
 [dependencies]
@@ -29,3 +29,4 @@ xxhash-rust = { version = "0.8.15", features = ["xxh32"] }
 blake3 = "1.8.2"
 hex = "0.4.3"
 base32 = "0.5.0"
+clap = { version = "4.5", features = ["derive"] }
