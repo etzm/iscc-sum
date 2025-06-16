@@ -89,9 +89,49 @@ def get_version():
     show_default=True,
     help="Maximum hamming distance for similarity matching",
 )
+@click.option(
+    "-r",
+    "--recursive",
+    default=None,
+    is_flag=True,
+    help="Process directories recursively (default when directory argument is provided)",
+)
+@click.option(
+    "--no-recursive",
+    is_flag=True,
+    help="Process only files in the specified directory, not subdirectories",
+)
+@click.option(
+    "--exclude",
+    multiple=True,
+    help="Exclude files matching the given glob pattern (can be specified multiple times)",
+)
+@click.option(
+    "--max-depth",
+    type=click.INT,
+    default=None,
+    help="Maximum directory depth to traverse (default: unlimited)",
+)
 @click.argument("files", nargs=-1, type=click.Path())
-def cli(check, tag, zero, quiet, status, warn, strict, narrow, units, similar, threshold, files):
-    # type: (bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, int, tuple) -> None
+def cli(
+    check,
+    tag,
+    zero,
+    quiet,
+    status,
+    warn,
+    strict,
+    narrow,
+    units,
+    similar,
+    threshold,
+    recursive,
+    no_recursive,
+    exclude,
+    max_depth,
+    files,
+):
+    # type: (bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, int, bool|None, bool, tuple, int|None, tuple) -> None
     """Compute ISCC (International Standard Content Code) checksums for files.
 
     Each checksum consists of a 2-byte self-describing header followed by a
@@ -122,6 +162,10 @@ def cli(check, tag, zero, quiet, status, warn, strict, narrow, units, similar, t
 
     if similar and len(files) < 2:
         click.echo("iscc-sum: --similar requires at least 2 files to compare", err=True)
+        sys.exit(EXIT_ERROR)
+
+    if recursive and no_recursive:
+        click.echo("iscc-sum: --recursive and --no-recursive cannot be used together", err=True)
         sys.exit(EXIT_ERROR)
 
     try:
