@@ -5,6 +5,7 @@ use std::fs::File;
 use std::io::{self, BufReader, Read};
 use std::path::PathBuf;
 use std::process;
+use walkdir::WalkDir;
 
 // Import from the library crate
 use _core::sum::{IsccSumProcessor, IsccSumResult};
@@ -86,10 +87,9 @@ fn process_file(path: &PathBuf, narrow: bool) -> io::Result<()> {
 
     // Handle special file types
     if metadata.is_dir() {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            format!("{}: Is a directory", path.display()),
-        ));
+        // For now, process directories recursively by default
+        // In checkpoint 2, we'll add a -r flag requirement
+        return process_directory(path, narrow);
     }
 
     #[cfg(unix)]
@@ -119,6 +119,53 @@ fn process_file(path: &PathBuf, narrow: bool) -> io::Result<()> {
         }
     }
 
+    // Process as regular file
+    process_regular_file(path, narrow)
+}
+
+/// Process stdin and output its ISCC checksum
+fn process_stdin(narrow: bool) -> io::Result<()> {
+    let mut stdin = io::stdin();
+    let result = process_reader(&mut stdin, narrow)?;
+
+    // Output with '-' as filename for stdin
+    println!("{} *-", result.iscc);
+
+    Ok(())
+}
+
+/// Process a directory recursively and output ISCC checksums for all files
+fn process_directory(dir_path: &PathBuf, narrow: bool) -> io::Result<()> {
+    let mut entries: Vec<_> = WalkDir::new(dir_path)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.file_type().is_file())
+        .map(|e| e.path().to_path_buf())
+        .collect();
+
+    // Sort entries for deterministic output
+    entries.sort();
+
+    let mut had_errors = false;
+
+    for entry_path in entries {
+        // Process each file, but continue on errors
+        if let Err(e) = process_regular_file(&entry_path, narrow) {
+            eprintln!("isum: {}: {}", entry_path.display(), e);
+            had_errors = true;
+        }
+    }
+
+    // If we had any errors, return an error to indicate partial failure
+    if had_errors {
+        Err(io::Error::other("Some files could not be processed"))
+    } else {
+        Ok(())
+    }
+}
+
+/// Process a regular file (extracted from process_file to avoid recursion)
+fn process_regular_file(path: &PathBuf, narrow: bool) -> io::Result<()> {
     // Open the file with buffered reader for better I/O performance
     let file = match File::open(path) {
         Ok(f) => f,
@@ -144,17 +191,6 @@ fn process_file(path: &PathBuf, narrow: bool) -> io::Result<()> {
     // Handle potentially invalid UTF-8 in filenames by using to_string_lossy
     let filename = path.to_string_lossy();
     println!("{} *{}", result.iscc, filename);
-
-    Ok(())
-}
-
-/// Process stdin and output its ISCC checksum
-fn process_stdin(narrow: bool) -> io::Result<()> {
-    let mut stdin = io::stdin();
-    let result = process_reader(&mut stdin, narrow)?;
-
-    // Output with '-' as filename for stdin
-    println!("{} *-", result.iscc);
 
     Ok(())
 }
@@ -371,5 +407,102 @@ mod tests {
             Err(e) => assert_eq!(e.kind(), io::ErrorKind::Other),
             Ok(_) => panic!("Expected error but got success"),
         }
+    }
+}
+
+#[cfg(test)]
+mod directory_tests {
+    use super::*;
+    use std::fs;
+    use tempfile::TempDir;
+
+    fn create_test_directory() -> TempDir {
+        let temp_dir = TempDir::new().expect("Failed to create temp directory");
+
+        // Create some test files
+        fs::write(temp_dir.path().join("file1.txt"), b"Hello, World!").unwrap();
+        fs::write(temp_dir.path().join("file2.txt"), b"Test data").unwrap();
+
+        // Create a subdirectory with files
+        let sub_dir = temp_dir.path().join("subdir");
+        fs::create_dir(&sub_dir).unwrap();
+        fs::write(sub_dir.join("file3.txt"), b"Nested file").unwrap();
+
+        temp_dir
+    }
+
+    #[test]
+    fn test_process_directory_basic() {
+        let temp_dir = create_test_directory();
+        let result = process_directory(&temp_dir.path().to_path_buf(), false);
+
+        // Should succeed for directory with readable files
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_process_directory_empty() {
+        let temp_dir = TempDir::new().expect("Failed to create temp directory");
+        let result = process_directory(&temp_dir.path().to_path_buf(), false);
+
+        // Empty directory should succeed (no files to process)
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_process_directory_with_unreadable_file() {
+        let temp_dir = create_test_directory();
+
+        // Create a file that we'll make unreadable
+        let unreadable_file = temp_dir.path().join("unreadable.txt");
+        fs::write(&unreadable_file, b"Can't read me").unwrap();
+
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut perms = fs::metadata(&unreadable_file).unwrap().permissions();
+            perms.set_mode(0o000);
+            fs::set_permissions(&unreadable_file, perms).unwrap();
+        }
+
+        let result = process_directory(&temp_dir.path().to_path_buf(), false);
+
+        #[cfg(unix)]
+        {
+            // Should return error indicating some files failed
+            assert!(result.is_err());
+
+            // Clean up permissions so tempdir can be removed
+            use std::os::unix::fs::PermissionsExt;
+            let mut perms = fs::metadata(&unreadable_file).unwrap().permissions();
+            perms.set_mode(0o644);
+            fs::set_permissions(&unreadable_file, perms).unwrap();
+        }
+
+        #[cfg(not(unix))]
+        {
+            // On non-Unix systems, we can't easily test permission denied
+            // So just verify the directory can be processed
+            let _ = result;
+        }
+    }
+
+    #[test]
+    fn test_process_regular_file() {
+        let temp_dir = TempDir::new().expect("Failed to create temp directory");
+        let test_file = temp_dir.path().join("test.txt");
+        fs::write(&test_file, b"Test content").unwrap();
+
+        let result = process_regular_file(&test_file, false);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_process_regular_file_not_found() {
+        let non_existent = PathBuf::from("/definitely/does/not/exist/file.txt");
+        let result = process_regular_file(&non_existent, false);
+
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().kind(), io::ErrorKind::NotFound);
     }
 }
