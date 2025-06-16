@@ -62,7 +62,7 @@ lower resource usage compared to the Python-based `iscc-sum`.
   - [x] Set appropriate width based on `--narrow` flag
   - [x] Ensure correct header bytes for each format
 - [x] Validate generated checksums match expected format
-- [ ] Add unit tests for checksum generation
+- [x] Add unit tests for checksum generation
 
 ### Checkpoint 4: Output Formatting
 

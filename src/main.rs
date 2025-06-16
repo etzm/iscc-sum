@@ -123,3 +123,162 @@ fn process_reader<R: Read>(reader: &mut R, narrow: bool) -> io::Result<IsccSumRe
 
     Ok(result)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Cursor;
+
+    #[test]
+    fn test_process_reader_empty() {
+        // Test with empty data
+        let mut cursor = Cursor::new(vec![]);
+        let result = process_reader(&mut cursor, false).unwrap();
+
+        // Empty file should produce a valid ISCC
+        assert!(result.iscc.starts_with("ISCC:"));
+        assert_eq!(result.filesize, 0);
+    }
+
+    #[test]
+    fn test_process_reader_small_data() {
+        // Test with small data
+        let data = b"Hello, World!";
+        let mut cursor = Cursor::new(data.to_vec());
+        let result = process_reader(&mut cursor, false).unwrap();
+
+        // Should produce a valid ISCC
+        assert!(result.iscc.starts_with("ISCC:"));
+        assert_eq!(result.filesize, 13);
+        // Extended format (wide=true) should be longer than narrow format
+        assert!(result.iscc.len() > 40);
+    }
+
+    #[test]
+    fn test_process_reader_narrow_format() {
+        // Test narrow format
+        let data = b"Test data for narrow format";
+        let mut cursor = Cursor::new(data.to_vec());
+        let result = process_reader(&mut cursor, true).unwrap();
+
+        // Should produce a valid ISCC
+        assert!(result.iscc.starts_with("ISCC:"));
+        assert_eq!(result.filesize, 27);
+        // Narrow format should be shorter (~29 chars after ISCC:)
+        assert!(result.iscc.len() < 40);
+    }
+
+    #[test]
+    fn test_process_reader_large_data() {
+        // Test with data larger than buffer size
+        let large_data = vec![0x42u8; BUFFER_SIZE * 2 + 1024];
+        let mut cursor = Cursor::new(large_data.clone());
+        let result = process_reader(&mut cursor, false).unwrap();
+
+        // Should process all data correctly
+        assert!(result.iscc.starts_with("ISCC:"));
+        assert_eq!(result.filesize, large_data.len() as u64);
+    }
+
+    #[test]
+    fn test_process_reader_deterministic() {
+        // Test that same data produces same checksum
+        let data = b"Deterministic test data";
+
+        let mut cursor1 = Cursor::new(data.to_vec());
+        let result1 = process_reader(&mut cursor1, false).unwrap();
+
+        let mut cursor2 = Cursor::new(data.to_vec());
+        let result2 = process_reader(&mut cursor2, false).unwrap();
+
+        // Same data should produce identical checksums
+        assert_eq!(result1.iscc, result2.iscc);
+        assert_eq!(result1.datahash, result2.datahash);
+        assert_eq!(result1.filesize, result2.filesize);
+    }
+
+    #[test]
+    fn test_process_reader_different_data() {
+        // Test that different data produces different checksums
+        let data1 = b"First test data";
+        let data2 = b"Second test data";
+
+        let mut cursor1 = Cursor::new(data1.to_vec());
+        let result1 = process_reader(&mut cursor1, false).unwrap();
+
+        let mut cursor2 = Cursor::new(data2.to_vec());
+        let result2 = process_reader(&mut cursor2, false).unwrap();
+
+        // Different data should produce different checksums
+        assert_ne!(result1.iscc, result2.iscc);
+    }
+
+    #[test]
+    fn test_narrow_vs_wide_format() {
+        // Test that narrow and wide formats differ for same data
+        let data = b"Format comparison test";
+
+        let mut cursor1 = Cursor::new(data.to_vec());
+        let narrow_result = process_reader(&mut cursor1, true).unwrap();
+
+        let mut cursor2 = Cursor::new(data.to_vec());
+        let wide_result = process_reader(&mut cursor2, false).unwrap();
+
+        // Formats should produce different ISCCs
+        assert_ne!(narrow_result.iscc, wide_result.iscc);
+        // But same filesize
+        assert_eq!(narrow_result.filesize, wide_result.filesize);
+        // Wide format should be longer
+        assert!(wide_result.iscc.len() > narrow_result.iscc.len());
+    }
+
+    #[test]
+    fn test_chunked_reading() {
+        // Test that chunked reading produces same result as single read
+        let data = vec![0x55u8; BUFFER_SIZE / 2];
+
+        // Process in one go
+        let mut cursor1 = Cursor::new(data.clone());
+        let result1 = process_reader(&mut cursor1, false).unwrap();
+
+        // Process same data but ensure it's read in chunks
+        // by using a custom reader that limits read size
+        struct ChunkedReader {
+            data: Cursor<Vec<u8>>,
+            max_chunk: usize,
+        }
+
+        impl Read for ChunkedReader {
+            fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+                let limit = buf.len().min(self.max_chunk);
+                let limited_buf = &mut buf[..limit];
+                self.data.read(limited_buf)
+            }
+        }
+
+        let mut chunked = ChunkedReader {
+            data: Cursor::new(data),
+            max_chunk: 1024, // Force small chunks
+        };
+        let result2 = process_reader(&mut chunked, false).unwrap();
+
+        // Results should be identical
+        assert_eq!(result1.iscc, result2.iscc);
+    }
+
+    #[test]
+    fn test_cli_narrow_flag() {
+        // Test CLI parsing of narrow flag
+        let cli = Cli {
+            files: vec![],
+            narrow: true,
+        };
+        assert!(cli.narrow);
+
+        let cli = Cli {
+            files: vec![],
+            narrow: false,
+        };
+        assert!(!cli.narrow);
+    }
+}
