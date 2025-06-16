@@ -89,18 +89,18 @@ lower resource usage compared to the Python-based `iscc-sum`.
 
 - [x] Implement comprehensive error handling:
   - [x] File not found errors
-  - [ ] Permission denied errors
+  - [x] Permission denied errors
   - [x] I/O errors during reading
-  - [ ] Invalid UTF-8 in filenames
+  - [x] Invalid UTF-8 in filenames
 - [x] Set correct exit codes:
   - [x] 0 for success
   - [x] 1 for any error
 - [x] Write error messages to stderr
-- [ ] Handle edge cases:
-  - [ ] Empty files
-  - [ ] Very large files
-  - [ ] Symbolic links
-  - [ ] Special files (devices, pipes)
+- [x] Handle edge cases:
+  - [x] Empty files
+  - [x] Very large files
+  - [x] Symbolic links (follows them by default, matching Unix tool behavior)
+  - [x] Special files (devices, pipes)
 
 ### Checkpoint 6: Performance Optimization
 
@@ -179,7 +179,7 @@ lower resource usage compared to the Python-based `iscc-sum`.
 
 1. ✅ Start with Checkpoints 1-3 to get basic functionality working
 2. ✅ Add Checkpoint 4 for proper output
-3. ⚠️ Implement Checkpoint 5 for robustness (basic error handling done)
+3. ✅ Implement Checkpoint 5 for robustness
 4. ❌ Follow with Checkpoints 6-7 for quality
 5. ❌ Complete with Checkpoints 8-9 for release
 
@@ -191,9 +191,10 @@ The `isum` CLI tool is **functionally complete** with all core features implemen
 - File and stdin processing with efficient chunking
 - ISCC checksum generation for both 256-bit and 128-bit formats
 - Correct Unix-style output formatting
-- Basic error handling with proper exit codes
+- Comprehensive error handling with proper exit codes
+- Robust handling of edge cases (empty files, special files, permissions, etc.)
 
-Remaining work focuses on quality assurance, testing, and release preparation.
+Remaining work focuses on performance optimization, comprehensive testing, and release preparation.
 
 ## Success Criteria
 

@@ -69,23 +69,77 @@ fn process_file(path: &PathBuf, narrow: bool) -> io::Result<()> {
         ));
     }
 
-    // Check if it's a regular file
-    let metadata = path.metadata()?;
-    if !metadata.is_file() {
+    // Get metadata (follows symlinks by default, which matches Unix tool behavior)
+    let metadata = match path.metadata() {
+        Ok(m) => m,
+        Err(e) => {
+            // Handle permission denied and other metadata errors
+            if e.kind() == io::ErrorKind::PermissionDenied {
+                return Err(io::Error::new(
+                    io::ErrorKind::PermissionDenied,
+                    format!("{}: Permission denied", path.display()),
+                ));
+            }
+            return Err(e);
+        }
+    };
+
+    // Handle special file types
+    if metadata.is_dir() {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            format!("{}: Is not a regular file", path.display()),
+            format!("{}: Is a directory", path.display()),
         ));
     }
 
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::FileTypeExt;
+        let file_type = metadata.file_type();
+
+        if file_type.is_block_device() || file_type.is_char_device() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("{}: Is a device file", path.display()),
+            ));
+        }
+
+        if file_type.is_fifo() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("{}: Is a named pipe", path.display()),
+            ));
+        }
+
+        if file_type.is_socket() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("{}: Is a socket", path.display()),
+            ));
+        }
+    }
+
     // Open the file
-    let mut file = File::open(path)?;
+    let mut file = match File::open(path) {
+        Ok(f) => f,
+        Err(e) => {
+            // Handle permission denied specifically
+            if e.kind() == io::ErrorKind::PermissionDenied {
+                return Err(io::Error::new(
+                    io::ErrorKind::PermissionDenied,
+                    format!("{}: Permission denied", path.display()),
+                ));
+            }
+            return Err(e);
+        }
+    };
 
     // Process the file and get the result
     let result = process_reader(&mut file, narrow)?;
 
     // Output the result in Unix checksum format
-    let filename = path.display();
+    // Handle potentially invalid UTF-8 in filenames by using to_string_lossy
+    let filename = path.to_string_lossy();
     println!("{} *{}", result.iscc, filename);
 
     Ok(())
@@ -280,5 +334,38 @@ mod tests {
             narrow: false,
         };
         assert!(!cli.narrow);
+    }
+
+    #[test]
+    fn test_empty_file_handling() {
+        // Test that empty files are handled correctly
+        let empty = vec![];
+        let mut cursor = Cursor::new(empty);
+        let result = process_reader(&mut cursor, false).unwrap();
+
+        // Empty files should produce valid ISCC with 0 filesize
+        assert!(result.iscc.starts_with("ISCC:"));
+        assert_eq!(result.filesize, 0);
+    }
+
+    #[test]
+    fn test_io_error_handling() {
+        // Test that I/O errors are properly propagated
+        struct FailingReader;
+
+        impl Read for FailingReader {
+            fn read(&mut self, _buf: &mut [u8]) -> io::Result<usize> {
+                Err(io::Error::other("read error"))
+            }
+        }
+
+        let mut reader = FailingReader;
+        let result = process_reader(&mut reader, false);
+
+        assert!(result.is_err());
+        match result {
+            Err(e) => assert_eq!(e.kind(), io::ErrorKind::Other),
+            Ok(_) => panic!("Expected error but got success"),
+        }
     }
 }
