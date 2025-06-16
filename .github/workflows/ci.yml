@@ -204,7 +204,7 @@ jobs:
           source test_env/bin/activate
           pip install dist/*.whl
           # Test that the package is installed and works
-          python -c "import iscc_sum; print(iscc_sum.hello_from_bin())"
+          python -c "import iscc_sum; p = iscc_sum.DataCodeProcessor(); print('iscc_sum module imported successfully')"
           python -m iscc_sum
           # Test that py.typed is installed
           test -f test_env/lib/python*/site-packages/iscc_sum/py.typed || exit 1
@@ -216,7 +216,7 @@ jobs:
           test_env\Scripts\Activate.ps1
           pip install (Get-ChildItem dist\*.whl).FullName
           # Test that the package is installed and works
-          python -c "import iscc_sum; print(iscc_sum.hello_from_bin())"
+          python -c "import iscc_sum; p = iscc_sum.DataCodeProcessor(); print('iscc_sum module imported successfully')"
           python -m iscc_sum
           # Test that py.typed is installed
           $pyTypedPath = Get-ChildItem -Path test_env\Lib\site-packages\iscc_sum\py.typed -ErrorAction SilentlyContinue
