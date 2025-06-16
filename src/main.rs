@@ -2,7 +2,7 @@
 
 use clap::Parser;
 use std::fs::File;
-use std::io::{self, Read};
+use std::io::{self, BufReader, Read};
 use std::path::PathBuf;
 use std::process;
 
@@ -119,8 +119,8 @@ fn process_file(path: &PathBuf, narrow: bool) -> io::Result<()> {
         }
     }
 
-    // Open the file
-    let mut file = match File::open(path) {
+    // Open the file with buffered reader for better I/O performance
+    let file = match File::open(path) {
         Ok(f) => f,
         Err(e) => {
             // Handle permission denied specifically
@@ -134,8 +134,11 @@ fn process_file(path: &PathBuf, narrow: bool) -> io::Result<()> {
         }
     };
 
+    // Use BufReader for better I/O performance
+    let mut reader = BufReader::with_capacity(BUFFER_SIZE, file);
+
     // Process the file and get the result
-    let result = process_reader(&mut file, narrow)?;
+    let result = process_reader(&mut reader, narrow)?;
 
     // Output the result in Unix checksum format
     // Handle potentially invalid UTF-8 in filenames by using to_string_lossy
@@ -159,7 +162,8 @@ fn process_stdin(narrow: bool) -> io::Result<()> {
 /// Process any reader (file or stdin) and return the ISCC result
 fn process_reader<R: Read>(reader: &mut R, narrow: bool) -> io::Result<IsccSumResult> {
     let mut processor = IsccSumProcessor::new();
-    let mut buffer = vec![0; BUFFER_SIZE];
+    // Use vec! to allocate buffer on heap
+    let mut buffer = vec![0u8; BUFFER_SIZE];
 
     loop {
         let bytes_read = reader.read(&mut buffer)?;
@@ -198,7 +202,7 @@ mod tests {
     fn test_process_reader_small_data() {
         // Test with small data
         let data = b"Hello, World!";
-        let mut cursor = Cursor::new(data.to_vec());
+        let mut cursor = Cursor::new(data);
         let result = process_reader(&mut cursor, false).unwrap();
 
         // Should produce a valid ISCC
@@ -212,7 +216,7 @@ mod tests {
     fn test_process_reader_narrow_format() {
         // Test narrow format
         let data = b"Test data for narrow format";
-        let mut cursor = Cursor::new(data.to_vec());
+        let mut cursor = Cursor::new(data);
         let result = process_reader(&mut cursor, true).unwrap();
 
         // Should produce a valid ISCC
@@ -239,10 +243,10 @@ mod tests {
         // Test that same data produces same checksum
         let data = b"Deterministic test data";
 
-        let mut cursor1 = Cursor::new(data.to_vec());
+        let mut cursor1 = Cursor::new(data);
         let result1 = process_reader(&mut cursor1, false).unwrap();
 
-        let mut cursor2 = Cursor::new(data.to_vec());
+        let mut cursor2 = Cursor::new(data);
         let result2 = process_reader(&mut cursor2, false).unwrap();
 
         // Same data should produce identical checksums
@@ -257,10 +261,10 @@ mod tests {
         let data1 = b"First test data";
         let data2 = b"Second test data";
 
-        let mut cursor1 = Cursor::new(data1.to_vec());
+        let mut cursor1 = Cursor::new(data1);
         let result1 = process_reader(&mut cursor1, false).unwrap();
 
-        let mut cursor2 = Cursor::new(data2.to_vec());
+        let mut cursor2 = Cursor::new(data2);
         let result2 = process_reader(&mut cursor2, false).unwrap();
 
         // Different data should produce different checksums
@@ -272,10 +276,10 @@ mod tests {
         // Test that narrow and wide formats differ for same data
         let data = b"Format comparison test";
 
-        let mut cursor1 = Cursor::new(data.to_vec());
+        let mut cursor1 = Cursor::new(data);
         let narrow_result = process_reader(&mut cursor1, true).unwrap();
 
-        let mut cursor2 = Cursor::new(data.to_vec());
+        let mut cursor2 = Cursor::new(data);
         let wide_result = process_reader(&mut cursor2, false).unwrap();
 
         // Formats should produce different ISCCs
