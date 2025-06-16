@@ -74,11 +74,10 @@ pub struct IsccSumProcessor {
     instance_hasher: InstanceHasher,
 }
 
-#[pymethods]
+// Public Rust API (for use from main.rs)
 impl IsccSumProcessor {
     /// Create a new ISCC-SUM processor
-    #[new]
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             data_hasher: DataHasher::new(),
             instance_hasher: InstanceHasher::new(),
@@ -86,13 +85,13 @@ impl IsccSumProcessor {
     }
 
     /// Update the processor with new data
-    fn update(&mut self, data: &[u8]) {
+    pub fn update(&mut self, data: &[u8]) {
         self.data_hasher.push(data);
         self.instance_hasher.push(data);
     }
 
     /// Get the final ISCC-SUM result
-    fn result(&mut self, wide: bool, add_units: bool) -> PyResult<IsccSumResult> {
+    pub fn result(&mut self, wide: bool, add_units: bool) -> IsccSumResult {
         // Get digests
         let data_digest = self.data_hasher.digest();
         let instance_digest = self.instance_hasher.digest();
@@ -165,7 +164,34 @@ impl IsccSumProcessor {
         };
 
         // Create and return IsccSumResult
-        Ok(IsccSumResult::new(iscc, datahash, filesize, units))
+        IsccSumResult::new(iscc, datahash, filesize, units)
+    }
+}
+
+impl Default for IsccSumProcessor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[pymethods]
+impl IsccSumProcessor {
+    /// Create a new ISCC-SUM processor
+    #[new]
+    fn py_new() -> Self {
+        Self::new()
+    }
+
+    /// Update the processor with new data
+    #[pyo3(name = "update")]
+    fn py_update(&mut self, data: &[u8]) {
+        self.update(data);
+    }
+
+    /// Get the final ISCC-SUM result
+    #[pyo3(name = "result")]
+    fn py_result(&mut self, wide: bool, add_units: bool) -> PyResult<IsccSumResult> {
+        Ok(self.result(wide, add_units))
     }
 }
 
@@ -190,7 +216,7 @@ pub fn code_iscc_sum(filepath: &str, wide: bool, add_units: bool) -> PyResult<Is
         processor.update(&buffer[..bytes_read]);
     }
 
-    processor.result(wide, add_units)
+    Ok(processor.result(wide, add_units))
 }
 
 #[cfg(test)]
