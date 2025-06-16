@@ -1,6 +1,7 @@
 // Main entry point for the iscc-sum CLI tool
 
 use clap::Parser;
+use globset::{Glob, GlobSet, GlobSetBuilder};
 use std::fs::File;
 use std::io::{self, BufReader, Read};
 use std::path::PathBuf;
@@ -23,6 +24,22 @@ struct Cli {
     /// Generate narrower 128-bit ISCC checksums (default: 256-bit)
     #[arg(short, long)]
     narrow: bool,
+
+    /// Process directories recursively (default when directory argument is provided)
+    #[arg(short, long, conflicts_with = "no_recursive")]
+    recursive: bool,
+
+    /// Process only files in the specified directory, not subdirectories
+    #[arg(long, conflicts_with = "recursive")]
+    no_recursive: bool,
+
+    /// Exclude files matching the given glob pattern (can be specified multiple times)
+    #[arg(long, value_name = "PATTERN")]
+    exclude: Vec<String>,
+
+    /// Maximum directory depth to traverse (default: unlimited)
+    #[arg(long, value_name = "N")]
+    max_depth: Option<usize>,
 }
 
 /// Exit codes following Unix conventions
@@ -35,6 +52,24 @@ const BUFFER_SIZE: usize = 2 * 1024 * 1024;
 fn error_exit(message: &str) -> ! {
     eprintln!("isum: {}", message);
     process::exit(EXIT_ERROR);
+}
+
+/// Build a GlobSet from exclude patterns
+fn build_exclude_set(patterns: &[String]) -> io::Result<Option<GlobSet>> {
+    let mut builder = GlobSetBuilder::new();
+
+    for pattern in patterns {
+        let glob = Glob::new(pattern).map_err(|e| {
+            io::Error::other(format!("Invalid exclude pattern '{}': {}", pattern, e))
+        })?;
+        builder.add(glob);
+    }
+
+    let globset = builder
+        .build()
+        .map_err(|e| io::Error::other(format!("Failed to build exclude patterns: {}", e)))?;
+
+    Ok(Some(globset))
 }
 
 fn main() {
@@ -51,9 +86,16 @@ fn run(cli: Cli) -> io::Result<()> {
         // Process stdin
         process_stdin(cli.narrow)?;
     } else {
+        // Build the exclude glob set if patterns were provided
+        let exclude_set = if !cli.exclude.is_empty() {
+            build_exclude_set(&cli.exclude)?
+        } else {
+            None
+        };
+
         // Process files
         for file in &cli.files {
-            process_file(file, cli.narrow)?;
+            process_file(file, &cli, exclude_set.as_ref())?;
         }
     }
 
@@ -61,7 +103,7 @@ fn run(cli: Cli) -> io::Result<()> {
 }
 
 /// Process a single file and output its ISCC checksum
-fn process_file(path: &PathBuf, narrow: bool) -> io::Result<()> {
+fn process_file(path: &PathBuf, cli: &Cli, exclude_set: Option<&GlobSet>) -> io::Result<()> {
     // Check if file exists
     if !path.exists() {
         return Err(io::Error::new(
@@ -87,9 +129,13 @@ fn process_file(path: &PathBuf, narrow: bool) -> io::Result<()> {
 
     // Handle special file types
     if metadata.is_dir() {
-        // For now, process directories recursively by default
-        // In checkpoint 2, we'll add a -r flag requirement
-        return process_directory(path, narrow);
+        // Process directory based on flags
+        if cli.no_recursive {
+            return process_directory_flat(path, cli, exclude_set);
+        } else {
+            // Recursive is the default behavior for directories
+            return process_directory(path, cli, exclude_set);
+        }
     }
 
     #[cfg(unix)]
@@ -120,7 +166,7 @@ fn process_file(path: &PathBuf, narrow: bool) -> io::Result<()> {
     }
 
     // Process as regular file
-    process_regular_file(path, narrow)
+    process_regular_file(path, cli.narrow)
 }
 
 /// Process stdin and output its ISCC checksum
@@ -134,12 +180,81 @@ fn process_stdin(narrow: bool) -> io::Result<()> {
     Ok(())
 }
 
+/// Process a directory non-recursively (only direct children)
+fn process_directory_flat(
+    dir_path: &PathBuf,
+    cli: &Cli,
+    exclude_set: Option<&GlobSet>,
+) -> io::Result<()> {
+    let mut entries = Vec::new();
+
+    // Read directory entries
+    for entry in std::fs::read_dir(dir_path)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        // Only process regular files
+        if entry.file_type()?.is_file() {
+            // Apply exclude patterns if any
+            if let Some(globset) = exclude_set {
+                let relative_path = path.strip_prefix(dir_path).unwrap_or(&path);
+                if globset.is_match(relative_path) {
+                    continue;
+                }
+            }
+            entries.push(path);
+        }
+    }
+
+    // Sort entries for deterministic output
+    entries.sort();
+
+    let mut had_errors = false;
+
+    for entry_path in entries {
+        // Process each file, but continue on errors
+        if let Err(e) = process_regular_file(&entry_path, cli.narrow) {
+            eprintln!("isum: {}: {}", entry_path.display(), e);
+            had_errors = true;
+        }
+    }
+
+    // If we had any errors, return an error to indicate partial failure
+    if had_errors {
+        Err(io::Error::other("Some files could not be processed"))
+    } else {
+        Ok(())
+    }
+}
+
 /// Process a directory recursively and output ISCC checksums for all files
-fn process_directory(dir_path: &PathBuf, narrow: bool) -> io::Result<()> {
-    let mut entries: Vec<_> = WalkDir::new(dir_path)
+fn process_directory(
+    dir_path: &PathBuf,
+    cli: &Cli,
+    exclude_set: Option<&GlobSet>,
+) -> io::Result<()> {
+    let mut walker = WalkDir::new(dir_path);
+
+    // Apply max_depth if specified
+    if let Some(depth) = cli.max_depth {
+        walker = walker.max_depth(depth);
+    }
+
+    let mut entries: Vec<_> = walker
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.file_type().is_file())
+        .filter(|e| {
+            // Apply exclude patterns if any
+            if let Some(globset) = exclude_set {
+                let path = e.path();
+                // Get relative path from the starting directory
+                let relative_path = path.strip_prefix(dir_path).unwrap_or(path);
+                !globset.is_match(relative_path)
+            } else {
+                true
+            }
+        })
         .map(|e| e.path().to_path_buf())
         .collect();
 
@@ -150,7 +265,7 @@ fn process_directory(dir_path: &PathBuf, narrow: bool) -> io::Result<()> {
 
     for entry_path in entries {
         // Process each file, but continue on errors
-        if let Err(e) = process_regular_file(&entry_path, narrow) {
+        if let Err(e) = process_regular_file(&entry_path, cli.narrow) {
             eprintln!("isum: {}: {}", entry_path.display(), e);
             had_errors = true;
         }
@@ -366,12 +481,20 @@ mod tests {
         let cli = Cli {
             files: vec![],
             narrow: true,
+            recursive: false,
+            no_recursive: false,
+            exclude: vec![],
+            max_depth: None,
         };
         assert!(cli.narrow);
 
         let cli = Cli {
             files: vec![],
             narrow: false,
+            recursive: false,
+            no_recursive: false,
+            exclude: vec![],
+            max_depth: None,
         };
         assert!(!cli.narrow);
     }
@@ -434,7 +557,15 @@ mod directory_tests {
     #[test]
     fn test_process_directory_basic() {
         let temp_dir = create_test_directory();
-        let result = process_directory(&temp_dir.path().to_path_buf(), false);
+        let cli = Cli {
+            files: vec![],
+            narrow: false,
+            recursive: false,
+            no_recursive: false,
+            exclude: vec![],
+            max_depth: None,
+        };
+        let result = process_directory(&temp_dir.path().to_path_buf(), &cli, None);
 
         // Should succeed for directory with readable files
         assert!(result.is_ok());
@@ -443,7 +574,15 @@ mod directory_tests {
     #[test]
     fn test_process_directory_empty() {
         let temp_dir = TempDir::new().expect("Failed to create temp directory");
-        let result = process_directory(&temp_dir.path().to_path_buf(), false);
+        let cli = Cli {
+            files: vec![],
+            narrow: false,
+            recursive: false,
+            no_recursive: false,
+            exclude: vec![],
+            max_depth: None,
+        };
+        let result = process_directory(&temp_dir.path().to_path_buf(), &cli, None);
 
         // Empty directory should succeed (no files to process)
         assert!(result.is_ok());
@@ -465,7 +604,15 @@ mod directory_tests {
             fs::set_permissions(&unreadable_file, perms).unwrap();
         }
 
-        let result = process_directory(&temp_dir.path().to_path_buf(), false);
+        let cli = Cli {
+            files: vec![],
+            narrow: false,
+            recursive: false,
+            no_recursive: false,
+            exclude: vec![],
+            max_depth: None,
+        };
+        let result = process_directory(&temp_dir.path().to_path_buf(), &cli, None);
 
         #[cfg(unix)]
         {
