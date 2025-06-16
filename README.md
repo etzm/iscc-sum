@@ -170,7 +170,7 @@ A standalone Rust binary is also available:
 cargo install iscc-sum
 
 # Run the Rust CLI
-iscc-sum-rs
+isum
 ```
 
 ### Python API
@@ -278,7 +278,7 @@ uv run pytest     # Python tests
 ### Building
 
 ```bash
-# Build Rust binary (creates iscc-sum-rs executable)
+# Build Rust binary (creates isum executable)
 cargo build --release
 
 # Build Python wheels

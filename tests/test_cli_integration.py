@@ -12,9 +12,9 @@ def get_rust_binary_path():
     # Try to find the binary in the target/release directory
     root_dir = Path(__file__).parent.parent
     if sys.platform == "win32":
-        binary_name = "iscc-sum-rs.exe"
+        binary_name = "isum.exe"
     else:
-        binary_name = "iscc-sum-rs"
+        binary_name = "isum"
 
     # Check release build first
     release_path = root_dir / "target" / "release" / binary_name
@@ -27,7 +27,7 @@ def get_rust_binary_path():
         return str(debug_path)
 
     # If not found, try to build it
-    subprocess.run(["cargo", "build", "--release", "--bin", "iscc-sum-rs"], check=True)
+    subprocess.run(["cargo", "build", "--release", "--bin", "isum"], check=True)
     if release_path.exists():
         return str(release_path)
 

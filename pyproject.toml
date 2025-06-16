@@ -114,7 +114,7 @@ rust-format = "cargo fmt"
 rust-format-check = "cargo fmt -- --check"
 rust-clippy = "cargo clippy --quiet --all-targets --all-features -- -D warnings"
 rust-test = "cargo test"
-rust-build = "cargo build --release --bin iscc-sum"
+rust-build = "cargo build --release --bin isum"
 
 # Python extension building
 build-ext = "maturin develop"

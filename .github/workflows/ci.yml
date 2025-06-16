@@ -50,14 +50,14 @@ jobs:
         run: cargo test --verbose
       
       - name: Build binary
-        run: cargo build --release --bin iscc-sum-rs
+        run: cargo build --release --bin isum
       
       - name: Test binary
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            ./target/release/iscc-sum-rs.exe
+            ./target/release/isum.exe
           else
-            ./target/release/iscc-sum-rs
+            ./target/release/isum
           fi
         shell: bash
       
@@ -65,9 +65,9 @@ jobs:
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
-          name: iscc-sum-rs-${{ matrix.os }}
+          name: isum-${{ matrix.os }}
           path: |
-            target/release/iscc-sum-rs${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+            target/release/isum${{ matrix.os == 'windows-latest' && '.exe' || '' }}
 
   # Python checks - strategic matrix coverage
   python-checks:
@@ -123,12 +123,12 @@ jobs:
       - name: Download Rust binary
         uses: actions/download-artifact@v4
         with:
-          name: iscc-sum-rs-${{ matrix.os }}
+          name: isum-${{ matrix.os }}
           path: target/release/
       
       - name: Make binary executable (Unix)
         if: runner.os != 'Windows'
-        run: chmod +x target/release/iscc-sum-rs
+        run: chmod +x target/release/isum
       
       - name: Create virtual environment
         run: uv venv

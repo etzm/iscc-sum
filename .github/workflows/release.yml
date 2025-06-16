@@ -42,28 +42,28 @@ jobs:
         uses: Swatinem/rust-cache@v2
       
       - name: Build release binary
-        run: cargo build --release --bin iscc-sum --target ${{ matrix.target }}
+        run: cargo build --release --bin isum --target ${{ matrix.target }}
       
       - name: Package binary (Unix)
         if: matrix.archive == 'tar.gz'
         run: |
           cd target/${{ matrix.target }}/release
-          tar czf iscc-sum-${{ matrix.target }}.tar.gz iscc-sum
-          mv iscc-sum-${{ matrix.target }}.tar.gz ../../../
+          tar czf isum-${{ matrix.target }}.tar.gz isum
+          mv isum-${{ matrix.target }}.tar.gz ../../../
       
       - name: Package binary (Windows)
         if: matrix.archive == 'zip'
         shell: pwsh
         run: |
           cd target/${{ matrix.target }}/release
-          Compress-Archive -Path iscc-sum.exe -DestinationPath iscc-sum-${{ matrix.target }}.zip
-          Move-Item iscc-sum-${{ matrix.target }}.zip ../../../
+          Compress-Archive -Path isum.exe -DestinationPath isum-${{ matrix.target }}.zip
+          Move-Item isum-${{ matrix.target }}.zip ../../../
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: iscc-sum-${{ matrix.target }}
-          path: iscc-sum-${{ matrix.target }}.${{ matrix.archive }}
+          name: isum-${{ matrix.target }}
+          path: isum-${{ matrix.target }}.${{ matrix.archive }}
 
   release-python:
     name: Build Python Wheels
