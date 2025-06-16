@@ -15,7 +15,23 @@ use _core::sum::{IsccSumProcessor, IsccSumResult};
 #[derive(Parser)]
 #[command(name = "isum")]
 #[command(version = "0.1.0-alpha.1")]
-#[command(about = "Generate ISCC Data-Code and Instance-Code checksums", long_about = None)]
+#[command(about = "Generate ISCC Data-Code and Instance-Code checksums")]
+#[command(
+    long_about = "Generate ISCC Data-Code and Instance-Code checksums for files and directories.
+
+ISCC (International Standard Content Code) is a standard for creating unique
+identifiers for digital content. This tool generates checksums that can be
+used to verify data integrity and identify duplicate content.
+
+Examples:
+  isum file.txt                  # Generate checksum for a single file
+  isum file1.txt file2.txt       # Generate checksums for multiple files
+  echo \"hello\" | isum           # Generate checksum from stdin
+  isum directory/                # Process all files in directory recursively
+  isum --narrow file.txt         # Generate 128-bit checksum (default: 256-bit)
+  isum --exclude \"*.log\" dir/    # Exclude log files
+  isum --max-depth 1 dir/        # Process only immediate subdirectories"
+)]
 struct Cli {
     /// Files to process (reads from stdin if not provided)
     #[arg(value_name = "FILE")]
@@ -33,11 +49,13 @@ struct Cli {
     #[arg(long, conflicts_with = "recursive")]
     no_recursive: bool,
 
-    /// Exclude files matching the given glob pattern (can be specified multiple times)
+    /// Exclude files matching the given glob pattern (can be specified multiple times).
+    /// Patterns: *.log, temp/*, **/*.tmp, .* (hidden files)
     #[arg(long, value_name = "PATTERN")]
     exclude: Vec<String>,
 
-    /// Maximum directory depth to traverse (default: unlimited)
+    /// Maximum directory depth to traverse (default: unlimited).
+    /// 0=current dir only, 1=include immediate subdirs, etc.
     #[arg(long, value_name = "N")]
     max_depth: Option<usize>,
 }
@@ -236,8 +254,11 @@ fn process_directory(
     let mut walker = WalkDir::new(dir_path);
 
     // Apply max_depth if specified
+    // Note: WalkDir considers the root as depth 0, so we add 1 to align with user expectations
+    // User's max_depth 0 = only files in root dir (WalkDir max_depth 1)
+    // User's max_depth 1 = files in root + immediate subdirs (WalkDir max_depth 2)
     if let Some(depth) = cli.max_depth {
-        walker = walker.max_depth(depth);
+        walker = walker.max_depth(depth + 1);
     }
 
     let mut entries: Vec<_> = walker
