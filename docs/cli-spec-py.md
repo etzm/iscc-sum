@@ -3,7 +3,7 @@
 ## Command Synopsis
 
 ```
-iscc-sum [OPTION]... [FILE]...
+iscc-sum [OPTION]... [FILE|DIR]...
 ```
 
 ## Description
@@ -15,6 +15,9 @@ components. All files are processed as binary data.
 Unlike traditional checksum tools that only verify exact matches, `iscc-sum` enables similarity detection
 between files through the Data-Code component. Files with similar content will have similar Data-Codes, allowing
 similarity matching based on hamming distance.
+
+When given directories as arguments, `iscc-sum` recursively processes all regular files within them in a
+deterministic order to ensure consistent output across platforms.
 
 ## Options
 
@@ -46,6 +49,13 @@ similarity matching based on hamming distance.
   - Requires at least 2 files to compare
 - `--threshold <N>` - Maximum hamming distance for similarity matching (default: 12)
   - Hamming distance is calculated on Data-Code bits: 128 bits (extended) or 64 bits (narrow)
+
+### Directory Processing Options
+
+- `-r, --recursive` - Process directories recursively (default when directory argument is provided)
+- `--no-recursive` - Process only files in the specified directory, not subdirectories
+- `--exclude <PATTERN>` - Exclude files matching the given glob pattern (can be specified multiple times)
+- `--max-depth <N>` - Maximum directory depth to traverse (default: unlimited)
 
 ## Output Format
 
@@ -172,22 +182,30 @@ iscc-sum --similar *.jpg
 # Use custom similarity threshold (hamming distance)
 iscc-sum --similar --threshold 20 documents/*.pdf
 
-# Find similar files recursively (using shell globstar)
-iscc-sum --similar **/*.png
-```
+# Find similar files recursively
+iscc-sum --similar /path/to/images
 
-**Note**: File patterns are expanded by the shell. Use `**/*` with shells that support globstar (bash with
-`shopt -s globstar`, zsh) for recursive directory traversal.
+# Exclude certain patterns
+iscc-sum --exclude "*.tmp" --exclude ".git/*" /path/to/project
+
+# Limit directory depth
+iscc-sum --max-depth 2 /path/to/directory
+```
 
 ## Implementation Notes
 
-1. The tool MUST process all files as binary data (no text encoding/decoding)
-2. File reading SHOULD use 2MB chunks for efficiency
-3. The tool MUST support reading from stdin when no FILE is specified
-4. Output MUST be deterministic for the same input
-5. The base32 encoding MUST use RFC4648 alphabet without padding
-6. The tool SHOULD auto-detect checksum format when verifying
-7. Unlike traditional checksum tools, iscc-sum has no text mode - all files are processed as binary
-8. Hamming distance MUST be calculated on the decoded bits of the Data-Code component only (excluding the 2-byte
-   header)
-9. File patterns are handled by shell expansion; the tool does not implement glob matching
+01. The tool MUST process all files as binary data (no text encoding/decoding)
+02. File reading SHOULD use 2MB chunks for efficiency
+03. The tool MUST support reading from stdin when no FILE is specified
+04. Output MUST be deterministic for the same input
+05. The base32 encoding MUST use RFC4648 alphabet without padding
+06. The tool SHOULD auto-detect checksum format when verifying
+07. Unlike traditional checksum tools, iscc-sum has no text mode - all files are processed as binary
+08. Hamming distance MUST be calculated on the decoded bits of the Data-Code component only (excluding the
+    2-byte header)
+09. Directory traversal MUST produce identical results across platforms:
+    - Sort entries case-sensitively by filename (using UTF-8 byte order)
+    - Process regular files only (skip symlinks, devices, etc.)
+    - Continue processing remaining files if individual files fail
+    - Output files in the order they are processed
+10. File and directory arguments can be mixed; shell patterns are still expanded by the shell
