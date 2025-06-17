@@ -101,6 +101,9 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **Container** : An entry that can contain other entries (directory, folder, ZIP archive, S3 prefix).
 
+**Yield/Output** : When an entry is "yielded" or appears in the "output", it means the entry path is returned to
+the caller. Note that containers are traversed but not yielded — only files within containers appear in output.
+
 **NFC Normalization** : Unicode Normalization Form C - a canonical form ensuring consistent representation of
 equivalent Unicode sequences.
 
@@ -160,17 +163,25 @@ After NFC normalization and UTF-8 encoding, the sorted order is:
 
 ### 4.2 Base Treewalk Algorithm
 
-The base algorithm **MUST** return entries in each container in this order:
+The base algorithm **MUST** yield entries in depth-first order following these rules:
 
-1. **Ignore files first** - Entries matching pattern `.*ignore` (e.g., .gitignore, .npmignore, .isccignore)
-2. **Regular entries** - All other non-container entries in sorted order
-3. **Sub-containers** - Recursively in sorted order
+1. **Process each container**: For each directory/container in the traversal:
+
+   - **Ignore files first** - Yield files matching pattern `.*ignore` (e.g., .gitignore, .npmignore) in sorted
+     order
+   - **Regular files second** - Yield all other files in sorted order
+   - **Recurse into sub-containers** - Process subdirectories in sorted order
+
+2. **Directory representation**: Containers (directories) themselves **MUST NOT** appear in the output. Only
+   files within containers are yielded. The algorithm traverses into directories but does not yield them as
+   entries.
 
 > [!NOTE]
-> This ordering ensures ignore files are available to callers and extensions before the entries they might 
-> filter.
+> This ordering ensures ignore files are discovered and yielded before the regular files they might filter,
+> enabling extensions to process filtering rules early.
 
-The base algorithm itself MUST not process ignore file contents or apply filtering.
+The base algorithm itself **MUST NOT** process ignore file contents or apply filtering - it only ensures
+deterministic ordering with ignore file prioritization.
 
 ### 4.3 Reference Handling
 
@@ -196,11 +207,19 @@ When using Treewalk-Ignore:
 2. Check for the specified ignore file in each directory
 3. Parse patterns using gitignore-style syntax
 4. Accumulate patterns from root to current directory
-5. Filter entries based on accumulated patterns
-6. Apply patterns to both files and directories
+5. Apply patterns to filter files and control directory traversal
+
+#### Directory Filtering
+
+Since directories are not yielded as output entries, directory patterns control traversal:
+
+- If a directory matches an ignore pattern, the algorithm **MUST NOT** recurse into it
+- This prevents all files within that directory from appearing in the output
+- Directory patterns **MUST** be checked with a trailing "/" to ensure proper matching
 
 > [!WARNING]
-> Directory patterns must be checked with a trailing "/" to ensure proper matching
+> A pattern like `temp/` prevents traversal into any directory named "temp", effectively excluding all files
+> within it from the output
 
 #### Pattern Matching Rules
 
@@ -402,6 +421,10 @@ Implementations **MUST** produce identical ordering for these test cases:
 - test_dir/.isccignore
 - test_dir/data.txt
 ```
+
+> [!NOTE]
+> The `temp/` pattern prevents traversal into the temp directory, so `temp/cache.dat` is excluded. The file
+> `data.txt.iscc.json` is automatically filtered by the ISCC extension.
 
 ## 10. References
 
