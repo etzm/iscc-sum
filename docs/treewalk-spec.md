@@ -13,6 +13,41 @@ ensuring consistent cross-platform ordering while enabling progressive filtering
 applies to file systems, archive formats (ZIP, EPUB, DOCX), cloud storage (S3, Azure Blob), and any system with
 directory-like organization.
 
+## Relevance to Scientific Data: Zarr and OME-NGFF
+
+> [!NOTE]
+> The bioimaging community's adoption of Zarr-based formats like OME-NGFF makes deterministic tree traversal
+> essential for reproducible scientific workflows.
+
+### Why Treewalk Matters for Zarr/OME-NGFF
+
+**Zarr** stores N-dimensional arrays as hierarchical directory structures containing thousands of chunk files,
+while **OME-NGFF** (Next-Generation File Format) builds bioimaging standards on top of Zarr. Both formats face
+critical challenges that Treewalk addresses:
+
+1. **Cross-platform reproducibility**: Zarr hierarchies yield different traversal orders on different systems,
+   breaking checksums and making data verification impossible. Treewalk ensures identical ordering whether data
+   resides on Linux, Windows, S3, or within ZIP archives.
+
+2. **Version compatibility**: Zarr v2 uses `.zarray`/`.zgroup` metadata files while v3 uses `zarr.json`.
+   Treewalk's ignore-file prioritization ensures metadata is always discovered before data chunks, regardless of
+   version.
+
+3. **Scalable integrity verification**: Petabyte-scale OME-NGFF datasets contain millions of chunks. Treewalk
+   enables efficient, incremental checksumming by guaranteeing chunk processing order remains consistent across
+   implementations.
+
+4. **Storage-agnostic identification**: Whether Zarr data lives in local filesystems, cloud buckets, or is
+   packaged for distribution, Treewalk is the foundation for producing identical content identifiers, enabling 
+   reliable data citation and provenance tracking.
+
+### Real-world Impact
+
+Without deterministic traversal, two researchers cannot verify they have identical Zarr datasets—file listing
+order varies by OS, locale, and storage backend. Treewalk makes reproducible computational science possible by
+ensuring that content-based identifiers remain stable across all environments where scientific data is stored,
+processed, and shared.
+
 ## Status
 
 This specification is DRAFT as of 2025-01-17.
