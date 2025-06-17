@@ -1,5 +1,5 @@
 """
-Platform-agnostic deterministic directory tree traversal.
+Platform-agnostic deterministic incremental directory tree traversal.
 
 This module provides a layered approach to directory traversal:
 1. `listdir`: Deterministic entry sorting using NFC-normalized UTF-8 encoding
@@ -90,6 +90,8 @@ def treewalk_ignore(path, ignore_file_name, root_path=None, ignore_spec=None):
     path = Path(path).resolve(strict=True)
     if root_path is None:
         root_path = path
+    else:
+        root_path = Path(root_path).resolve(strict=True)
 
     # Load local ignore rules if present
     local_ignore = path / ignore_file_name
@@ -153,6 +155,6 @@ def treewalk_iscc(path):
             yield file_path
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     for entry in treewalk_iscc("../../"):
         print(entry.as_posix())
