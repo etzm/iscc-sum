@@ -50,26 +50,25 @@
 - [x] Update `_handle_checksum_generation` to use `_expand_paths`
 - [x] Add tree mode handling to checksum generation flow
 - [x] Update `_handle_similarity` to use `_expand_paths`
-- [ ] Update `_handle_verification` to support tree mode checksums
+- [x] Update `_handle_verification` to support tree mode checksums
 - [x] Ensure stdin handling still works correctly
 - [x] Update existing integration tests
 - [x] Add tests for directory processing
 - [x] Add tests for mixed file/directory arguments
-- [ ] Run full test suite and fix any remaining issues
-
+- [x] Run full test suite and fix any remaining issues
 
 ## Checkpoint 5: Tree Mode Verification Support
 
 ### Tasks:
 
-- [ ] Update `_parse_checksum_line` to detect tree mode (trailing slash)
-- [ ] Implement tree mode verification logic in `_handle_verification`
-- [ ] When verifying tree checksum, use `treewalk_iscc` on the directory
-- [ ] Process all files and combine into single checksum
-- [ ] Add tests for tree mode verification
-- [ ] Test verification with both standard and BSD formats
-- [ ] Test error cases (missing directory, changed files)
-- [ ] Ensure proper exit codes for tree verification
+- [x] Update `_parse_checksum_line` to detect tree mode (trailing slash)
+- [x] Implement tree mode verification logic in `_handle_verification`
+- [x] When verifying tree checksum, use `treewalk_iscc` on the directory
+- [x] Process all files and combine into single checksum
+- [x] Add tests for tree mode verification
+- [x] Test verification with both standard and BSD formats
+- [x] Test error cases (missing directory, changed files)
+- [x] Ensure proper exit codes for tree verification
 
 ## Checkpoint 6: Update Documentation
 

@@ -373,19 +373,26 @@ def _parse_checksum_line(line):
     # type: (str) -> tuple | None
     """Parse a checksum line in either default or BSD format.
 
-    Returns (iscc_code, filename) tuple or None if invalid format.
+    Returns (iscc_code, filename, is_tree_mode) tuple or None if invalid format.
+    The is_tree_mode flag indicates if the filename ends with a slash (tree mode).
     """
     import re
 
     # BSD format: ISCC-SUM (filename) = ISCC:xxx
     bsd_match = re.match(r"^ISCC-SUM \((.+)\) = (ISCC:[A-Z0-9]+)$", line)
     if bsd_match:
-        return bsd_match.group(2), bsd_match.group(1)
+        filename = bsd_match.group(1)
+        iscc_code = bsd_match.group(2)
+        is_tree_mode = filename.endswith("/")
+        return iscc_code, filename, is_tree_mode
 
     # Default format: ISCC:xxx *filename
     default_match = re.match(r"^(ISCC:[A-Z0-9]+) \*(.+)$", line)
     if default_match:
-        return default_match.group(1), default_match.group(2)
+        iscc_code = default_match.group(1)
+        filename = default_match.group(2)
+        is_tree_mode = filename.endswith("/")
+        return iscc_code, filename, is_tree_mode
 
     return None
 
@@ -431,45 +438,102 @@ def _handle_verification(files, quiet, status, warn, strict):
                             sys.exit(EXIT_ERROR)
                         continue
 
-                    expected_iscc, filename = parsed
+                    expected_iscc, filename, is_tree_mode = parsed
                     total_files += 1
 
-                    # Check if file exists
-                    if not os.path.exists(filename):
-                        missing_files += 1
-                        if not status:
-                            click.echo(f"iscc-sum: {filename}: No such file or directory")
-                        failed_files += 1
-                        continue
+                    # For tree mode, remove the trailing slash to get the directory path
+                    if is_tree_mode:
+                        directory = filename.rstrip("/")
 
-                    # Calculate actual checksum
-                    try:
-                        processor = IsccSumProcessor()
-                        with open(filename, "rb") as target_file:
-                            while True:
-                                chunk = target_file.read(IO_READ_SIZE)
-                                if not chunk:
-                                    break
-                                processor.update(chunk)
+                        # Check if directory exists
+                        if not os.path.exists(directory):
+                            missing_files += 1
+                            if not status:
+                                click.echo(f"iscc-sum: {directory}: No such file or directory")
+                            failed_files += 1
+                            continue
 
-                        # Determine if expected is narrow or wide format
-                        is_narrow = len(expected_iscc) < 35
-                        result = processor.result(wide=not is_narrow, add_units=False)
-                        actual_iscc = result.iscc
-
-                        # Compare checksums
-                        if actual_iscc == expected_iscc:
-                            if not quiet and not status:
-                                click.echo(f"{filename}: OK")
-                        else:
+                        if not os.path.isdir(directory):
                             failed_files += 1
                             if not status:
-                                click.echo(f"{filename}: FAILED")
+                                click.echo(f"iscc-sum: {directory}: Not a directory")
+                            continue
 
-                    except IOError as e:
-                        failed_files += 1
-                        if not status:
-                            click.echo(f"iscc-sum: {filename}: {e}")
+                        # Calculate tree checksum
+                        try:
+                            from iscc_sum.treewalk import treewalk_iscc
+
+                            processor = IsccSumProcessor()
+
+                            # Process all files in the directory in order
+                            for file_path in treewalk_iscc(directory):
+                                try:
+                                    with open(file_path, "rb") as tree_file:
+                                        while True:
+                                            chunk = tree_file.read(IO_READ_SIZE)
+                                            if not chunk:
+                                                break
+                                            processor.update(chunk)
+                                except IOError:
+                                    # Skip files we can't read (matches tree mode generation behavior)
+                                    continue
+
+                            # Determine if expected is narrow or wide format
+                            is_narrow = len(expected_iscc) < 35
+                            result = processor.result(wide=not is_narrow, add_units=False)
+                            actual_iscc = result.iscc
+
+                            # Compare checksums
+                            if actual_iscc == expected_iscc:
+                                if not quiet and not status:
+                                    click.echo(f"{filename}: OK")
+                            else:
+                                failed_files += 1
+                                if not status:
+                                    click.echo(f"{filename}: FAILED")
+
+                        except Exception as e:
+                            failed_files += 1
+                            if not status:
+                                click.echo(f"iscc-sum: {directory}: {e}")
+                    else:
+                        # Regular file verification
+                        # Check if file exists
+                        if not os.path.exists(filename):
+                            missing_files += 1
+                            if not status:
+                                click.echo(f"iscc-sum: {filename}: No such file or directory")
+                            failed_files += 1
+                            continue
+
+                        # Calculate actual checksum
+                        try:
+                            processor = IsccSumProcessor()
+                            with open(filename, "rb") as target_file:
+                                while True:
+                                    chunk = target_file.read(IO_READ_SIZE)
+                                    if not chunk:
+                                        break
+                                    processor.update(chunk)
+
+                            # Determine if expected is narrow or wide format
+                            is_narrow = len(expected_iscc) < 35
+                            result = processor.result(wide=not is_narrow, add_units=False)
+                            actual_iscc = result.iscc
+
+                            # Compare checksums
+                            if actual_iscc == expected_iscc:
+                                if not quiet and not status:
+                                    click.echo(f"{filename}: OK")
+                            else:
+                                failed_files += 1
+                                if not status:
+                                    click.echo(f"{filename}: FAILED")
+
+                        except IOError as e:
+                            failed_files += 1
+                            if not status:
+                                click.echo(f"iscc-sum: {filename}: {e}")
 
         except IOError as e:
             click.echo(f"iscc-sum: {checksum_file}: {e}", err=True)

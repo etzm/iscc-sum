@@ -233,3 +233,212 @@ def test_tree_mode_io_error_handling():
             # Should still get a checksum for the readable file
             assert result.exit_code == 0
             assert "ISCC:" in result.output
+
+
+def test_tree_mode_verification_basic():
+    # type: () -> None
+    """Test tree mode verification with correct checksum."""
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        # Create test directory
+        os.makedirs("test_dir")
+        Path("test_dir/file1.txt").write_text("Content 1")
+        Path("test_dir/file2.txt").write_text("Content 2")
+
+        # Generate tree checksum
+        result = runner.invoke(cli, ["--tree", "test_dir"])
+        assert result.exit_code == 0
+
+        # Save checksum to file
+        Path("checksums.txt").write_text(result.output)
+
+        # Verify the checksum
+        result = runner.invoke(cli, ["--check", "checksums.txt"])
+        assert result.exit_code == 0
+        assert "test_dir/: OK" in result.output
+
+
+def test_tree_mode_verification_bsd_format():
+    # type: () -> None
+    """Test tree mode verification with BSD format."""
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        # Create test directory
+        os.makedirs("test_dir")
+        Path("test_dir/file.txt").write_text("Test content")
+
+        # Generate BSD format checksum
+        result = runner.invoke(cli, ["--tree", "--tag", "test_dir"])
+        assert result.exit_code == 0
+
+        # Save checksum
+        Path("checksums.txt").write_text(result.output)
+
+        # Verify
+        result = runner.invoke(cli, ["--check", "checksums.txt"])
+        assert result.exit_code == 0
+        assert "test_dir/: OK" in result.output
+
+
+def test_tree_mode_verification_failed():
+    # type: () -> None
+    """Test tree mode verification with changed content."""
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        # Create test directory
+        os.makedirs("test_dir")
+        Path("test_dir/file.txt").write_text("Original content")
+
+        # Generate checksum
+        result = runner.invoke(cli, ["--tree", "test_dir"])
+        assert result.exit_code == 0
+        Path("checksums.txt").write_text(result.output)
+
+        # Modify file
+        Path("test_dir/file.txt").write_text("Changed content")
+
+        # Verify - should fail
+        result = runner.invoke(cli, ["--check", "checksums.txt"])
+        assert result.exit_code == 1
+        assert "test_dir/: FAILED" in result.output
+
+
+def test_tree_mode_verification_missing_directory():
+    # type: () -> None
+    """Test tree mode verification with missing directory."""
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        # Create fake checksum file for non-existent directory
+        Path("checksums.txt").write_text(
+            "ISCC:KAEFOO3Z7A7QZPXVYDBGBBLBRDQFH6J2GJNXLSM4G5V6VZ5D3Y4Q *missing_dir/\n"
+        )
+
+        # Verify - should report missing
+        result = runner.invoke(cli, ["--check", "checksums.txt"])
+        assert result.exit_code == 1
+        assert "missing_dir: No such file or directory" in result.output
+
+
+def test_tree_mode_verification_not_directory():
+    # type: () -> None
+    """Test tree mode verification when path is not a directory."""
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        # Create a file
+        Path("file.txt").write_text("content")
+
+        # Create checksum file pointing to file with trailing slash
+        Path("checksums.txt").write_text(
+            "ISCC:KAEFOO3Z7A7QZPXVYDBGBBLBRDQFH6J2GJNXLSM4G5V6VZ5D3Y4Q *file.txt/\n"
+        )
+
+        # Verify - should report not a directory
+        result = runner.invoke(cli, ["--check", "checksums.txt"])
+        assert result.exit_code == 1
+        assert "file.txt: Not a directory" in result.output
+
+
+def test_tree_mode_verification_mixed():
+    # type: () -> None
+    """Test verification with mixed tree and file checksums."""
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        # Create test structure
+        os.makedirs("test_dir")
+        Path("test_dir/file1.txt").write_text("Content 1")
+        Path("standalone.txt").write_text("Standalone content")
+
+        # Generate checksums for both
+        result1 = runner.invoke(cli, ["--tree", "test_dir"])
+        assert result1.exit_code == 0
+
+        result2 = runner.invoke(cli, ["standalone.txt"])
+        assert result2.exit_code == 0
+
+        # Save both checksums
+        Path("checksums.txt").write_text(result1.output + result2.output)
+
+        # Verify both
+        result = runner.invoke(cli, ["--check", "checksums.txt"])
+        assert result.exit_code == 0
+        assert "test_dir/: OK" in result.output
+        assert "standalone.txt: OK" in result.output
+
+
+def test_tree_mode_verification_quiet():
+    # type: () -> None
+    """Test tree mode verification with quiet option."""
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        # Create test directory
+        os.makedirs("test_dir")
+        Path("test_dir/file.txt").write_text("content")
+
+        # Generate and save checksum
+        result = runner.invoke(cli, ["--tree", "test_dir"])
+        Path("checksums.txt").write_text(result.output)
+
+        # Verify with quiet option
+        result = runner.invoke(cli, ["--check", "--quiet", "checksums.txt"])
+        assert result.exit_code == 0
+        assert result.output == ""  # No output in quiet mode for success
+
+
+def test_tree_mode_verification_io_error():
+    # type: () -> None
+    """Test tree mode verification with IO errors."""
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        # Create test directory
+        os.makedirs("test_dir")
+        Path("test_dir/file1.txt").write_text("content 1")
+        Path("test_dir/file2.txt").write_text("content 2")
+
+        # Make one file unreadable before generating checksum
+        if os.name != "nt":
+            os.chmod("test_dir/file2.txt", 0o000)
+
+            # Generate checksum for the directory (will skip unreadable file)
+            result = runner.invoke(cli, ["--tree", "test_dir"])
+            assert result.exit_code == 0
+
+            # Save checksum
+            Path("checksums.txt").write_text(result.output)
+
+            # Verify - should succeed since both generation and verification skip the same file
+            result = runner.invoke(cli, ["--check", "checksums.txt"])
+
+            # Restore permissions
+            os.chmod("test_dir/file2.txt", 0o644)
+
+            # The verification should succeed since tree mode skips unreadable files consistently
+            assert result.exit_code == 0
+            assert "test_dir/: OK" in result.output
+
+
+def test_tree_mode_verification_unexpected_error():
+    # type: () -> None
+    """Test tree mode verification with unexpected errors."""
+    import unittest.mock
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        # Create test directory
+        os.makedirs("test_dir")
+        Path("test_dir/file.txt").write_text("content")
+
+        # Generate checksum
+        result = runner.invoke(cli, ["--tree", "test_dir"])
+        assert result.exit_code == 0
+
+        # Save checksum
+        Path("checksums.txt").write_text(result.output)
+
+        # Mock treewalk to raise an exception
+        with unittest.mock.patch("iscc_sum.treewalk.treewalk_iscc") as mock_treewalk:
+            mock_treewalk.side_effect = Exception("Simulated error")
+
+            # Verify - should report error
+            result = runner.invoke(cli, ["--check", "checksums.txt"])
+            assert result.exit_code == 1
+            assert "Simulated error" in result.output
