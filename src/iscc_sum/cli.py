@@ -198,7 +198,6 @@ def _expand_paths(paths):
     Yields:
         Individual file paths
     """
-    import os
     from pathlib import Path
 
     from iscc_sum.treewalk import treewalk_iscc
@@ -211,12 +210,20 @@ def _expand_paths(paths):
             raise IOError(f"No such file or directory: '{path}'")
 
         if path_obj.is_file():
-            # Yield file path as-is
-            yield str(path_obj)
+            # Yield file path as-is, preserving original format
+            yield path
         elif path_obj.is_dir():
+            # Get the absolute path of the directory for comparison
+            dir_absolute = path_obj.resolve()
+
             # Use treewalk_iscc for deterministic directory traversal
             for file_path in treewalk_iscc(path_obj):
-                yield str(file_path)
+                # Make path relative to the original directory
+                relative_path = file_path.relative_to(dir_absolute)
+                # Create output path with forward slashes for consistency
+                # Join original path with relative path using forward slashes
+                output_path = path + "/" + relative_path.as_posix()
+                yield output_path
         else:
             # Not a regular file or directory (e.g., device, pipe)
             raise IOError(f"Not a regular file or directory: '{path}'")

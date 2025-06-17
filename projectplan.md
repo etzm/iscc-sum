@@ -1,6 +1,36 @@
-# Implementation Plan: Update iscc-sum CLI to Use treewalk_iscc
+# Implementation Plan: Fix Windows Path Display in Directory Expansion
 
-## Overview
+## Current Issue: Windows Test Failure
+
+The test `test_directory_instead_of_file` fails on Windows because when processing directories, the CLI outputs
+absolute Windows paths (e.g., `C:\Users\...\testdir\file1.txt`) instead of the expected relative paths (e.g.,
+`testdir/file1.txt`).
+
+### Root Cause
+
+In `_expand_paths` function (cli.py:218-222):
+
+- `treewalk_iscc` returns absolute Path objects
+- The code tries to make paths relative using `file_path.relative_to(path_obj.resolve())`
+- Then joins with `os.path.join(path, str(relative_path))`
+- On Windows, this creates incorrect paths due to path resolution and separator differences
+
+### Solution
+
+Modify the path handling in `_expand_paths` to ensure consistent relative path output across platforms.
+
+### Fix Applied
+
+Modified the `_expand_paths` function in cli.py to:
+
+1. Use `path_obj.resolve()` to get the absolute directory path
+2. Calculate relative paths using `file_path.relative_to(dir_absolute)`
+3. Join paths using forward slashes: `path + "/" + relative_path.as_posix()`
+4. This ensures consistent output format across Windows and Unix systems
+
+✅ **FIXED**: All tests now pass. The Windows-specific path issue has been resolved.
+
+## Previous Work: Update iscc-sum CLI to Use treewalk_iscc
 
 This plan outlines the steps to update the iscc-sum Python CLI to use the `treewalk_iscc` function for
 directory-based processing. The key changes include:
