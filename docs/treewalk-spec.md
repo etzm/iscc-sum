@@ -147,9 +147,13 @@ All directory entries **MUST** be sorted using the following algorithm:
 2. Encode the normalized name as UTF-8
 3. Sort entries by comparing the resulting byte sequences lexicographically
 
-When multiple entries have identical names after NFC normalization, implementations **MUST** treat them as
-duplicates and handle them according to the storage system's native behavior (typically only one will be
-accessible).
+When multiple entries have identical names after NFC normalization, implementations **MUST** yield all such
+entries in the order they are returned by the storage system's listing API. This ensures deterministic output
+even when storage systems allow multiple entries with equivalent names.
+
+> [!WARNING]
+> Some storage systems (e.g., case-insensitive filesystems) may prevent creation of entries with names that
+> differ only in case or normalization. In such cases, only the accessible entry will be yielded.
 
 #### Example
 
@@ -160,6 +164,16 @@ After NFC normalization and UTF-8 encoding, the sorted order is:
 - "Café" (capital C sorts before lowercase)
 - "café"
 - "caffe"
+
+#### Why deterministic duplicate handling?
+
+When entries have identical normalized names, we yield all of them to ensure consistent output across
+implementations. This approach:
+
+- **Preserves information**: No entries are silently dropped
+- **Maintains determinism**: The same storage state always produces the same output
+- **Respects storage capabilities**: Systems that prevent duplicates naturally have none to yield
+- **Enables verification**: Consumers can detect and handle duplicates as needed
 
 ### 4.2 Base Treewalk Algorithm
 
@@ -347,20 +361,48 @@ Implementations **MUST** produce identical ordering for these test cases:
 **Structure:**
 
 ```yaml
-- path: Café.txt
-- path: café.txt
+- path: Café.txt         # NFC form (U+00E9)
+- path: "Cafe\u0301.txt" # NFD form (U+0065 U+0301)
+- path: café.txt         # NFC form (U+00E9)
 - path: caffe.txt
 ```
 
 **Expected (Base Treewalk):**
 
 ```yaml
-- test_dir/Café.txt
+- test_dir/Café.txt         # First NFC form
+- "test_dir/Cafe\u0301.txt" # NFD form (sorted by NFC but preserves original form)
 - test_dir/caffe.txt
 - test_dir/café.txt
 ```
 
-#### Test Case 2: Ignore File Priority
+> [!NOTE]
+> On case-insensitive filesystems, only one of "Café.txt" or "café.txt" may be created, resulting in fewer
+> entries in the output.
+
+#### Test Case 2: Duplicate Normalized Names
+
+**Structure:**
+
+```yaml
+# These normalize to the same NFC form
+- path: é.txt          # U+00E9 (precomposed)
+- path: "e\u0301.txt"  # U+0065 U+0301 (decomposed)
+```
+
+**Expected (Base Treewalk):**
+
+```yaml
+# Both entries yielded if storage allows both, preserving their original forms
+- test_dir/é.txt         # NFC form
+- "test_dir/e\u0301.txt" # NFD form
+```
+
+> [!NOTE]
+> Storage systems typically prevent creation of both forms, so usually only one entry will exist and be yielded.
+> The key guarantee is that whatever entries exist will be yielded deterministically.
+
+#### Test Case 3: Ignore File Priority
 
 **Structure:**
 
@@ -380,7 +422,7 @@ Implementations **MUST** produce identical ordering for these test cases:
 
 ### 9.2 Treewalk-Ignore Tests
 
-#### Test Case 3: Pattern Filtering
+#### Test Case 4: Pattern Filtering
 
 **Structure:**
 
@@ -401,7 +443,7 @@ Implementations **MUST** produce identical ordering for these test cases:
 
 ### 9.3 Treewalk-ISCC Tests
 
-#### Test Case 4: ISCC Metadata Filtering
+#### Test Case 5: ISCC Metadata Filtering
 
 **Structure:**
 
