@@ -50,7 +50,7 @@ processed, and shared.
 
 ## Status
 
-This specification is DRAFT as of 2025-01-17.
+This specification is DRAFT as of 2025-06-17.
 
 ## 1. Introduction
 
