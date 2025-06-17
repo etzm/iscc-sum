@@ -1,3 +1,4 @@
+# Deterministic directory tree traversal with ignore file support.
 import os
 from os import DirEntry
 from pathlib import Path
@@ -10,9 +11,18 @@ import pathspec
 def treewalk(path):
     # type: (str|Path) -> Iterator[Path]
     """
-    Walk a directory tree and yield filepaths in determinist order (cross-platrform).
+    Walk a directory tree and yield file paths in deterministic order.
 
-    We yield .ignore files first so callers may set filtering rules before proccesing other files
+    Yields paths in the following order:
+    1. Ignore files (.*ignore) in current directory
+    2. Regular files in current directory
+    3. Files from subdirectories (recursively)
+
+    The ordering is deterministic across platforms using NFC-normalized UTF-8 sorting.
+    Symlinks are ignored for security and consistency.
+
+    :param path: Directory path to walk
+    :return: Iterator yielding Path objects for each file found
     """
     path = Path(path).resolve(strict=True)
     entries = listdir(path)
@@ -37,9 +47,16 @@ def treewalk(path):
 def treewalk_ignore(path, ignore_file_name, root_path=None, ignore_spec=None):
     # type: (str|Path, str, Path|None, pathspec.PathSpec|None) -> Iterator[Path]
     """
-    Walk a directory tree while respecting ignore-files.
+    Walk a directory tree while respecting ignore file patterns.
 
-    Yields .ignore files first, then other files, then recurses into directories.
+    Yields paths in deterministic order while filtering based on accumulated
+    ignore patterns from the root down to each subdirectory.
+
+    :param path: Directory to walk
+    :param ignore_file_name: Name of ignore file to look for (e.g., '.gitignore')
+    :param root_path: Root directory for relative path calculations (defaults to path)
+    :param ignore_spec: Existing PathSpec with ignore patterns to extend
+    :return: Iterator yielding Path objects for non-ignored files
     """
     path = Path(path).resolve(strict=True)
     if root_path is None:
@@ -87,10 +104,16 @@ def treewalk_ignore(path, ignore_file_name, root_path=None, ignore_spec=None):
 def treewalk_iscc(path):
     # type: (str|Path) -> Iterator[Path]
     """
-    Treewalk-Ignore extended with ISCC support.
+    Walk directory tree with ISCC-specific ignore rules.
 
-    - Allways ignores all files ending with `.iscc.json`
-    - Uses ignore rules from strandard .isccignore files.
+    Automatically filters out:
+    - Files ending with '.iscc.json' (ISCC metadata files)
+    - Paths matching patterns in '.isccignore' files
+
+    Uses the same deterministic ordering as treewalk_ignore.
+
+    :param path: Directory path to walk
+    :return: Iterator yielding Path objects for non-ignored, non-ISCC metadata files
     """
     path = Path(path).resolve(strict=True)
 
@@ -103,7 +126,16 @@ def treewalk_iscc(path):
 
 def listdir(path):
     # type: (str|Path) -> list[DirEntry]
-    """List directory entries with cross-platform stable sorting"""
+    """
+    List directory entries with deterministic cross-platform sorting.
+
+    Returns directory entries sorted by NFC-normalized UTF-8 encoded names,
+    ensuring consistent ordering across different filesystems and locales.
+    Symlinks are excluded for security and consistency.
+
+    :param path: Directory path to list
+    :return: Sorted list of DirEntry objects (excluding symlinks)
+    """
     with os.scandir(path) as it:
         filtered = [e for e in it if not e.is_symlink()]
     return sorted(filtered, key=lambda e: normalize("NFC", e.name).encode("utf-8"))
