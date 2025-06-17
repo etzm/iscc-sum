@@ -2,6 +2,7 @@
 
 import sys
 from importlib.metadata import PackageNotFoundError, version
+from typing import Iterator
 
 import click
 
@@ -89,29 +90,6 @@ def get_version():
     show_default=True,
     help="Maximum hamming distance for similarity matching",
 )
-@click.option(
-    "-r",
-    "--recursive",
-    default=None,
-    is_flag=True,
-    help="Process directories recursively (default when directory argument is provided)",
-)
-@click.option(
-    "--no-recursive",
-    is_flag=True,
-    help="Process only files in the specified directory, not subdirectories",
-)
-@click.option(
-    "--exclude",
-    multiple=True,
-    help="Exclude files matching the given glob pattern (can be specified multiple times)",
-)
-@click.option(
-    "--max-depth",
-    type=click.INT,
-    default=None,
-    help="Maximum directory depth to traverse (default: unlimited)",
-)
 @click.argument("files", nargs=-1, type=click.Path())
 def cli(
     check,
@@ -125,13 +103,9 @@ def cli(
     units,
     similar,
     threshold,
-    recursive,
-    no_recursive,
-    exclude,
-    max_depth,
     files,
 ):
-    # type: (bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, int, bool|None, bool, tuple, int|None, tuple) -> None
+    # type: (bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, int, tuple) -> None
     """Compute ISCC (International Standard Content Code) checksums for files.
 
     Each checksum consists of a 2-byte self-describing header followed by a
@@ -164,10 +138,6 @@ def cli(
         click.echo("iscc-sum: --similar requires at least 2 files to compare", err=True)
         sys.exit(EXIT_ERROR)
 
-    if recursive and no_recursive:
-        click.echo("iscc-sum: --recursive and --no-recursive cannot be used together", err=True)
-        sys.exit(EXIT_ERROR)
-
     try:
         if check:
             # Verification mode
@@ -183,6 +153,43 @@ def cli(
         sys.exit(EXIT_ERROR)
 
     sys.exit(EXIT_SUCCESS)
+
+
+def _expand_paths(paths):
+    # type: (tuple) -> Iterator[str]
+    """Expand file and directory paths to individual file paths.
+
+    For file paths, yield as-is. For directory paths, use treewalk_iscc
+    to get all files in deterministic order.
+
+    Args:
+        paths: Tuple of file/directory paths
+
+    Yields:
+        Individual file paths
+    """
+    import os
+    from pathlib import Path
+
+    from iscc_sum.treewalk import treewalk_iscc
+
+    for path in paths:
+        path_obj = Path(path)
+
+        # Check if path exists
+        if not path_obj.exists():
+            raise IOError(f"No such file or directory: '{path}'")
+
+        if path_obj.is_file():
+            # Yield file path as-is
+            yield str(path_obj)
+        elif path_obj.is_dir():
+            # Use treewalk_iscc for deterministic directory traversal
+            for file_path in treewalk_iscc(path_obj):
+                yield str(file_path)
+        else:
+            # Not a regular file or directory (e.g., device, pipe)
+            raise IOError(f"Not a regular file or directory: '{path}'")
 
 
 def _handle_checksum_generation(files, narrow, units, tag, zero):
