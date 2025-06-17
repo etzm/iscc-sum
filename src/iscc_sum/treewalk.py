@@ -92,7 +92,13 @@ def treewalk_iscc(path):
     - Allways ignores all files ending with `.iscc.json`
     - Uses ignore rules from strandard .isccignore files.
     """
-    yield Path(".")
+    path = Path(path).resolve(strict=True)
+
+    # Use treewalk_ignore with .isccignore files
+    for file_path in treewalk_ignore(path, ".isccignore"):
+        # Skip files ending with .iscc.json
+        if not file_path.name.endswith(".iscc.json"):
+            yield file_path
 
 
 def listdir(path):
@@ -104,5 +110,5 @@ def listdir(path):
 
 
 if __name__ == "__main__":
-    for entry in treewalk_ignore("../../", ".isccignore"):
+    for entry in treewalk_iscc("../../"):
         print(entry.as_posix())
