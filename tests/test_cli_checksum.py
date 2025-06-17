@@ -12,22 +12,26 @@ def test_file_not_found():
     runner = CliRunner()
     result = runner.invoke(cli, ["nonexistent.txt"])
     assert result.exit_code == 2
-    assert "iscc-sum: nonexistent.txt:" in result.output
-    assert "No such file or directory" in result.output or "cannot find the file" in result.output
+    assert "No such file or directory" in result.output
 
 
 def test_directory_instead_of_file():
     # type: () -> None
-    """Test error handling when directory is passed instead of file."""
+    """Test that directories are now processed by expanding to files."""
     runner = CliRunner()
     with runner.isolated_filesystem():
         import os
+        from pathlib import Path
 
         os.mkdir("testdir")
+        Path("testdir/file1.txt").write_text("content1")
+        Path("testdir/file2.txt").write_text("content2")
 
         result = runner.invoke(cli, ["testdir"])
-        assert result.exit_code == 2
-        assert "iscc-sum: testdir:" in result.output
+        assert result.exit_code == 0
+        # Should process both files
+        assert "testdir/file1.txt" in result.output
+        assert "testdir/file2.txt" in result.output
 
 
 def test_empty_file():

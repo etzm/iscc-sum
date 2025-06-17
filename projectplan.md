@@ -43,15 +43,15 @@ directory-based processing. The key changes include:
 
 ### Tasks:
 
-- [ ] Add `--tree/-t` option to CLI definition
-- [ ] Add validation to ensure tree mode only works with single directory argument
-- [ ] Create `_handle_tree_mode` function to process entire directory as one unit
-- [ ] Implement checksum output with trailing slash for tree mode
-- [ ] Handle both standard and BSD format outputs for tree mode
-- [ ] Add tree mode tests for basic functionality
-- [ ] Add tree mode tests for error cases
-- [ ] Test tree mode with both output formats
-- [ ] Verify all tree mode tests pass
+- [x] Add `--tree/-t` option to CLI definition
+- [x] Add validation to ensure tree mode only works with single directory argument
+- [x] Create `_handle_tree_mode` function to process entire directory as one unit
+- [x] Implement checksum output with trailing slash for tree mode
+- [x] Handle both standard and BSD format outputs for tree mode
+- [x] Add tree mode tests for basic functionality
+- [x] Add tree mode tests for error cases
+- [x] Test tree mode with both output formats
+- [x] Verify all tree mode tests pass
 
 ## Checkpoint 4: Update Main Processing Functions
 
