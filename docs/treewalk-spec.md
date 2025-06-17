@@ -73,11 +73,12 @@ All directory entries **MUST** be sorted using the following algorithm:
 
 #### Example
 
-```python
-# Given entries: ["café", "caffe", "Café"]
-# After NFC normalization and UTF-8 encoding, sorted order is:
-# ["Café", "café", "caffe"]
-```
+Given entries: ["café", "caffe", "Café"]
+
+After NFC normalization and UTF-8 encoding, the sorted order is:
+- "Café" (capital C sorts before lowercase)
+- "café"
+- "caffe"
 
 ### 3.2 Traversal Order
 
@@ -129,10 +130,13 @@ repo/
 └── temp/
     └── cache.dat
 
-# Yields only:
-# repo/.gitignore
-# repo/src/main.py
+Yields only:
+- repo/.gitignore
+- repo/src/main.py
 ```
+
+> [!NOTE]
+> The ignore file itself is included in the output (unless excluded by a parent ignore file)
 
 ## 4. Implementation Guidance
 
@@ -147,6 +151,7 @@ repo/
 - Treat archive members as entries
 - Use "/" as universal path separator
 - Process nested archives as sub-containers
+- Apply the same NFC normalization to member names
 
 #### Cloud Storage (S3, Azure Blob)
 - Use prefix-based queries for "directory" listing
@@ -172,23 +177,19 @@ repo/
 
 Implementations **MAY** support different ignore file names:
 
-```python
-# Examples:
-treewalk_ignore(path, ".gitignore")    # Git-style ignores
-treewalk_ignore(path, ".npmignore")    # NPM-style ignores
-treewalk_ignore(path, ".customignore") # Domain-specific
-```
+- `.gitignore` - Git-style ignores
+- `.npmignore` - NPM-style ignores  
+- `.isccignore` - ISCC-specific ignores
+- `.customignore` - Domain-specific ignores
 
 ### 5.2 Additional Filters
 
-Implementations **MAY** add post-processing filters:
+Implementations **MAY** add post-processing filters to exclude specific file types or patterns.
 
-```python
-# Filter out specific file types
-for path in treewalk(directory):
-    if not path.name.endswith('.tmp'):
-        yield path
-```
+For example, an ISCC implementation might filter out metadata files:
+- Files ending with `.iscc.json`
+- Temporary files ending with `.tmp`
+- System files like `.DS_Store` or `Thumbs.db`
 
 ## 6. Test Vectors
 
