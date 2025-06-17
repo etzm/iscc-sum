@@ -59,6 +59,7 @@ dev-dependencies = [
     "mdformat-gfm-alerts>=2.0.0",
     "build>=1.0",
     "bandit>=1.8.3",
+    "pyfakefs>=5.8.0",
 ]
 
 [tool.ruff]
