@@ -34,44 +34,54 @@ def treewalk(path):
         yield from treewalk(Path(dir_entry.path))
 
 
-def treewalk_ignore(path, ignore_file_name):
-    # type: (str|Path, str) -> Iterator[Path]
-    """Treewalk extended with generic ignore-file support"""
+def treewalk_ignore(path, ignore_file_name, root_path=None, ignore_spec=None):
+    # type: (str|Path, str, Path|None, pathspec.PathSpec|None) -> Iterator[Path]
+    """
+    Walk a directory tree while respecting ignore-files.
+
+    Yields .ignore files first, then other files, then recurses into directories.
+    """
     path = Path(path).resolve(strict=True)
-    ignore_spec = None
-    ignore_path = path / ignore_file_name
+    if root_path is None:
+        root_path = path
 
-    # Check if the ignore-file exists
-    if ignore_path.exists():
-        with open(ignore_path, "r", encoding="utf-8") as f:
-            ignore_spec = pathspec.PathSpec.from_lines(pathspec.patterns.GitWildMatchPattern, f)
+    # Load local ignore rules if present
+    local_ignore = path / ignore_file_name
+    if local_ignore.exists():
+        with open(local_ignore, "r", encoding="utf-8") as f:
+            new_spec = pathspec.PathSpec.from_lines(pathspec.patterns.GitWildMatchPattern, f)
+            ignore_spec = new_spec if ignore_spec is None else ignore_spec + new_spec
 
-    # Get all file paths using treewalk
-    for file_path in treewalk(path):
-        # Skip the ignore-file itself when yielding
-        if file_path.name == ignore_file_name and file_path.parent == path:
-            continue
+    entries = listdir(path)
+    dirs = [d for d in entries if d.is_dir()]
+    files = [f for f in entries if f.is_file()]
 
-        # If we have ignore-rules, check if the file should be ignored
-        if ignore_spec is not None:
-            # Get a relative path for checking against ignore-patterns
-            rel_path = file_path.relative_to(path)
-            if ignore_spec.match_file(rel_path):
-                continue
+    def should_ignore(file_path):
+        if ignore_spec is None:
+            return False
+        rel_path = file_path.relative_to(root_path)
+        # Check file pattern match or any parent directory match
+        return ignore_spec.match_file(rel_path) or ignore_spec.match_file(str(rel_path) + "/")
 
-            # Check if any parent directory of this file is ignored
-            # We need to check each parent directory path with trailing slash
-            should_ignore = False
-            for parent in rel_path.parents:
-                if parent != Path("."):  # Skip the root relative path '.'
-                    if ignore_spec.match_file(f"{parent}/"):
-                        should_ignore = True
-                        break
+    # First yield ignore files (except the current one)
+    for file_entry in files:
+        file_path = Path(file_entry.path)
+        if file_entry.name.startswith(".") and file_entry.name.endswith("ignore") and file_path != local_ignore:
+            if not should_ignore(file_path):
+                yield file_path
 
-            if should_ignore:
-                continue
+    # Then yield non-ignore files
+    for file_entry in files:
+        file_path = Path(file_entry.path)
+        if not (file_entry.name.startswith(".") and file_entry.name.endswith("ignore")):
+            if not should_ignore(file_path):
+                yield file_path
 
-        yield file_path
+    # Then recurse into directories
+    for dir_entry in dirs:
+        dir_path = Path(dir_entry.path)
+        if not should_ignore(dir_path):
+            yield from treewalk_ignore(dir_path, ignore_file_name, root_path, ignore_spec)
 
 
 def treewalk_iscc(path):
