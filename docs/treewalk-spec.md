@@ -160,15 +160,17 @@ After NFC normalization and UTF-8 encoding, the sorted order is:
 
 ### 4.2 Base Treewalk Algorithm
 
-The base algorithm **MUST** process entries in each container in this order:
+The base algorithm **MUST** return entries in each container in this order:
 
 1. **Ignore files first** - Entries matching pattern `.*ignore` (e.g., .gitignore, .npmignore, .isccignore)
 2. **Regular entries** - All other non-container entries in sorted order
 3. **Sub-containers** - Recursively in sorted order
 
 > [!NOTE]
-> This ordering ensures ignore files are available to extensions before the entries they might filter. The base
-> algorithm itself does not process ignore file contents or apply filtering.
+> This ordering ensures ignore files are available to callers and extensions before the entries they might 
+> filter.
+
+The base algorithm itself MUST not process ignore file contents or apply filtering.
 
 ### 4.3 Reference Handling
 
