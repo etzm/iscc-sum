@@ -179,7 +179,7 @@ The algorithm **MUST NOT** follow references when:
 - Determining if an entry is a regular entry or container
 - Recursing into sub-containers
 
-References (symbolic links, redirects, etc.) **MUST** be completely excluded from traversal results.
+References (symbolic links, redirects) MUST NOT appear in traversal output AND MUST NOT be followed.
 
 ## 5. Treewalk-Ignore Extension
 
