@@ -1,0 +1,17 @@
+# Ignore all subdirectories by default
+*/
+
+# Include the following subdirectories
+
+!.github/**
+!docs/**
+!examples/**
+!scripts/**
+!src/**
+!tests/**
+
+# But do ignore
+*.pyc
+*.so
+*.pyd
+.iscc.json

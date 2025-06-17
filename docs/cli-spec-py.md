@@ -203,9 +203,11 @@ iscc-sum --max-depth 2 /path/to/directory
 07. Unlike traditional checksum tools, iscc-sum has no text mode - all files are processed as binary
 08. Hamming distance MUST be calculated on the decoded bits of the Data-Code component only (excluding the
     2-byte header)
-09. Directory traversal MUST produce identical results across platforms:
-    - Sort entries case-sensitively by filename (using UTF-8 byte order)
+09. Directory traversal MUST follow the Deterministic Directory Tree Sorting Specification (see
+    docs/dirsort-spec.md) to ensure identical results across platforms:
     - Process regular files only (skip symlinks, devices, etc.)
+    - Sort paths by UTF-8 byte representation in ascending lexicographic order
+    - Use Unicode Normalization Form C (NFC) for all paths
     - Continue processing remaining files if individual files fail
-    - Output files in the order they are processed
+    - Output files in the deterministic sorted order
 10. File and directory arguments can be mixed; shell patterns are still expanded by the shell

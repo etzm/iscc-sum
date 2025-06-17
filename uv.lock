@@ -240,6 +240,7 @@ source = { editable = "." }
 dependencies = [
     { name = "blake3" },
     { name = "click" },
+    { name = "pathspec" },
     { name = "universal-pathlib" },
     { name = "xxhash" },
 ]
@@ -263,6 +264,7 @@ dev = [
 requires-dist = [
     { name = "blake3", specifier = ">=1.0.5" },
     { name = "click", specifier = ">=8.0.0" },
+    { name = "pathspec", specifier = ">=0.12.1" },
     { name = "universal-pathlib", specifier = ">=0.2.6" },
     { name = "xxhash", specifier = ">=3.5.0" },
 ]

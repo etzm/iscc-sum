@@ -217,6 +217,7 @@ cython_debug/
 # Claude Code
 CLAUDE.local.md
 .claude
+.venv-wsl
 
 # Aider
 .aider*
