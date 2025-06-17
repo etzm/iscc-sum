@@ -36,7 +36,7 @@ def treewalk(path):
 
 def treewalk_ignore(path, ignore_file_name):
     # type: (str|Path, str) -> Iterator[Path]
-    """Treewalk extended with ignore-file support"""
+    """Treewalk extended with generic ignore-file support"""
     path = Path(path).resolve(strict=True)
     ignore_spec = None
     ignore_path = path / ignore_file_name
