@@ -38,7 +38,7 @@ critical challenges that Treewalk addresses:
    implementations.
 
 4. **Storage-agnostic identification**: Whether Zarr data lives in local filesystems, cloud buckets, or is
-   packaged for distribution, Treewalk is the foundation for producing identical content identifiers, enabling 
+   packaged for distribution, Treewalk is the foundation for producing identical content identifiers, enabling
    reliable data citation and provenance tracking.
 
 ### Real-world Impact
@@ -144,6 +144,10 @@ All directory entries **MUST** be sorted using the following algorithm:
 2. Encode the normalized name as UTF-8
 3. Sort entries by comparing the resulting byte sequences lexicographically
 
+When multiple entries have identical names after NFC normalization, implementations **MUST** treat them as
+duplicates and handle them according to the storage system's native behavior (typically only one will be
+accessible).
+
 #### Example
 
 Given entries: ["café", "caffe", "Café"]
@@ -158,12 +162,13 @@ After NFC normalization and UTF-8 encoding, the sorted order is:
 
 The base algorithm **MUST** process entries in each container in this order:
 
-1. **Ignore files first** - Entries matching pattern `.*ignore` (e.g., .gitignore)
+1. **Ignore files first** - Entries matching pattern `.*ignore` (e.g., .gitignore, .npmignore, .isccignore)
 2. **Regular entries** - All other non-container entries in sorted order
 3. **Sub-containers** - Recursively in sorted order
 
 > [!NOTE]
-> This ordering ensures ignore patterns can be processed before the entries they might exclude
+> This ordering ensures ignore files are available to extensions before the entries they might filter. The base
+> algorithm itself does not process ignore file contents or apply filtering.
 
 ### 4.3 Reference Handling
 
@@ -185,14 +190,23 @@ same deterministic ordering while progressively filtering entries based on accum
 
 When using Treewalk-Ignore:
 
-1. Check for ignore files in each directory (e.g., `.gitignore`, `.npmignore`)
-2. Parse patterns using gitignore-style syntax
-3. Accumulate patterns from root to current directory
-4. Filter entries based on accumulated patterns
-5. Apply patterns to both files and directories
+1. The implementation specifies which ignore file to process (e.g., `.gitignore` OR `.npmignore`)
+2. Check for the specified ignore file in each directory
+3. Parse patterns using gitignore-style syntax
+4. Accumulate patterns from root to current directory
+5. Filter entries based on accumulated patterns
+6. Apply patterns to both files and directories
 
 > [!WARNING]
 > Directory patterns must be checked with a trailing "/" to ensure proper matching
+
+#### Pattern Matching Rules
+
+- Pattern matching **MUST** be case-sensitive
+- Only one ignore file type is processed per traversal (specified by the implementation)
+- Later patterns have higher precedence than earlier patterns within the same file
+- Child directory patterns have higher precedence than parent directory patterns
+- Patterns from child directories override patterns from parent directories
 
 ### 5.3 Example with .gitignore
 
@@ -213,21 +227,21 @@ Yields only:
 > [!NOTE]
 > The ignore file itself is included in the output (unless excluded by a parent ignore file)
 
-## 5. Treewalk-ISCC Extension
+## 6. Treewalk-ISCC Extension
 
-### 5.1 Overview
+### 6.1 Overview
 
 The **Treewalk-ISCC** extension provides ISCC-specific filtering on top of Treewalk-Ignore. It automatically
 filters metadata files while respecting `.isccignore` patterns.
 
-### 5.2 Automatic Exclusions
+### 6.2 Automatic Exclusions
 
 Treewalk-ISCC **MUST** exclude:
 
 - Files ending with `.iscc.json` (ISCC metadata files)
 - Any patterns specified in `.isccignore` files
 
-### 5.3 Implementation
+### 6.3 Implementation
 
 Treewalk-ISCC is implemented as:
 
@@ -236,15 +250,20 @@ Treewalk-ISCC is implemented as:
 
 This layered approach ensures consistent behavior while adding domain-specific rules.
 
-## 6. Implementation Guidance
+> [!NOTE]
+> The automatic exclusion of `.iscc.json` files cannot be overridden by `.isccignore` patterns. These files are
+> always excluded, even if `.isccignore` contains patterns that would otherwise include them.
 
-### 6.1 Storage System Adaptation
+## 7. Implementation Guidance
+
+### 7.1 Storage System Adaptation
 
 #### File Systems
 
 - Use native directory listing APIs (e.g., `os.scandir()`)
 - Filter symbolic links during initial scan
 - Resolve paths to absolute form before traversal
+- On Windows, handle drive roots (e.g., `C:\`) as valid starting points
 
 #### Archive Formats (ZIP, EPUB, DOCX)
 
@@ -258,23 +277,24 @@ This layered approach ensures consistent behavior while adding domain-specific r
 - Use prefix-based queries for "directory" listing
 - Treat key prefixes ending with "/" as containers
 - Batch API calls for efficiency
+- Skip zero-byte objects with keys ending in "/" (S3 directory markers)
 
-### 6.2 Path Representation
+### 7.2 Path Representation
 
 - Use forward slash (/) as universal path separator
 - Calculate relative paths from traversal root
 - Apply NFC normalization before any path operations
 
-### 6.3 Security Considerations
+### 7.3 Security Considerations
 
 - **MUST** validate that all paths remain within the traversal root
 - **MUST NOT** follow references to prevent traversal attacks
 - **SHOULD** implement depth limits for deeply nested structures
 - **SHOULD** enforce size limits when processing archives
 
-## 7. Extensibility
+## 8. Extensibility
 
-### 7.1 Custom Extensions
+### 8.1 Custom Extensions
 
 Implementations **MAY** create additional extensions following the layered pattern:
 
@@ -282,20 +302,24 @@ Implementations **MAY** create additional extensions following the layered patte
 2. Maintain deterministic ordering guarantees
 3. Document extension-specific behavior clearly
 
-### 7.2 Custom Ignore Files
+### 8.2 Custom Ignore Files
 
-Treewalk-Ignore implementations **MAY** support different ignore file names:
+Treewalk-Ignore implementations **MAY** support different ignore file names by allowing the caller to specify
+which ignore file to process:
 
 - `.gitignore` - Git-style ignores
 - `.npmignore` - NPM-style ignores
 - `.isccignore` - ISCC-specific ignores
 - `.customignore` - Domain-specific ignores
 
-## 8. Test Vectors
+> [!NOTE]
+> Each traversal processes only one type of ignore file as specified by the implementation or caller
+
+## 9. Test Vectors
 
 Implementations **MUST** produce identical ordering for these test cases:
 
-### 8.1 Base Treewalk Tests
+### 9.1 Base Treewalk Tests
 
 #### Test Case 1: Unicode Normalization
 
@@ -324,7 +348,7 @@ Expected order (Base Treewalk):
 3. test_dir/zzz.txt
 ```
 
-### 8.2 Treewalk-Ignore Tests
+### 9.2 Treewalk-Ignore Tests
 
 #### Test Case 3: Pattern Filtering
 
@@ -340,7 +364,7 @@ Expected order (Treewalk-Ignore with .gitignore):
 2. test_dir/app.py
 ```
 
-### 8.3 Treewalk-ISCC Tests
+### 9.3 Treewalk-ISCC Tests
 
 #### Test Case 4: ISCC Metadata Filtering
 
@@ -357,7 +381,7 @@ Expected order (Treewalk-ISCC):
 2. test_dir/data.txt
 ```
 
-## 9. References
+## 10. References
 
 ### Normative
 
