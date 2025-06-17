@@ -16,8 +16,9 @@ Unlike traditional checksum tools that only verify exact matches, `iscc-sum` ena
 between files through the Data-Code component. Files with similar content will have similar Data-Codes, allowing
 similarity matching based on hamming distance.
 
-When given directories as arguments, `iscc-sum` recursively processes all regular files within them in a
-deterministic order to ensure consistent output across platforms.
+When given directories as arguments, `iscc-sum` processes all files recursively within them using the
+`treewalk_iscc` function in a deterministic order to ensure consistent output across platforms. Files are
+filtered according to `.isccignore` rules if present.
 
 ## Options
 
@@ -52,10 +53,7 @@ deterministic order to ensure consistent output across platforms.
 
 ### Directory Processing Options
 
-- `-r, --recursive` - Process directories recursively (default when directory argument is provided)
-- `--no-recursive` - Process only files in the specified directory, not subdirectories
-- `--exclude <PATTERN>` - Exclude files matching the given glob pattern (can be specified multiple times)
-- `--max-depth <N>` - Maximum directory depth to traverse (default: unlimited)
+- `-t, --tree` - Process directory as a single unit with combined checksum (requires single directory argument)
 
 ## Output Format
 
@@ -112,6 +110,24 @@ Files are grouped by similarity with the first file in each group as reference:
 ```
 
 Numbers indicate hamming distance between Data-Code components.
+
+### Tree Mode Output (--tree)
+
+When processing a directory with `--tree`, output shows the directory path with a trailing slash:
+
+#### Default format:
+
+```
+<ISCC_CHECKSUM> *<DIRECTORY_PATH>/
+```
+
+#### BSD-tagged format:
+
+```
+ISCC-SUM (<DIRECTORY_PATH>/) = <ISCC_CHECKSUM>
+```
+
+The checksum represents all files in the directory processed as a single unit.
 
 ## Checksum Structure
 
@@ -182,14 +198,20 @@ iscc-sum --similar *.jpg
 # Use custom similarity threshold (hamming distance)
 iscc-sum --similar --threshold 20 documents/*.pdf
 
-# Find similar files recursively
+# Find similar files in directory
 iscc-sum --similar /path/to/images
 
-# Exclude certain patterns
-iscc-sum --exclude "*.tmp" --exclude ".git/*" /path/to/project
+# Process entire directory as single unit
+iscc-sum --tree /path/to/project
 
-# Limit directory depth
-iscc-sum --max-depth 2 /path/to/directory
+# Generate checksums for all files in directory
+iscc-sum /path/to/directory
+
+# Process directory tree and create a single checksum
+iscc-sum --tree /path/to/project
+
+# BSD-style tree checksum
+iscc-sum --tree --tag /path/to/project
 ```
 
 ## Implementation Notes
@@ -203,11 +225,15 @@ iscc-sum --max-depth 2 /path/to/directory
 07. Unlike traditional checksum tools, iscc-sum has no text mode - all files are processed as binary
 08. Hamming distance MUST be calculated on the decoded bits of the Data-Code component only (excluding the
     2-byte header)
-09. Directory traversal MUST follow the Deterministic Directory Tree Sorting Specification (see
-    docs/dirsort-spec.md) to ensure identical results across platforms:
+09. Directory traversal MUST use the `treewalk_iscc` function to ensure identical results across platforms:
     - Process regular files only (skip symlinks, devices, etc.)
     - Sort paths by UTF-8 byte representation in ascending lexicographic order
     - Use Unicode Normalization Form C (NFC) for all paths
+    - Apply `.isccignore` rules if present
     - Continue processing remaining files if individual files fail
     - Output files in the deterministic sorted order
 10. File and directory arguments can be mixed; shell patterns are still expanded by the shell
+11. Tree mode (`--tree`) requires exactly one directory argument and processes all files within that directory
+    as a single unit, producing one combined checksum for the entire directory tree
+12. Tree mode checksums can be verified; the tool will automatically detect the trailing slash and process the
+    directory accordingly

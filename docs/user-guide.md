@@ -78,6 +78,25 @@ cat document.txt | iscc-sum
 iscc-sum *.txt
 ```
 
+### Process Directory Recursively
+
+Generate checksums for all files in a directory and its subdirectories:
+
+```bash
+iscc-sum /path/to/directory
+```
+
+### Tree Mode - Single Checksum for Directory
+
+Generate a single checksum representing all files in a directory tree:
+
+```bash
+iscc-sum --tree /path/to/project
+# ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2XHGQY */path/to/project/
+```
+
+Note the trailing slash indicating this is a directory checksum.
+
 ## Output Formats
 
 ### Default Format
@@ -232,6 +251,7 @@ iscc-sum --similar --tag --threshold 10 *.pdf
 | `--zero`      | `-z`  | End lines with NUL instead of newline                   |
 | `--similar`   |       | Find files with similar Data-Codes                      |
 | `--threshold` |       | Hamming distance threshold for similarity (default: 12) |
+| `--tree`      | `-t`  | Process directory as single unit with combined checksum |
 | `--quiet`     | `-q`  | Only show failures during verification                  |
 | `--status`    |       | Silent mode, exit code indicates success                |
 | `--warn`      | `-w`  | Show warnings about format errors                       |
@@ -269,7 +289,21 @@ Find similar images in a directory:
 iscc-sum --similar --threshold 8 photos/*.jpg
 ```
 
-### Example 4: Pipeline Processing
+### Example 4: Create Directory Checksum
+
+Create a single checksum for an entire project:
+
+```bash
+iscc-sum --tree my-project > project.checksum
+```
+
+Verify the project hasn't changed:
+
+```bash
+iscc-sum -c project.checksum
+```
+
+### Example 5: Pipeline Processing
 
 Process files in a pipeline:
 
@@ -277,7 +311,7 @@ Process files in a pipeline:
 find . -name "*.doc" -print0 | xargs -0 iscc-sum > documents.checksums
 ```
 
-### Example 5: Verify Downloads
+### Example 6: Verify Downloads
 
 Create checksum for download:
 

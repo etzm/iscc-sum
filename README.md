@@ -115,6 +115,10 @@ iscc-sum --units file.txt
 # ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2XHGQY *file.txt
 #   ISCC:EAAW4BQTJSTJSHAI27AJSAGMGHNUKSKRTK3E6OZ5CXUS57SWQZXJQ
 #   ISCC:IABXF3ZHYL6O6PM5P2HGV677CS3RBHINZSXEJCITE3WNOTQ2CYXRA
+
+# Process entire directory as single unit
+iscc-sum --tree /path/to/project
+# ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2XHGQY */path/to/project/
 ```
 
 #### Similarity Matching
@@ -146,6 +150,7 @@ Options:
   -z, --zero       End each output line with NUL
   --similar        Find files with similar Data-Codes
   --threshold      Hamming distance threshold for similarity (default: 12)
+  -t, --tree       Process directory as single unit with combined checksum
   -q, --quiet      Don't print OK for each verified file
   --status         Don't output anything, exit code shows success
   -w, --warn       Warn about improperly formatted lines

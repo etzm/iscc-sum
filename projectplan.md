@@ -74,14 +74,14 @@
 
 ### Tasks:
 
-- [ ] Update `docs/cli-spec-py.md` to remove deprecated options
-- [ ] Add `--tree` option documentation to `docs/cli-spec-py.md`
-- [ ] Update examples to show tree mode usage
-- [ ] Update directory processing description
-- [ ] Remove references to exclude patterns and recursion control
-- [ ] Add tree mode examples to CLI help text
-- [ ] Update any other relevant documentation files
-- [ ] Review all documentation for consistency
+- [x] Update `docs/cli-spec-py.md` to remove deprecated options
+- [x] Add `--tree` option documentation to `docs/cli-spec-py.md`
+- [x] Update examples to show tree mode usage
+- [x] Update directory processing description
+- [x] Remove references to exclude patterns and recursion control
+- [x] Add tree mode examples to CLI help text
+- [x] Update any other relevant documentation files
+- [x] Review all documentation for consistency
 
 ## Checkpoint 7: Integration and Edge Case Testing
 
