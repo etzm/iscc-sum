@@ -323,62 +323,82 @@ Implementations **MUST** produce identical ordering for these test cases:
 
 #### Test Case 1: Unicode Normalization
 
-```
-test_dir/
-├── Café.txt    (NFC: C-a-f-é)
-├── Café.txt    (NFD: C-a-f-e-́)
-└── café.txt
+**Structure:**
 
-Expected order (Base Treewalk):
-1. test_dir/Café.txt  (capital C sorts before lowercase)
-2. test_dir/café.txt
+```yaml
+- path: Café.txt
+- path: café.txt
+- path: caffe.txt
+```
+
+**Expected (Base Treewalk):**
+
+```yaml
+- test_dir/Café.txt
+- test_dir/caffe.txt
+- test_dir/café.txt
 ```
 
 #### Test Case 2: Ignore File Priority
 
-```
-test_dir/
-├── .gitignore
-├── aaa.txt
-├── zzz.txt
+**Structure:**
 
-Expected order (Base Treewalk):
-1. test_dir/.gitignore  (ignore files first)
-2. test_dir/aaa.txt
-3. test_dir/zzz.txt
+```yaml
+- path: .gitignore
+- path: aaa.txt
+- path: zzz.txt
+```
+
+**Expected (Base Treewalk):**
+
+```yaml
+- test_dir/.gitignore
+- test_dir/aaa.txt
+- test_dir/zzz.txt
 ```
 
 ### 9.2 Treewalk-Ignore Tests
 
 #### Test Case 3: Pattern Filtering
 
-```
-test_dir/
-├── .gitignore (contains: *.log)
-├── app.py
-├── debug.log
-└── error.log
+**Structure:**
 
-Expected order (Treewalk-Ignore with .gitignore):
-1. test_dir/.gitignore
-2. test_dir/app.py
+```yaml
+- path: .gitignore
+  content: "*.log"
+- path: app.py
+- path: debug.log
+- path: error.log
+```
+
+**Expected (Treewalk-Ignore with .gitignore):**
+
+```yaml
+- test_dir/.gitignore
+- test_dir/app.py
 ```
 
 ### 9.3 Treewalk-ISCC Tests
 
 #### Test Case 4: ISCC Metadata Filtering
 
-```
-test_dir/
-├── .isccignore (contains: temp/)
-├── data.txt
-├── data.txt.iscc.json
-└── temp/
-    └── cache.dat
+**Structure:**
 
-Expected order (Treewalk-ISCC):
-1. test_dir/.isccignore
-2. test_dir/data.txt
+```yaml
+- path: .isccignore
+  content: "temp/"
+- path: data.txt
+- path: data.txt.iscc.json
+- path: temp
+  type: dir
+- path: temp/cache.dat
+```
+
+**Expected (Treewalk-ISCC):**
+
+```yaml
+- test_dir/.isccignore
+- test_dir/data.txt
 ```
 
 ## 10. References

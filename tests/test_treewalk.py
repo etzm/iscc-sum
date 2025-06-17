@@ -294,7 +294,7 @@ class TestTreewalkIgnore:
         result = list(treewalk_ignore("/test", ".gitignore"))
         names = [p.name for p in result]
 
-        assert ".gitignore" not in names
+        assert ".gitignore" in names  # Ignore files are included per spec
         assert "file.txt" in names
 
     def test_custom_ignore_filename(self, fs):
@@ -459,7 +459,7 @@ class TestTreewalkIscc:
         result = list(treewalk_iscc("/test"))
         names = [p.name for p in result]
 
-        assert ".isccignore" not in names
+        assert ".isccignore" in names  # Ignore files are included per spec
         assert "file.txt" in names
 
 
@@ -474,8 +474,10 @@ class TestTreewalkIgnoreSpecialCases:
         fs.create_file("/test/file.txt")
 
         result = list(treewalk_ignore("/test", ".gitignore"))
-        assert len(result) == 1
-        assert result[0].name == "file.txt"
+        assert len(result) == 2  # Both .gitignore and file.txt
+        names = [p.name for p in result]
+        assert ".gitignore" in names
+        assert "file.txt" in names
 
     def test_ignore_file_with_comments(self, fs):
         # type: (FakeFilesystem) -> None

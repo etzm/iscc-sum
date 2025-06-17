@@ -111,10 +111,10 @@ def treewalk_ignore(path, ignore_file_name, root_path=None, ignore_spec=None):
         # Check file pattern match or any parent directory match
         return ignore_spec.match_file(rel_path) or ignore_spec.match_file(str(rel_path) + "/")
 
-    # First yield ignore files (except the current one)
+    # First yield ignore files including the current one
     for file_entry in files:
         file_path = Path(file_entry.path)
-        if file_entry.name.startswith(".") and file_entry.name.endswith("ignore") and file_path != local_ignore:
+        if file_entry.name.startswith(".") and file_entry.name.endswith("ignore"):
             if not should_ignore(file_path):
                 yield file_path
 
