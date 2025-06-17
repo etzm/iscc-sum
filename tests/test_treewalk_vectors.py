@@ -6,6 +6,7 @@ validates the treewalk implementation against them using YAML for structured dat
 """
 
 import re
+import sys
 from pathlib import Path
 from unicodedata import normalize
 
@@ -14,6 +15,24 @@ import yaml
 from pyfakefs.fake_filesystem_unittest import Patcher
 
 from iscc_sum.treewalk import listdir, treewalk, treewalk_ignore, treewalk_iscc
+
+
+def is_case_insensitive_filesystem():
+    # type: () -> bool
+    """
+    Detect if the filesystem is case-insensitive.
+
+    This is typically true for:
+    - Windows (NTFS by default, though can be case-sensitive)
+    - macOS (HFS+ and APFS by default, though can be case-sensitive)
+    """
+    import os
+
+    # For pyfakefs, we simulate based on platform
+    # macOS and Windows are typically case-insensitive
+    if sys.platform == "darwin" or os.name == "nt":
+        return True
+    return False
 
 
 def parse_test_vectors_from_spec():
@@ -210,12 +229,10 @@ class TestTreewalkVectors:
                 pytest.fail(f"Unknown test type: {test_vector['test_type']}")
 
             # Compare with expected
-            # On Windows, handle case-insensitive filesystem for Unicode test
-            import os
-
-            if os.name == "nt" and "Unicode" in test_vector["name"]:
-                # Windows filesystem is case-insensitive, so "Café.txt" and "café.txt"
-                # are the same file. We need to adjust expectations
+            # Handle case-insensitive filesystems for Unicode test
+            if is_case_insensitive_filesystem() and "Unicode" in test_vector["name"]:
+                # Case-insensitive filesystems (Windows, macOS) treat "Café.txt" and "café.txt"
+                # as the same file. We need to adjust expectations
                 if len(actual_paths) < len(test_vector["expected"]):
                     # Filter out the lowercase version from expected
                     expected_filtered = [
@@ -224,7 +241,7 @@ class TestTreewalkVectors:
                         if not (p == "test_dir/café.txt" and "test_dir/Café.txt" in test_vector["expected"])
                     ]
                     assert actual_paths == expected_filtered, (
-                        f"Test Case {test_vector['number']}: {test_vector['name']} (Windows)\n"
+                        f"Test Case {test_vector['number']}: {test_vector['name']} (Case-insensitive FS)\n"
                         f"Expected (adjusted): {expected_filtered}\n"
                         f"Actual: {actual_paths}"
                     )
@@ -256,7 +273,7 @@ class TestTreewalkVectors:
             nfc_name = "Café.txt"  # NFC form
             nfd_name = normalize("NFD", nfc_name)  # NFD form
 
-            # On Windows, file names are case-insensitive, so we need to handle this
+            # On case-insensitive filesystems, file names are case-insensitive
             patcher.fs.create_file(str(test_dir / nfc_name))
             try:
                 patcher.fs.create_file(str(test_dir / nfd_name))
@@ -270,12 +287,9 @@ class TestTreewalkVectors:
             entries = listdir(test_dir)
             names = [e.name for e in entries]
 
-            # On case-sensitive systems (Linux), we should have 3 files
-            # On case-insensitive systems (Windows), we might have fewer
-            import os
-
-            if os.name == "nt":  # Windows
-                # On Windows, "Café.txt" and "café.txt" are the same file
+            # Check based on filesystem case sensitivity
+            if is_case_insensitive_filesystem():
+                # On case-insensitive systems (Windows, macOS), "Café.txt" and "café.txt" are the same file
                 assert len(names) >= 1
             else:
                 # All three files should be present on Linux
