@@ -156,5 +156,10 @@ def treewalk_iscc(path):
 
 
 if __name__ == "__main__":  # pragma: no cover
-    for entry in treewalk_iscc("../../"):
+    import pathlib
+    import sys
+
+    HERE = pathlib.Path(__file__).parent.absolute()
+    ROOT = HERE.parent.parent.absolute()
+    for entry in treewalk_iscc(ROOT):
         print(entry.as_posix())

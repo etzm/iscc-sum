@@ -38,7 +38,7 @@ def is_case_insensitive_filesystem():
 def parse_test_vectors_from_spec():
     # type: () -> list[dict]
     """Parse test vectors from the treewalk specification markdown file."""
-    spec_path = Path(__file__).parent.parent / "docs" / "treewalk-spec.md"
+    spec_path = Path(__file__).parent.parent / "docs" / "specifications" / "treewalk.md"
     with open(spec_path, "r", encoding="utf-8") as f:
         content = f.read()
 

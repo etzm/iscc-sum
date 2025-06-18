@@ -23,12 +23,19 @@ theme:
   favicon: images/iscc-logo-icon-black.svg
   language: en
   font: false
+  features:
+    - navigation.tabs
+#    - toc.integrate
+#    - navigation.indexes
+#    - navigation.tracking
+#    - navigation.tabs.sticky
+#    - navigation.expand
   palette:
-    - scheme: slate
+    - scheme: default
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
-    - scheme: default
+    - scheme: slate
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
@@ -36,18 +43,6 @@ theme:
 plugins:
   - search
   - glightbox
-  - add-number:
-      strict_mode: False
-      order: 2
-      excludes:
-        - index.md
-  - git-revision-date-localized:
-      type: iso_date
-      locale: en
-      enable_creation_date: true
-      enabled: true
-      exclude:
-        - index.md
 
 markdown_extensions:
   - abbr
@@ -82,4 +77,10 @@ markdown_extensions:
 
 nav:
   - Overview: index.md
+  - Specifications:
+#    - specifications/index.md
+    - TreeWalk: specifications/treewalk.md
+  - Developers:
+      Readme: developers/index.md
+
 

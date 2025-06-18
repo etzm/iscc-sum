@@ -15,9 +15,10 @@ directory-like organization.
 
 ## Relevance to Scientific Data: Zarr and OME-NGFF
 
-> [!NOTE]
-> The bioimaging community's adoption of Zarr-based formats like OME-NGFF makes deterministic tree traversal
-> essential for reproducible scientific workflows.
+!!! note
+
+    The bioimaging community's adoption of Zarr-based formats like OME-NGFF makes deterministic tree traversal
+    essential for reproducible scientific workflows.
 
 ### Why Treewalk Matters for Zarr/OME-NGFF
 
@@ -139,7 +140,9 @@ Each layer maintains the core guarantees while adding specific functionality:
 
 ### 4.1 Entry Ordering
 
-> 💡 **Quick Reference**: Sort entries by NFC-normalized UTF-8 encoded names
+!!! tip "Quick Reference"
+
+    Sort entries by NFC-normalized UTF-8 encoded names
 
 All directory entries **MUST** be sorted using the following algorithm:
 
@@ -152,9 +155,10 @@ entries sorted by lexicographically comparing their original, pre-normalization 
 a tie-breaker. This ensures deterministic output even when storage systems allow multiple entries with
 equivalent names.
 
-> [!WARNING]
-> Some storage systems (e.g., case-insensitive filesystems) may prevent creation of entries with names that
-> differ only in case or normalization. In such cases, only the accessible entry will be yielded.
+!!! warning
+
+    Some storage systems (e.g., case-insensitive filesystems) may prevent creation of entries with names that
+    differ only in case or normalization. In such cases, only the accessible entry will be yielded.
 
 #### Example
 
@@ -191,9 +195,10 @@ The base algorithm **MUST** yield entries in depth-first order following these r
    files within containers are yielded. The algorithm traverses into directories but does not yield them as
    entries.
 
-> [!NOTE]
-> This ordering ensures ignore files are discovered and yielded before the regular files they might filter,
-> enabling extensions to process filtering rules early.
+!!! note
+
+    This ordering ensures ignore files are discovered and yielded before the regular files they might filter,
+    enabling extensions to process filtering rules early.
 
 The base algorithm itself **MUST NOT** process ignore file contents or apply filtering - it only ensures
 deterministic ordering with ignore file prioritization.
@@ -232,9 +237,10 @@ Since directories are not yielded as output entries, directory patterns control 
 - This prevents all files within that directory from appearing in the output
 - Directory patterns **MUST** be checked with a trailing "/" to ensure proper matching
 
-> [!WARNING]
-> A pattern like `temp/` prevents traversal into any directory named "temp", effectively excluding all files
-> within it from the output
+!!! warning
+
+    A pattern like `temp/` prevents traversal into any directory named "temp", effectively excluding all files
+    within it from the output
 
 #### Pattern Matching Rules
 
@@ -260,8 +266,9 @@ Yields only:
 - repo/src/main.py
 ```
 
-> [!NOTE]
-> The ignore file itself is included in the output (unless excluded by a parent ignore file)
+!!! note
+
+    The ignore file itself is included in the output (unless excluded by a parent ignore file)
 
 ## 6. Treewalk-ISCC Extension
 
@@ -286,9 +293,10 @@ Treewalk-ISCC is implemented as:
 
 This layered approach ensures consistent behavior while adding domain-specific rules.
 
-> [!NOTE]
-> The automatic exclusion of `.iscc.json` files cannot be overridden by `.isccignore` patterns. These files are
-> always excluded, even if `.isccignore` contains patterns that would otherwise include them.
+!!! note
+
+    The automatic exclusion of `.iscc.json` files cannot be overridden by `.isccignore` patterns. These files are
+    always excluded, even if `.isccignore` contains patterns that would otherwise include them.
 
 ## 7. Implementation Guidance
 
@@ -348,8 +356,9 @@ which ignore file to process:
 - `.isccignore` - ISCC-specific ignores
 - `.customignore` - Domain-specific ignores
 
-> [!NOTE]
-> Each traversal processes only one type of ignore file as specified by the implementation or caller
+!!! note
+
+    Each traversal processes only one type of ignore file as specified by the implementation or caller
 
 ## 9. Test Vectors
 
@@ -377,9 +386,10 @@ Implementations **MUST** produce identical ordering for these test cases:
 - test_dir/café.txt
 ```
 
-> [!NOTE]
-> On case-insensitive filesystems, only one of "Café.txt" or "café.txt" may be created, resulting in fewer
-> entries in the output.
+!!! note
+
+    On case-insensitive filesystems, only one of "Café.txt" or "café.txt" may be created, resulting in fewer
+    entries in the output.
 
 #### Test Case 2: Duplicate Normalized Names
 
@@ -399,9 +409,10 @@ Implementations **MUST** produce identical ordering for these test cases:
 - test_dir/é.txt         # NFC form
 ```
 
-> [!NOTE]
-> Storage systems typically prevent creation of both forms, so usually only one entry will exist and be yielded.
-> The key guarantee is that whatever entries exist will be yielded deterministically.
+!!! note
+
+    Storage systems typically prevent creation of both forms, so usually only one entry will exist and be yielded.
+    The key guarantee is that whatever entries exist will be yielded deterministically.
 
 #### Test Case 3: Ignore File Priority
 
@@ -465,9 +476,10 @@ Implementations **MUST** produce identical ordering for these test cases:
 - test_dir/data.txt
 ```
 
-> [!NOTE]
-> The `temp/` pattern prevents traversal into the temp directory, so `temp/cache.dat` is excluded. The file
-> `data.txt.iscc.json` is automatically filtered by the ISCC extension.
+!!! note
+
+    The `temp/` pattern prevents traversal into the temp directory, so `temp/cache.dat` is excluded. The file
+    `data.txt.iscc.json` is automatically filtered by the ISCC extension.
 
 ## 10. References
 

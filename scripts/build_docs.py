@@ -4,7 +4,7 @@ from os.path import abspath, dirname, join
 
 HERE = dirname(abspath(__file__))
 SRC = join(HERE, "../README.md")
-DST = join(HERE, "../docs/index.md")
+DST = join(HERE, "../docs/developers/index.md")
 
 
 def main():
