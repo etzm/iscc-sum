@@ -40,10 +40,25 @@ impl std::fmt::Display for TreewalkError {
 
 impl std::error::Error for TreewalkError {}
 
+/// Represents a single gitignore pattern with metadata
+#[derive(Debug, Clone)]
+struct PatternEntry {
+    /// The original pattern string (with ! prefix if applicable)
+    #[allow(dead_code)]
+    original: String,
+    /// The pattern string without ! prefix
+    pattern: String,
+    /// True if this is a whitelist pattern (starts with !)
+    is_whitelist: bool,
+    /// Line number in the ignore file (for precedence)
+    line_number: usize,
+}
+
 /// Wrapper around GlobSet for handling gitignore-style patterns
 #[derive(Debug, Clone, Default)]
 pub struct IgnoreSpec {
-    patterns: Vec<String>,
+    /// All patterns in order of appearance
+    entries: Vec<PatternEntry>,
 }
 
 impl IgnoreSpec {
@@ -58,7 +73,8 @@ impl IgnoreSpec {
         I: IntoIterator<Item = S>,
         S: AsRef<str>,
     {
-        let mut patterns = Vec::new();
+        let mut entries = Vec::new();
+        let mut line_number = 0;
 
         for line in lines {
             let line = line.as_ref().trim();
@@ -68,68 +84,172 @@ impl IgnoreSpec {
                 continue;
             }
 
-            patterns.push(line.to_string());
+            // Check for negation pattern
+            let (pattern, is_whitelist) = if let Some(stripped) = line.strip_prefix('!') {
+                // Remove the ! prefix
+                (stripped, true)
+            } else {
+                (line, false)
+            };
+
+            entries.push(PatternEntry {
+                original: line.to_string(),
+                pattern: pattern.to_string(),
+                is_whitelist,
+                line_number,
+            });
+
+            line_number += 1;
         }
 
-        Ok(IgnoreSpec { patterns })
+        Ok(IgnoreSpec { entries })
     }
 
     /// Combine two IgnoreSpec instances
     pub fn combine(&self, other: &IgnoreSpec) -> IgnoreSpec {
-        let mut patterns = self.patterns.clone();
-        patterns.extend(other.patterns.clone());
-        IgnoreSpec { patterns }
+        let mut entries = self.entries.clone();
+
+        // When combining, we need to adjust line numbers to maintain precedence
+        let offset = self.entries.len();
+        for mut entry in other.entries.clone() {
+            entry.line_number += offset;
+            entries.push(entry);
+        }
+
+        IgnoreSpec { entries }
     }
 
-    /// Build a GlobSet from the accumulated patterns
-    fn build_globset(&self) -> Result<GlobSet, TreewalkError> {
-        let mut builder = GlobSetBuilder::new();
+    /// Build separate GlobSets for ignore and whitelist patterns
+    #[allow(dead_code)]
+    fn build_globsets(&self) -> Result<(GlobSet, GlobSet), TreewalkError> {
+        let mut ignore_builder = GlobSetBuilder::new();
+        let mut whitelist_builder = GlobSetBuilder::new();
 
-        for pattern in &self.patterns {
-            // Handle negation patterns (not directly supported by globset)
-            // For now, we'll skip them and handle in a future iteration
-            if pattern.starts_with('!') {
-                continue;
-            }
-
+        for entry in &self.entries {
             // Convert gitignore pattern to glob pattern
-            let glob_pattern = if pattern.ends_with('/') {
+            let glob_pattern = if entry.pattern.ends_with('/') {
                 // Directory pattern - match the directory and everything under it
-                format!("{}**", pattern)
-            } else if let Some(stripped) = pattern.strip_prefix('/') {
+                format!("{}**", entry.pattern)
+            } else if let Some(stripped) = entry.pattern.strip_prefix('/') {
                 // Anchored pattern - match from root
                 stripped.to_string()
-            } else if pattern.contains('/') && !pattern.starts_with("**/") {
+            } else if entry.pattern.contains('/') && !entry.pattern.starts_with("**/") {
                 // Pattern with slash but not starting with **/ - make it relative
-                format!("**/{}", pattern)
+                format!("**/{}", entry.pattern)
             } else {
                 // Simple pattern - match anywhere
-                format!("**/{}", pattern)
+                format!("**/{}", entry.pattern)
             };
 
             let glob = Glob::new(&glob_pattern).map_err(|e| {
-                TreewalkError::InvalidPath(format!("Invalid pattern '{}': {}", pattern, e))
+                TreewalkError::InvalidPath(format!("Invalid pattern '{}': {}", entry.pattern, e))
             })?;
-            builder.add(glob);
+
+            if entry.is_whitelist {
+                whitelist_builder.add(glob);
+            } else {
+                ignore_builder.add(glob);
+            }
         }
 
-        builder
-            .build()
-            .map_err(|e| TreewalkError::InvalidPath(format!("Failed to build pattern set: {}", e)))
+        let ignore_set = ignore_builder.build().map_err(|e| {
+            TreewalkError::InvalidPath(format!("Failed to build ignore set: {}", e))
+        })?;
+        let whitelist_set = whitelist_builder.build().map_err(|e| {
+            TreewalkError::InvalidPath(format!("Failed to build whitelist set: {}", e))
+        })?;
+
+        Ok((ignore_set, whitelist_set))
     }
 
     /// Check if a path matches any ignore pattern
     pub fn matches<P: AsRef<Path>>(&self, path: P) -> Result<bool, TreewalkError> {
-        let globset = self.build_globset()?;
-        Ok(globset.is_match(path.as_ref()))
+        self.matches_with_precedence(path.as_ref(), false)
     }
 
     /// Check if a path matches as a directory (with trailing slash)
     pub fn matches_dir<P: AsRef<Path>>(&self, path: P) -> Result<bool, TreewalkError> {
-        let globset = self.build_globset()?;
-        let path_str = path.as_ref().to_string_lossy();
-        let dir_path = format!("{}/", path_str);
-        Ok(globset.is_match(&dir_path) || globset.is_match(path.as_ref()))
+        self.matches_with_precedence(path.as_ref(), true)
+    }
+
+    /// Internal method that properly handles precedence
+    fn matches_with_precedence(&self, path: &Path, is_dir: bool) -> Result<bool, TreewalkError> {
+        let path_str = path.to_string_lossy();
+
+        // For directories, also check with trailing slash
+        let dir_path = if is_dir {
+            Some(format!("{}/", path_str))
+        } else {
+            None
+        };
+
+        // Find all matching patterns and respect their order (last match wins)
+        let mut should_ignore = false;
+
+        for entry in &self.entries {
+            let glob_pattern = if entry.pattern.ends_with('/') {
+                format!("{}**", entry.pattern)
+            } else if let Some(stripped) = entry.pattern.strip_prefix('/') {
+                stripped.to_string()
+            } else {
+                // Both cases: pattern with slash or simple pattern - match anywhere
+                format!("**/{}", entry.pattern)
+            };
+
+            // Try to match the pattern
+            if let Ok(glob) = Glob::new(&glob_pattern) {
+                let matches = glob.compile_matcher().is_match(path)
+                    || (is_dir
+                        && dir_path
+                            .as_ref()
+                            .is_some_and(|dp| glob.compile_matcher().is_match(dp.as_str())));
+
+                if matches {
+                    // Last matching pattern determines the outcome
+                    should_ignore = !entry.is_whitelist;
+                }
+            }
+        }
+
+        Ok(should_ignore)
+    }
+
+    /// Check if a directory has any whitelisted content (for traversal decisions)
+    pub fn has_whitelisted_content(&self, dir_path: &Path) -> Result<bool, TreewalkError> {
+        let dir_str = dir_path.to_string_lossy();
+
+        for entry in &self.entries {
+            if !entry.is_whitelist {
+                continue;
+            }
+
+            // Check if this whitelist pattern could match something under this directory
+            if entry.pattern.starts_with(&format!("{}/", dir_str))
+                || entry.pattern.starts_with(&format!("{}", dir_str))
+            {
+                return Ok(true);
+            }
+
+            // Check if pattern could match files under this directory
+            // For example, !build/dist/ should allow traversal into build/
+            let parts: Vec<&str> = entry.pattern.split('/').collect();
+            let dir_parts: Vec<&str> = dir_str.split('/').collect();
+
+            if parts.len() > dir_parts.len() {
+                let mut matches = true;
+                for (i, dir_part) in dir_parts.iter().enumerate() {
+                    if parts[i] != *dir_part {
+                        matches = false;
+                        break;
+                    }
+                }
+                if matches {
+                    return Ok(true);
+                }
+            }
+        }
+
+        Ok(false)
     }
 }
 
@@ -392,7 +512,11 @@ fn treewalk_ignore_recursive(
         })?;
 
         // Check if directory should be excluded
-        if !current_spec.matches_dir(rel_path)? {
+        // Also check if it has whitelisted content that should be traversed
+        let is_ignored = current_spec.matches_dir(rel_path)?;
+        let has_whitelisted = current_spec.has_whitelisted_content(rel_path)?;
+
+        if !is_ignored || has_whitelisted {
             treewalk_ignore_recursive(
                 &entry.path,
                 ignore_file_name,
@@ -873,26 +997,47 @@ mod tests {
     #[test]
     fn test_ignore_spec_from_lines() {
         // Test parsing basic patterns
-        let lines = vec!["*.tmp", "# comment", "", "build/", "/src/*.log"];
+        let lines = vec![
+            "*.tmp",
+            "# comment",
+            "",
+            "build/",
+            "/src/*.log",
+            "!important.log",
+        ];
         let spec = IgnoreSpec::from_lines(lines).unwrap();
 
-        assert_eq!(spec.patterns.len(), 3);
-        assert!(spec.patterns.contains(&"*.tmp".to_string()));
-        assert!(spec.patterns.contains(&"build/".to_string()));
-        assert!(spec.patterns.contains(&"/src/*.log".to_string()));
+        assert_eq!(spec.entries.len(), 4);
+        assert_eq!(spec.entries[0].pattern, "*.tmp");
+        assert!(!spec.entries[0].is_whitelist);
+        assert_eq!(spec.entries[1].pattern, "build/");
+        assert!(!spec.entries[1].is_whitelist);
+        assert_eq!(spec.entries[2].pattern, "/src/*.log");
+        assert!(!spec.entries[2].is_whitelist);
+        assert_eq!(spec.entries[3].pattern, "important.log");
+        assert!(spec.entries[3].is_whitelist);
     }
 
     #[test]
     fn test_ignore_spec_combine() {
         let spec1 = IgnoreSpec::from_lines(vec!["*.tmp", "*.log"]).unwrap();
-        let spec2 = IgnoreSpec::from_lines(vec!["build/", "dist/"]).unwrap();
+        let spec2 = IgnoreSpec::from_lines(vec!["build/", "dist/", "!build/important/"]).unwrap();
 
         let combined = spec1.combine(&spec2);
-        assert_eq!(combined.patterns.len(), 4);
-        assert!(combined.patterns.contains(&"*.tmp".to_string()));
-        assert!(combined.patterns.contains(&"*.log".to_string()));
-        assert!(combined.patterns.contains(&"build/".to_string()));
-        assert!(combined.patterns.contains(&"dist/".to_string()));
+        assert_eq!(combined.entries.len(), 5);
+        assert_eq!(combined.entries[0].pattern, "*.tmp");
+        assert_eq!(combined.entries[1].pattern, "*.log");
+        assert_eq!(combined.entries[2].pattern, "build/");
+        assert_eq!(combined.entries[3].pattern, "dist/");
+        assert_eq!(combined.entries[4].pattern, "build/important/");
+        assert!(combined.entries[4].is_whitelist);
+
+        // Check line numbers are adjusted correctly
+        assert_eq!(combined.entries[0].line_number, 0);
+        assert_eq!(combined.entries[1].line_number, 1);
+        assert_eq!(combined.entries[2].line_number, 2);
+        assert_eq!(combined.entries[3].line_number, 3);
+        assert_eq!(combined.entries[4].line_number, 4);
     }
 
     #[test]
@@ -904,6 +1049,25 @@ mod tests {
         assert!(spec.matches("test_foo.py").unwrap());
         assert!(!spec.matches("file.txt").unwrap());
         assert!(!spec.matches("script.py").unwrap());
+    }
+
+    #[test]
+    fn test_ignore_spec_negation_patterns() {
+        // Test basic negation
+        let spec = IgnoreSpec::from_lines(vec!["*.log", "!important.log"]).unwrap();
+
+        assert!(spec.matches("debug.log").unwrap());
+        assert!(spec.matches("error.log").unwrap());
+        assert!(!spec.matches("important.log").unwrap()); // Should NOT be ignored due to !
+        assert!(!spec.matches("file.txt").unwrap());
+
+        // Test directory negation
+        let spec2 = IgnoreSpec::from_lines(vec!["build/", "!build/dist/"]).unwrap();
+
+        assert!(spec2.matches_dir("build").unwrap());
+        assert!(spec2.matches("build/temp.txt").unwrap());
+        assert!(!spec2.matches_dir("build/dist").unwrap()); // Should NOT be ignored
+        assert!(!spec2.matches("build/dist/app.js").unwrap());
     }
 
     #[test]
@@ -1050,6 +1214,58 @@ mod tests {
     }
 
     #[test]
+    fn test_treewalk_ignore_with_negation() {
+        use std::fs::{self, File};
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Create .gitignore with negation patterns
+        fs::write(
+            root.join(".gitignore"),
+            "*.log\n!important.log\nbuild/\n!build/dist/\n",
+        )
+        .unwrap();
+
+        // Create files
+        File::create(root.join("debug.log")).unwrap();
+        File::create(root.join("error.log")).unwrap();
+        File::create(root.join("important.log")).unwrap();
+        File::create(root.join("file.txt")).unwrap();
+
+        // Create directories
+        fs::create_dir(root.join("build")).unwrap();
+        File::create(root.join("build/temp.txt")).unwrap();
+        fs::create_dir(root.join("build/dist")).unwrap();
+        File::create(root.join("build/dist/app.js")).unwrap();
+
+        let paths = treewalk_ignore(root, ".gitignore", None, None).unwrap();
+
+        // Convert to relative paths
+        let relative_paths: Vec<String> = paths
+            .iter()
+            .map(|p| {
+                p.strip_prefix(root)
+                    .unwrap()
+                    .to_string_lossy()
+                    .replace('\\', "/")
+            })
+            .collect();
+
+        // Should include important.log (negated) and build/dist/app.js (negated directory)
+        assert!(relative_paths.contains(&".gitignore".to_string()));
+        assert!(relative_paths.contains(&"important.log".to_string())); // Negated
+        assert!(relative_paths.contains(&"file.txt".to_string()));
+        assert!(relative_paths.contains(&"build/dist/app.js".to_string())); // In negated directory
+
+        // Should NOT include regular log files or non-negated build files
+        assert!(!relative_paths.contains(&"debug.log".to_string()));
+        assert!(!relative_paths.contains(&"error.log".to_string()));
+        assert!(!relative_paths.contains(&"build/temp.txt".to_string()));
+    }
+
+    #[test]
     fn test_treewalk_ignore_nonexistent_path() {
         let result = treewalk_ignore("/this/path/should/not/exist", ".gitignore", None, None);
         assert!(result.is_err());
@@ -1172,5 +1388,54 @@ mod tests {
         assert!(filenames.contains(&"keep.txt".to_string()));
         assert!(filenames.contains(&"temp.tmp".to_string())); // Not ignored by .customignore
         assert!(!filenames.contains(&"debug.log".to_string())); // Ignored by .customignore
+    }
+
+    #[test]
+    fn test_negation_precedence_and_cascading() {
+        use std::fs::{self, File};
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Root .gitignore
+        fs::write(root.join(".gitignore"), "*.log\n!important.log\n").unwrap();
+
+        // Create subdirectory with its own .gitignore
+        fs::create_dir(root.join("src")).unwrap();
+        fs::write(root.join("src/.gitignore"), "!debug.log\n").unwrap();
+
+        // Create files
+        File::create(root.join("debug.log")).unwrap();
+        File::create(root.join("error.log")).unwrap();
+        File::create(root.join("important.log")).unwrap();
+
+        fs::create_dir(root.join("src/logs")).unwrap();
+        File::create(root.join("src/debug.log")).unwrap();
+        File::create(root.join("src/error.log")).unwrap();
+        File::create(root.join("src/logs/trace.log")).unwrap();
+
+        let paths = treewalk_ignore(root, ".gitignore", None, None).unwrap();
+
+        // Convert to relative paths
+        let relative_paths: Vec<String> = paths
+            .iter()
+            .map(|p| {
+                p.strip_prefix(root)
+                    .unwrap()
+                    .to_string_lossy()
+                    .replace('\\', "/")
+            })
+            .collect();
+
+        // Root level: important.log is whitelisted
+        assert!(relative_paths.contains(&"important.log".to_string()));
+        assert!(!relative_paths.contains(&"debug.log".to_string()));
+        assert!(!relative_paths.contains(&"error.log".to_string()));
+
+        // src level: debug.log is whitelisted (overrides parent)
+        assert!(relative_paths.contains(&"src/debug.log".to_string()));
+        assert!(!relative_paths.contains(&"src/error.log".to_string()));
+        assert!(!relative_paths.contains(&"src/logs/trace.log".to_string()));
     }
 }

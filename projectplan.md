@@ -172,6 +172,60 @@ handle properly with globset.
   - [ ] Optimize pattern matching for large ignore files
   - [ ] Benchmark against Python pathspec implementation
 
+### Review - Checkpoint 4.1
+
+**Summary of changes:**
+
+- Enhanced `IgnoreSpec` structure with `PatternEntry` to track pattern metadata
+- Added support for negation patterns (!) with proper parsing
+- Implemented precedence-aware matching logic (last pattern wins)
+- Added `has_whitelisted_content` method to allow traversal into directories with whitelisted content
+- Updated `treewalk_ignore` to respect whitelisted directories
+- Added comprehensive test suite for negation patterns:
+  - Basic negation patterns (\*.log, !important.log)
+  - Directory negation (build/, !build/dist/)
+  - Cascading negation across directories
+  - Precedence testing with multiple patterns
+- All Rust tests passing (58 tests total, 34 treewalk tests)
+- Python test coverage maintained at 100%
+- All clippy warnings resolved
+
+The negation pattern support is now fully functional and compatible with gitignore semantics.
+
+### Checkpoint 4.1: Negation Pattern Support
+
+**Goal**: Implement full support for gitignore-style negation patterns (!) in the IgnoreSpec.
+
+**Context**: The globset crate does not natively support negation patterns. We need to implement this on top of
+globset, similar to how ripgrep's ignore crate does it.
+
+**Implementation approach**:
+
+1. Track which patterns are negations (whitelist patterns) separately
+2. Build separate GlobSets for ignore and whitelist patterns
+3. Apply matching logic that respects precedence: later patterns override earlier ones
+4. Ensure directory exclusion logic respects whitelisted directories
+
+- [x] Enhance IgnoreSpec structure:
+  - [x] Add separate tracking for negation patterns
+  - [x] Store pattern metadata (is_whitelist, original_line_number)
+  - [x] Modify pattern parsing to detect and handle '!' prefix
+- [x] Implement two-phase matching:
+  - [x] Build separate GlobSets for ignore and whitelist patterns
+  - [x] Implement precedence-aware matching logic
+  - [x] Handle directory whitelisting to allow traversal
+- [x] Update treewalk_ignore logic:
+  - [x] Check both ignore and whitelist patterns
+  - [x] Apply correct precedence rules
+  - [x] Allow traversal into whitelisted directories
+- [x] Add comprehensive negation tests:
+  - [x] Test basic negation (ignore \*.log, !important.log)
+  - [x] Test directory negation (ignore build/, !build/dist/)
+  - [x] Test cascading negation across directories
+  - [x] Test precedence with multiple patterns
+  - [x] Test edge cases (escaped !, double negation)
+- [x] Ensure compatibility with Python reference implementation
+
 ### Checkpoint 5: Treewalk-ISCC Extension
 
 **Goal**: Implement ISCC-specific filtering on top of treewalk-ignore.
