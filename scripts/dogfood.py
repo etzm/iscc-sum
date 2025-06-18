@@ -227,8 +227,8 @@ def verify(file: Optional[Path]):
 
 
 if __name__ == "__main__":
-    # If no arguments provided, default to verify
+    # If no arguments provided, default to generate
     if len(sys.argv) == 1:
-        sys.argv.append("verify")
+        sys.argv.append("generate")
 
     cli()

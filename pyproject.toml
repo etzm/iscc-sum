@@ -130,12 +130,14 @@ typecheck = "mypy src"
 coverage = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100 -m 'not slow'"
 
 # Pre-commit all-in-one command
-all = ["md-format", "rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext-release", "py-coverage", "check-security", "dogfood"]
-# CI command that includes slow tests
-ci = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-test-all"]
+all = ["md-format", "rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext-release", "py-coverage", "check-security", "dogfood-generate"]
+# CI command that includes slow tests and dogfood verification
+ci = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-test-all", "dogfood-verify"]
 
 # Benchmarking
 benchmark = { sequence = ["build-ext-release", { cmd = "python scripts/benchmark.py" }], help = "Run performance benchmarks with release build" }
 
 # Dogfooding  
-dogfood = { cmd = "python scripts/dogfood.py", help = "Generate or verify ISCC hash for the repository (default: verify)" }
+dogfood = { cmd = "python scripts/dogfood.py", help = "Generate or verify ISCC hash for the repository (default: generate)" }
+dogfood-generate = { cmd = "python scripts/dogfood.py generate", help = "Generate ISCC hash for the repository" }
+dogfood-verify = { cmd = "python scripts/dogfood.py verify", help = "Verify repository against stored ISCC hash" }
