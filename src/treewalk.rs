@@ -93,6 +93,91 @@ pub fn listdir<P: AsRef<Path>>(path: P) -> Result<Vec<DirEntry>, TreewalkError> 
     Ok(entries)
 }
 
+/// Recursively walk a directory tree with deterministic ordering.
+///
+/// This function traverses the directory tree starting from the given path,
+/// yielding file paths in a specific order:
+/// 1. Ignore files (.*ignore pattern) from each directory level
+/// 2. Regular files from each directory level
+/// 3. Subdirectories are processed recursively
+///
+/// The ordering ensures that ignore files can be processed first for efficient
+/// filtering in downstream processors.
+///
+/// # Arguments
+///
+/// * `path` - Root directory path to start traversal
+///
+/// # Returns
+///
+/// Iterator of absolute file paths (directories are traversed but not yielded)
+pub fn treewalk<P: AsRef<Path>>(path: P) -> Result<Vec<std::path::PathBuf>, TreewalkError> {
+    let root = path.as_ref();
+
+    // Verify the path exists and is a directory
+    if !root.exists() {
+        return Err(TreewalkError::IoError(io::Error::new(
+            io::ErrorKind::NotFound,
+            format!("Path does not exist: {}", root.display()),
+        )));
+    }
+
+    if !root.is_dir() {
+        return Err(TreewalkError::IoError(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            format!("Path is not a directory: {}", root.display()),
+        )));
+    }
+
+    let mut result = Vec::new();
+    treewalk_recursive(root, &mut result)?;
+    Ok(result)
+}
+
+/// Helper function for recursive tree traversal
+fn treewalk_recursive(
+    dir: &Path,
+    result: &mut Vec<std::path::PathBuf>,
+) -> Result<(), TreewalkError> {
+    // Get sorted entries from the directory
+    let entries = listdir(dir)?;
+
+    // Separate entries into files and directories
+    let mut ignore_files = Vec::new();
+    let mut regular_files = Vec::new();
+    let mut directories = Vec::new();
+
+    for entry in entries {
+        if entry.is_dir {
+            directories.push(entry);
+        } else if entry.is_file {
+            // Check if this is an ignore file (starts with '.' and ends with 'ignore')
+            if entry.name.starts_with('.') && entry.name.ends_with("ignore") {
+                ignore_files.push(entry);
+            } else {
+                regular_files.push(entry);
+            }
+        }
+    }
+
+    // Yield ignore files first
+    for entry in &ignore_files {
+        result.push(entry.path.clone());
+    }
+
+    // Yield regular files second
+    for entry in &regular_files {
+        result.push(entry.path.clone());
+    }
+
+    // Recursively process directories
+    for entry in &directories {
+        treewalk_recursive(&entry.path, result)?;
+    }
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -300,5 +385,260 @@ mod tests {
         let mut perms = fs::metadata(&restricted_dir).unwrap().permissions();
         perms.set_mode(0o755);
         fs::set_permissions(&restricted_dir, perms).unwrap();
+    }
+
+    #[test]
+    fn test_treewalk_basic() {
+        use std::fs::{self, File};
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Create a simple directory structure
+        File::create(root.join("file1.txt")).unwrap();
+        File::create(root.join("file2.txt")).unwrap();
+        fs::create_dir(root.join("subdir")).unwrap();
+        File::create(root.join("subdir").join("file3.txt")).unwrap();
+
+        let paths = treewalk(root).unwrap();
+
+        // Should have 3 files total
+        assert_eq!(paths.len(), 3);
+
+        // Convert to relative paths for easier verification
+        let relative_paths: Vec<String> = paths
+            .iter()
+            .map(|p| {
+                p.strip_prefix(root)
+                    .unwrap()
+                    .to_string_lossy()
+                    .replace('\\', "/")
+            })
+            .collect();
+
+        assert!(relative_paths.contains(&"file1.txt".to_string()));
+        assert!(relative_paths.contains(&"file2.txt".to_string()));
+        assert!(relative_paths.contains(&"subdir/file3.txt".to_string()));
+    }
+
+    #[test]
+    fn test_treewalk_ignore_file_priority() {
+        use std::fs::File;
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Create files with .gitignore being yielded first
+        File::create(root.join("zebra.txt")).unwrap();
+        File::create(root.join(".gitignore")).unwrap();
+        File::create(root.join("apple.txt")).unwrap();
+        File::create(root.join(".customignore")).unwrap();
+
+        let paths = treewalk(root).unwrap();
+
+        assert_eq!(paths.len(), 4);
+
+        // Convert to filenames only for verification
+        let filenames: Vec<String> = paths
+            .iter()
+            .map(|p| p.file_name().unwrap().to_string_lossy().to_string())
+            .collect();
+
+        // Ignore files should come first
+        assert_eq!(filenames[0], ".customignore");
+        assert_eq!(filenames[1], ".gitignore");
+        // Then regular files in sorted order
+        assert_eq!(filenames[2], "apple.txt");
+        assert_eq!(filenames[3], "zebra.txt");
+    }
+
+    #[test]
+    fn test_treewalk_recursive_ordering() {
+        use std::fs::{self, File};
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Create a more complex structure
+        File::create(root.join("root.txt")).unwrap();
+        File::create(root.join(".rootignore")).unwrap();
+
+        fs::create_dir(root.join("a_dir")).unwrap();
+        File::create(root.join("a_dir").join("a_file.txt")).unwrap();
+        File::create(root.join("a_dir").join(".ignore")).unwrap();
+
+        fs::create_dir(root.join("b_dir")).unwrap();
+        File::create(root.join("b_dir").join("b_file.txt")).unwrap();
+
+        let paths = treewalk(root).unwrap();
+
+        // Convert to relative paths for verification
+        let relative_paths: Vec<String> = paths
+            .iter()
+            .map(|p| {
+                p.strip_prefix(root)
+                    .unwrap()
+                    .to_string_lossy()
+                    .replace('\\', "/")
+            })
+            .collect();
+
+        // Expected order:
+        // 1. Root level ignore files
+        assert_eq!(relative_paths[0], ".rootignore");
+        // 2. Root level regular files
+        assert_eq!(relative_paths[1], "root.txt");
+        // 3. Subdirectory contents (a_dir first alphabetically)
+        assert_eq!(relative_paths[2], "a_dir/.ignore");
+        assert_eq!(relative_paths[3], "a_dir/a_file.txt");
+        assert_eq!(relative_paths[4], "b_dir/b_file.txt");
+    }
+
+    #[test]
+    fn test_treewalk_empty_directory() {
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let paths = treewalk(temp_dir.path()).unwrap();
+
+        assert_eq!(paths.len(), 0);
+    }
+
+    #[test]
+    fn test_treewalk_empty_subdirectories() {
+        use std::fs;
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Create empty subdirectories
+        fs::create_dir(root.join("empty1")).unwrap();
+        fs::create_dir(root.join("empty2")).unwrap();
+        fs::create_dir(root.join("empty1").join("nested_empty")).unwrap();
+
+        let paths = treewalk(root).unwrap();
+
+        // Should yield no files
+        assert_eq!(paths.len(), 0);
+    }
+
+    #[test]
+    fn test_treewalk_deeply_nested() {
+        use std::fs::{self, File};
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let mut current = temp_dir.path().to_path_buf();
+
+        // Create a deeply nested structure
+        for i in 0..5 {
+            current = current.join(format!("level{}", i));
+            fs::create_dir(&current).unwrap();
+            File::create(current.join(format!("file{}.txt", i))).unwrap();
+        }
+
+        let paths = treewalk(temp_dir.path()).unwrap();
+
+        // Should have 5 files, one at each level
+        assert_eq!(paths.len(), 5);
+
+        // Verify all files are found
+        for (i, path) in paths.iter().enumerate() {
+            let filename = path.file_name().unwrap().to_string_lossy();
+            assert_eq!(filename, format!("file{}.txt", i));
+        }
+    }
+
+    #[test]
+    fn test_treewalk_nonexistent_path() {
+        let result = treewalk("/this/path/should/not/exist");
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            TreewalkError::IoError(e) => {
+                assert_eq!(e.kind(), io::ErrorKind::NotFound);
+            }
+            _ => panic!("Expected IoError with NotFound"),
+        }
+    }
+
+    #[test]
+    fn test_treewalk_file_not_directory() {
+        use std::fs::File;
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let file_path = temp_dir.path().join("file.txt");
+        File::create(&file_path).unwrap();
+
+        let result = treewalk(&file_path);
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            TreewalkError::IoError(e) => {
+                assert_eq!(e.kind(), io::ErrorKind::InvalidInput);
+            }
+            _ => panic!("Expected IoError with InvalidInput"),
+        }
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn test_treewalk_permission_denied() {
+        use std::fs::{self, File};
+        use std::os::unix::fs::PermissionsExt;
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Create a directory with a file, then remove permissions
+        let restricted = root.join("restricted");
+        fs::create_dir(&restricted).unwrap();
+        File::create(restricted.join("file.txt")).unwrap();
+
+        // Remove read permissions
+        let mut perms = fs::metadata(&restricted).unwrap().permissions();
+        perms.set_mode(0o000);
+        fs::set_permissions(&restricted, perms).unwrap();
+
+        // treewalk should fail when it tries to read the restricted directory
+        let result = treewalk(root);
+        assert!(result.is_err());
+
+        // Restore permissions for cleanup
+        let mut perms = fs::metadata(&restricted).unwrap().permissions();
+        perms.set_mode(0o755);
+        fs::set_permissions(&restricted, perms).unwrap();
+    }
+
+    #[test]
+    fn test_treewalk_unicode_files() {
+        use std::fs::File;
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Create files with Unicode names
+        File::create(root.join("café.txt")).unwrap();
+        File::create(root.join("日本語.txt")).unwrap();
+        File::create(root.join("emoji🎉.txt")).unwrap();
+
+        let paths = treewalk(root).unwrap();
+
+        assert_eq!(paths.len(), 3);
+
+        // Verify all files are found
+        let filenames: Vec<String> = paths
+            .iter()
+            .map(|p| p.file_name().unwrap().to_string_lossy().to_string())
+            .collect();
+
+        assert!(filenames.contains(&"café.txt".to_string()));
+        assert!(filenames.contains(&"日本語.txt".to_string()));
+        assert!(filenames.contains(&"emoji🎉.txt".to_string()));
     }
 }
