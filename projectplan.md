@@ -50,22 +50,35 @@ algorithms.
 - [x] Set up basic error types for treewalk operations
 - [x] Create unit test module structure in `src/treewalk.rs`
 
+### Review - Checkpoint 2
+
+**Summary of changes:**
+
+- Implemented `listdir` function in `src/treewalk.rs` with full NFC normalization support
+- Created `DirEntry` struct to represent directory entries with type information
+- Added deterministic sorting by normalized UTF-8 bytes with original bytes as tie-breaker
+- Implemented symlink filtering for security
+- Added comprehensive test suite covering all edge cases
+- All tests passing with 100% Python code coverage maintained
+
+All tasks in Checkpoint 2 have been completed successfully.
+
 ### Checkpoint 2: Core Listdir Implementation
 
 **Goal**: Implement the foundational directory listing with deterministic ordering.
 
-- [ ] Implement `listdir` function with NFC normalization:
-  - [ ] Read directory entries using std::fs
-  - [ ] Filter out symlinks for security
-  - [ ] Apply NFC normalization to entry names
-  - [ ] Sort by normalized UTF-8 bytes with original bytes as tie-breaker
-  - [ ] Return structured entry information (name, is_dir, is_file)
-- [ ] Add comprehensive unit tests for `listdir`:
-  - [ ] Test basic sorting
-  - [ ] Test Unicode normalization cases
-  - [ ] Test duplicate normalized names handling
-  - [ ] Test symlink filtering
-  - [ ] Test error handling (permissions, non-existent paths)
+- [x] Implement `listdir` function with NFC normalization:
+  - [x] Read directory entries using std::fs
+  - [x] Filter out symlinks for security
+  - [x] Apply NFC normalization to entry names
+  - [x] Sort by normalized UTF-8 bytes with original bytes as tie-breaker
+  - [x] Return structured entry information (name, is_dir, is_file)
+- [x] Add comprehensive unit tests for `listdir`:
+  - [x] Test basic sorting
+  - [x] Test Unicode normalization cases
+  - [x] Test duplicate normalized names handling
+  - [x] Test symlink filtering
+  - [x] Test error handling (permissions, non-existent paths)
 
 ### Checkpoint 3: Base Treewalk Algorithm
 
