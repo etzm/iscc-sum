@@ -1,143 +1,145 @@
-# Implementation Plan: Fix Windows Path Display in Directory Expansion
+# iscc-sum Project Plan
 
-## Checkpoint 1: Remove Deprecated CLI Options
+## Completed Tasks
 
-### Tasks:
+### Initial Setup and Infrastructure
 
-- [x] Remove `--recursive` option from CLI definition
-- [x] Remove `--no-recursive` option from CLI definition
-- [x] Remove `--exclude` option from CLI definition
-- [x] Remove `--max-depth` option from CLI definition
-- [x] Remove all validation logic for these options
-- [x] Remove all references to these options in function signatures
-- [x] Update docstrings to remove mentions of these options
-- [x] Run existing tests to identify which tests need updating
-- [x] Update failing tests to remove references to deprecated options
-- [x] Verify all tests pass after cleanup
+- ✅ Project setup with maturin and basic Rust/Python structure
+- ✅ Basic CLI implementation with both Python and Rust versions
+- ✅ Core hashing algorithms (Data-Code, Instance-Code) in Rust
+- ✅ Python bindings via PyO3
+- ✅ Comprehensive test suite with 100% coverage
+- ✅ Reference implementations for verification
+- ✅ Benchmarking framework
 
-## Checkpoint 2: Add File Discovery and Expansion Logic
+### Tree Mode Feature
 
-### Tasks:
+- ✅ Tree mode specification (treewalk-spec.md)
+- ✅ Python implementation of treewalk algorithms
+- ✅ Tree mode verification support
+- ✅ Test vectors for treewalk functionality
+- ✅ Deterministic tie-breaking for duplicate normalized names
 
-- [x] Create a new function `_expand_paths` that takes file/directory arguments
-- [x] For file arguments, yield the file path as-is
-- [x] For directory arguments, use `treewalk_iscc` to get all files
-- [x] Handle mixed file and directory arguments correctly
-- [x] Add proper error handling for invalid paths
-- [x] Create unit tests for `_expand_paths` function
-- [x] Test with various path combinations (files, dirs, mixed)
-- [x] Ensure deterministic ordering is maintained
-- [x] Verify tests pass
+## Next Milestone: Rust Treewalk Implementation
 
-## Checkpoint 3: Implement Tree Mode Option
+A compatible RUST port of @src/iscc_sum/treewalk.py
 
-### Tasks:
+### Review - Checkpoint 1
 
-- [x] Add `--tree/-t` option to CLI definition
-- [x] Add validation to ensure tree mode only works with single directory argument
-- [x] Create `_handle_tree_mode` function to process entire directory as one unit
-- [x] Implement checksum output with trailing slash for tree mode
-- [x] Handle both standard and BSD format outputs for tree mode
-- [x] Add tree mode tests for basic functionality
-- [x] Add tree mode tests for error cases
-- [x] Test tree mode with both output formats
-- [x] Verify all tree mode tests pass
+**Summary of changes:**
 
-## Checkpoint 4: Update Main Processing Functions
+- Added `unicode-normalization = "0.1"` dependency to Cargo.toml for NFC normalization support
+- Created `src/treewalk.rs` module with initial error types and structure
+- Added module declaration to `src/lib.rs`
+- Set up TreewalkError enum with IoError and InvalidPath variants
+- Created unit test module structure with basic error conversion test
 
-### Tasks:
+All tasks in Checkpoint 1 have been completed. The infrastructure is ready for implementing the core treewalk
+algorithms.
 
-- [x] Update `_handle_checksum_generation` to use `_expand_paths`
-- [x] Add tree mode handling to checksum generation flow
-- [x] Update `_handle_similarity` to use `_expand_paths`
-- [x] Update `_handle_verification` to support tree mode checksums
-- [x] Ensure stdin handling still works correctly
-- [x] Update existing integration tests
-- [x] Add tests for directory processing
-- [x] Add tests for mixed file/directory arguments
-- [x] Run full test suite and fix any remaining issues
+### Checkpoint 1: Core Infrastructure Setup
 
-## Checkpoint 5: Tree Mode Verification Support
+**Goal**: Set up the foundation for the Rust treewalk module with necessary dependencies and basic structure.
 
-### Tasks:
+- [x] Add dependencies to Cargo.toml:
+  - [x] `globset` for pattern matching (already in use, verify version)
+  - [x] `unicode-normalization` for NFC normalization
+  - [x] `walkdir` (optional - evaluate if needed vs custom implementation)
+- [x] Create `src/treewalk.rs` module file with module documentation
+- [x] Add module declaration to `src/lib.rs`
+- [x] Set up basic error types for treewalk operations
+- [x] Create unit test module structure in `src/treewalk.rs`
 
-- [x] Update `_parse_checksum_line` to detect tree mode (trailing slash)
-- [x] Implement tree mode verification logic in `_handle_verification`
-- [x] When verifying tree checksum, use `treewalk_iscc` on the directory
-- [x] Process all files and combine into single checksum
-- [x] Add tests for tree mode verification
-- [x] Test verification with both standard and BSD formats
-- [x] Test error cases (missing directory, changed files)
-- [x] Ensure proper exit codes for tree verification
+### Checkpoint 2: Core Listdir Implementation
 
-## Checkpoint 6: Update Documentation
+**Goal**: Implement the foundational directory listing with deterministic ordering.
 
-### Tasks:
+- [ ] Implement `listdir` function with NFC normalization:
+  - [ ] Read directory entries using std::fs
+  - [ ] Filter out symlinks for security
+  - [ ] Apply NFC normalization to entry names
+  - [ ] Sort by normalized UTF-8 bytes with original bytes as tie-breaker
+  - [ ] Return structured entry information (name, is_dir, is_file)
+- [ ] Add comprehensive unit tests for `listdir`:
+  - [ ] Test basic sorting
+  - [ ] Test Unicode normalization cases
+  - [ ] Test duplicate normalized names handling
+  - [ ] Test symlink filtering
+  - [ ] Test error handling (permissions, non-existent paths)
 
-- [x] Update `docs/cli-spec-py.md` to remove deprecated options
-- [x] Add `--tree` option documentation to `docs/cli-spec-py.md`
-- [x] Update examples to show tree mode usage
-- [x] Update directory processing description
-- [x] Remove references to exclude patterns and recursion control
-- [x] Add tree mode examples to CLI help text
-- [x] Update any other relevant documentation files
-- [x] Review all documentation for consistency
+### Checkpoint 3: Base Treewalk Algorithm
 
-## Checkpoint 7: Integration and Edge Case Testing
+**Goal**: Implement the core recursive tree traversal with ignore file prioritization.
 
-### Tasks:
+- [ ] Implement `treewalk` function:
+  - [ ] Use `listdir` for deterministic entry ordering
+  - [ ] Separate entries into files and directories
+  - [ ] Yield ignore files first (.\*ignore pattern)
+  - [ ] Yield regular files second
+  - [ ] Recursively process subdirectories
+  - [ ] Handle path resolution and normalization
+- [ ] Implement efficient path handling:
+  - [ ] Use PathBuf for cross-platform compatibility
+  - [ ] Implement relative path calculation from root
+  - [ ] Handle Windows drive roots correctly
+- [ ] Add unit tests for `treewalk`:
+  - [ ] Test ignore file prioritization
+  - [ ] Test recursive traversal order
+  - [ ] Test empty directories
+  - [ ] Test deeply nested structures
+  - [ ] Test permission errors during traversal
+- [ ] Add integration tests using test vectors from spec
 
-- [ ] Test with empty directories
-- [ ] Test with directories containing only ignored files (.isccignore)
-- [ ] Test with symlinks (should be ignored by treewalk)
-- [ ] Test with very deep directory structures
-- [ ] Test with Unicode filenames
-- [ ] Test cross-platform compatibility
-- [ ] Add performance tests for large directories
-- [ ] Ensure 100% code coverage is maintained
-- [ ] Run full test suite with coverage report
+### Checkpoint 4: Treewalk-Ignore Extension
 
-## Additional Work Not in Original Plan
+**Goal**: Add gitignore-style pattern matching with cascading rules.
 
-### Unicode Normalization Tie-Breaking Fix:
+- [ ] Implement pattern parsing and matching:
+  - [ ] Create `IgnoreSpec` wrapper around globset
+  - [ ] Parse ignore files with proper error handling
+  - [ ] Handle gitignore-specific syntax (comments, negation, etc.)
+- [ ] Implement `treewalk_ignore` function:
+  - [ ] Load and parse ignore files at each directory level
+  - [ ] Accumulate patterns from root to current directory
+  - [ ] Apply pattern matching to filter entries
+  - [ ] Handle directory exclusion to prevent traversal
+  - [ ] Maintain pattern precedence rules
+- [ ] Add comprehensive tests:
+  - [ ] Test basic pattern matching
+  - [ ] Test pattern precedence and overrides
+  - [ ] Test directory exclusion
+  - [ ] Test negation patterns
+  - [ ] Test edge cases (empty ignore files, invalid patterns)
+- [ ] Performance optimization:
+  - [ ] Cache compiled patterns
+  - [ ] Optimize pattern matching for large ignore files
+  - [ ] Benchmark against Python pathspec implementation
 
-- [x] Updated treewalk-spec.md Section 4.1 to specify deterministic tie-breaking rule
-- [x] Updated listdir() implementation to use tuple sorting with original bytes as tie-breaker
-- [x] Fixed test expectations in spec to match correct byte ordering
-- [x] Added explicit test for unicode normalization tie-breaking behavior
-- [x] Verified all tests pass with 100% coverage
+### Checkpoint 5: Treewalk-ISCC Extension
 
-### Rust CLI Updates:
+**Goal**: Implement ISCC-specific filtering on top of treewalk-ignore.
 
-- [ ] Remove deprecated options from Rust CLI (`--recursive`, `--no-recursive`, `--exclude`, `--max-depth`)
-- [ ] Consider implementing tree mode in Rust CLI for feature parity
-- [ ] Update Rust CLI documentation
+- [ ] Implement `treewalk_iscc` function:
+  - [ ] Use treewalk_ignore with `.isccignore` files
+  - [ ] Add automatic filtering of `.iscc.json` files
+  - [ ] Ensure proper layering of filters
+- [ ] Add tests for ISCC-specific behavior:
+  - [ ] Test .isccignore processing
+  - [ ] Test .iscc.json filtering
+  - [ ] Test interaction between filters
+  - [ ] Verify conformance with specification
+- [ ] Integration tests with existing ISCC hashing
 
-## Implementation Notes
+### Checkpoint 9: Documentation and Polish
 
-### Key Considerations:
+**Goal**: Ensure the implementation is production-ready with proper documentation.
 
-1. The `treewalk_iscc` function already handles:
-
-   - Deterministic ordering (NFC-normalized UTF-8)
-   - .isccignore file processing
-   - Filtering of .iscc.json metadata files
-   - Symlink exclusion
-
-2. For tree mode:
-
-   - Process all files from `treewalk_iscc` in order
-   - Feed each file's content to a single `IsccSumProcessor` instance
-   - Output shows directory path with trailing slash
-
-3. Backward compatibility:
-
-   - Since no release yet, we can break compatibility
-   - Remove all traces of deprecated options
-   - Update all tests and documentation
-
-### Dependencies:
-
-- The existing `treewalk_iscc` function from `iscc_sum.treewalk`
-- The existing processor classes from `iscc_sum._core`
-- No new external dependencies required
+- [ ] Complete documentation:
+  - [ ] API documentation with examples
+- [ ] Code quality:
+  - [ ] Run clippy and fix all warnings
+  - [ ] Ensure consistent error messages
+  - [ ] Review and if necessary refactor for clarity
+- [ ] Final testing:
+  - [ ] Run full test suite
+  - [ ] Verify spec compliance
