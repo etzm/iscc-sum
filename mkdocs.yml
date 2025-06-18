@@ -81,6 +81,7 @@ nav:
   - Specifications:
 #    - specifications/index.md
     - TreeWalk: specifications/treewalk.md
+    - ISCC-SUM CLI: specifications/cli.md
   - Developers:
       - Readme: developers/index.md
 
