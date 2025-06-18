@@ -25,6 +25,7 @@ filtered according to `.isccignore` rules if present.
 ### Core Options (GNU coreutils compatible)
 
 - `-c, --check` - Read checksums from FILEs and verify them
+- `-o, --output FILE` - Write checksums to FILE instead of stdout (ensures UTF-8, LF encoding)
 - `--tag` - Create a BSD-style checksum output
 - `-z, --zero` - End each output line with NUL, not newline
 - `--help` - Display help message and exit
@@ -174,6 +175,9 @@ iscc-sum --narrow document.pdf
 
 # With component units
 iscc-sum --units document.pdf
+
+# Output to file (cross-platform compatible)
+iscc-sum -o checksums.iscc *.txt
 ```
 
 ### Verify checksums
@@ -237,3 +241,6 @@ iscc-sum --tree --tag /path/to/project
     as a single unit, producing one combined checksum for the entire directory tree
 12. Tree mode checksums can be verified; the tool will automatically detect the trailing slash and process the
     directory accordingly
+13. Checksum files MUST be UTF-8 encoded without BOM for cross-platform compatibility
+14. When using `-o/--output`, the tool MUST write UTF-8 with LF line endings on all platforms
+15. When reading checksum files with `--check`, the tool expects UTF-8 encoding

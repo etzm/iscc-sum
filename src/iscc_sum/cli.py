@@ -1,8 +1,9 @@
 # Command-line interface for iscc-sum tool
 
 import sys
+from contextlib import contextmanager
 from importlib.metadata import PackageNotFoundError, version
-from typing import Iterator
+from typing import IO, Any, Iterator
 
 import click
 
@@ -24,6 +25,33 @@ def get_version():
         return "0.1.0-alpha.1"  # Fallback version
 
 
+@contextmanager
+def output_file_context(output_path):
+    # type: (str | None) -> Iterator[IO[Any] | None]
+    """Context manager to open output file or return None for stdout.
+
+    Args:
+        output_path: Path to output file, or None for stdout
+
+    Yields:
+        File handle or None
+
+    Raises:
+        IOError: If file cannot be opened for writing
+    """
+    if output_path is None:
+        # Use stdout - yield None to signal stdout usage
+        yield None
+    else:
+        # Open file with UTF-8 encoding and LF line endings
+        try:
+            with open(output_path, "w", encoding="utf-8", newline="\n") as f:
+                yield f
+        except IOError as e:
+            click.echo(f"iscc-sum: {output_path}: {e}", err=True)
+            sys.exit(EXIT_ERROR)
+
+
 @click.command(
     context_settings={"help_option_names": ["-h", "--help"]},
     epilog="Exit status: 0 if OK, 1 if checksum verification fails, 2 if trouble.",
@@ -39,6 +67,12 @@ def get_version():
     "--tag",
     is_flag=True,
     help="Create a BSD-style checksum output",
+)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(),
+    help="Write checksums to FILE instead of stdout (ensures UTF-8, LF encoding)",
 )
 @click.option(
     "-z",
@@ -100,6 +134,7 @@ def get_version():
 def cli(
     check,
     tag,
+    output,
     zero,
     quiet,
     status,
@@ -112,7 +147,7 @@ def cli(
     tree,
     files,
 ):
-    # type: (bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, int, bool, tuple) -> None
+    # type: (bool, bool, str | None, bool, bool, bool, bool, bool, bool, bool, bool, int, bool, tuple) -> None
     """Compute ISCC (International Standard Content Code) checksums for files.
 
     Each checksum consists of a 2-byte self-describing header followed by a
@@ -137,6 +172,10 @@ def cli(
       iscc-sum --similar *.jpg
     """
     # Validate conflicting options
+    if output and check:
+        click.echo("iscc-sum: -o/--output cannot be used with -c/--check", err=True)
+        sys.exit(EXIT_ERROR)
+
     if similar and check:
         click.echo("iscc-sum: --similar cannot be used with -c/--check", err=True)
         sys.exit(EXIT_ERROR)
@@ -167,17 +206,20 @@ def cli(
 
     try:
         if check:
-            # Verification mode
+            # Verification mode (no output file needed)
             _handle_verification(files, quiet, status, warn, strict)
-        elif similar:
-            # Similarity matching mode
-            _handle_similarity(files, threshold, narrow, tag, zero)
-        elif tree:
-            # Tree mode - process directory as single unit
-            _handle_tree_mode(files[0], narrow, units, tag, zero)
         else:
-            # Normal checksum generation mode
-            _handle_checksum_generation(files, narrow, units, tag, zero)
+            # Generation modes - use output file context
+            with output_file_context(output) as output_file:
+                if similar:
+                    # Similarity matching mode
+                    _handle_similarity(files, threshold, narrow, tag, zero, output_file)
+                elif tree:
+                    # Tree mode - process directory as single unit
+                    _handle_tree_mode(files[0], narrow, units, tag, zero, output_file)
+                else:
+                    # Normal checksum generation mode
+                    _handle_checksum_generation(files, narrow, units, tag, zero, output_file)
     except Exception as e:
         click.echo(f"iscc-sum: {e}", err=True)
         sys.exit(EXIT_ERROR)
@@ -229,8 +271,8 @@ def _expand_paths(paths):
             raise IOError(f"Not a regular file or directory: '{path}'")
 
 
-def _handle_tree_mode(directory, narrow, units, tag, zero):
-    # type: (str, bool, bool, bool, bool) -> None
+def _handle_tree_mode(directory, narrow, units, tag, zero, output_file=None):
+    # type: (str, bool, bool, bool, bool, IO[Any] | None) -> None
     """Handle tree mode - process directory as single unit."""
     from pathlib import Path
 
@@ -275,15 +317,15 @@ def _handle_tree_mode(directory, narrow, units, tag, zero):
             # Default output format
             output = "{} *{}".format(result.iscc, display_name)
 
-        click.echo(output, nl=False)
-        click.echo(terminator, nl=False)
+        click.echo(output, nl=False, file=output_file)
+        click.echo(terminator, nl=False, file=output_file)
 
         # Display units if requested
         if units and result.units:
             for unit in result.units:
                 unit_output = "  {}".format(unit)
-                click.echo(unit_output, nl=False)
-                click.echo(terminator, nl=False)
+                click.echo(unit_output, nl=False, file=output_file)
+                click.echo(terminator, nl=False, file=output_file)
 
     except Exception as e:
         error_msg = "iscc-sum: {}: unexpected error: {}".format(directory, str(e))
@@ -291,8 +333,8 @@ def _handle_tree_mode(directory, narrow, units, tag, zero):
         sys.exit(EXIT_ERROR)
 
 
-def _handle_checksum_generation(files, narrow, units, tag, zero):
-    # type: (tuple, bool, bool, bool, bool) -> None
+def _handle_checksum_generation(files, narrow, units, tag, zero, output_file=None):
+    # type: (tuple, bool, bool, bool, bool, IO[Any] | None) -> None
     """Handle normal checksum generation mode."""
     import os
 
@@ -349,15 +391,15 @@ def _handle_checksum_generation(files, narrow, units, tag, zero):
                 # Default output format
                 output = "{} *{}".format(result.iscc, display_name)
 
-            click.echo(output, nl=False)
-            click.echo(terminator, nl=False)
+            click.echo(output, nl=False, file=output_file)
+            click.echo(terminator, nl=False, file=output_file)
 
             # Display units if requested
             if units and result.units:
                 for unit in result.units:
                     unit_output = "  {}".format(unit)
-                    click.echo(unit_output, nl=False)
-                    click.echo(terminator, nl=False)
+                    click.echo(unit_output, nl=False, file=output_file)
+                    click.echo(terminator, nl=False, file=output_file)
 
         except IOError as e:
             error_msg = "iscc-sum: {}: {}".format(filepath, str(e))
@@ -420,6 +462,10 @@ def _handle_verification(files, quiet, status, warn, strict):
                 for line in f:
                     line_number += 1
                     line = line.rstrip("\n\r")
+
+                    # Strip BOM if present (can occur on first line)
+                    if line_number == 1 and line.startswith("\ufeff"):
+                        line = line[1:]
 
                     if not line:
                         continue
@@ -611,8 +657,8 @@ def _hamming_distance(bits_a, bits_b):
     return distance
 
 
-def _handle_similarity(files, threshold, narrow, tag, zero):
-    # type: (tuple, int, bool, bool, bool) -> None
+def _handle_similarity(files, threshold, narrow, tag, zero, output_file=None):
+    # type: (tuple, int, bool, bool, bool, IO[Any] | None) -> None
     """Handle similarity matching mode."""
     from iscc_sum import IsccSumProcessor
 
@@ -673,12 +719,12 @@ def _handle_similarity(files, threshold, narrow, tag, zero):
             # Add blank line between groups (except before first group)
             if group_count > 0:
                 if not zero:
-                    click.echo()
+                    click.echo(file=output_file)
 
             group_count += 1
 
             # Output reference file
-            _output_checksum(ref_iscc, ref_path, tag, zero)
+            _output_checksum(ref_iscc, ref_path, tag, zero, output_file)
             processed.add(ref_path)
 
             # Sort similar files by hamming distance (ascending)
@@ -691,34 +737,34 @@ def _handle_similarity(files, threshold, narrow, tag, zero):
                 else:
                     output = f"  ~{distance:02d} {sim_iscc} *{sim_path}"
 
-                click.echo(output, nl=not zero)
+                click.echo(output, nl=not zero, file=output_file)
                 if zero:
-                    click.echo("\0", nl=False)
+                    click.echo("\0", nl=False, file=output_file)
 
         # If this file has no similar files but hasn't been processed, output it alone
         elif ref_path not in processed:
             # Add blank line between groups (except before first group)
             if group_count > 0:
                 if not zero:
-                    click.echo()
+                    click.echo(file=output_file)
 
             group_count += 1
 
-            _output_checksum(ref_iscc, ref_path, tag, zero)
+            _output_checksum(ref_iscc, ref_path, tag, zero, output_file)
             processed.add(ref_path)
 
 
-def _output_checksum(iscc, filepath, tag, zero):
-    # type: (str, str, bool, bool) -> None
+def _output_checksum(iscc, filepath, tag, zero, output_file=None):
+    # type: (str, str, bool, bool, IO[Any] | None) -> None
     """Output a checksum in the specified format."""
     if tag:
         output = f"ISCC-SUM ({filepath}) = {iscc}"
     else:
         output = f"{iscc} *{filepath}"
 
-    click.echo(output, nl=not zero)
+    click.echo(output, nl=not zero, file=output_file)
     if zero:
-        click.echo("\0", nl=False)
+        click.echo("\0", nl=False, file=output_file)
 
 
 if __name__ == "__main__":
