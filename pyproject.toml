@@ -130,9 +130,12 @@ typecheck = "mypy src"
 coverage = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100 -m 'not slow'"
 
 # Pre-commit all-in-one command
-all = ["md-format", "rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext-release", "py-coverage", "check-security"]
+all = ["md-format", "rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext-release", "py-coverage", "check-security", "dogfood"]
 # CI command that includes slow tests
 ci = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-test-all"]
 
 # Benchmarking
 benchmark = { sequence = ["build-ext-release", { cmd = "python scripts/benchmark.py" }], help = "Run performance benchmarks with release build" }
+
+# Dogfooding  
+dogfood = { cmd = "python scripts/dogfood.py", help = "Generate or verify ISCC hash for the repository (default: verify)" }
