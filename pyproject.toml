@@ -60,6 +60,10 @@ dev-dependencies = [
     "build>=1.0",
     "bandit>=1.8.3",
     "pyfakefs>=5.8.0",
+    "mkdocs-material>=9.6.14",
+    "mkdocs-glightbox>=0.4.0",
+    "mkdocs-add-number-plugin>=1.2.2",
+    "mkdocs-git-revision-date-localized-plugin>=1.4.7",
 ]
 
 [tool.ruff]
@@ -118,6 +122,9 @@ rust-clippy = "cargo clippy --quiet --all-targets --all-features -- -D warnings"
 rust-test = "cargo test"
 rust-build = "cargo build --release --bin isum"
 
+# Documentation tasks
+docs-build = { script = "scripts.build_docs:main", help = "Copy README.md to /docs" }
+
 # Python extension building
 build-ext = "maturin develop"
 build-ext-release = "maturin develop --release"
@@ -130,14 +137,14 @@ typecheck = "mypy src"
 coverage = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100 -m 'not slow'"
 
 # Pre-commit all-in-one command
-all = ["md-format", "rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext-release", "py-coverage", "check-security", "dogfood-generate"]
+all = ["docs-build", "md-format", "rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext-release", "py-coverage", "check-security", "dogfood-generate"]
 # CI command that includes slow tests and dogfood verification
 ci = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-test-all", "dogfood-verify"]
 
 # Benchmarking
 benchmark = { sequence = ["build-ext-release", { cmd = "python scripts/benchmark.py" }], help = "Run performance benchmarks with release build" }
 
-# Dogfooding  
+# Dogfooding
 dogfood = { cmd = "python scripts/dogfood.py", help = "Generate or verify ISCC hash for the repository (default: generate)" }
 dogfood-generate = { cmd = "python scripts/dogfood.py generate", help = "Generate ISCC hash for the repository" }
 dogfood-verify = { cmd = "python scripts/dogfood.py verify", help = "Verify repository against stored ISCC hash" }
