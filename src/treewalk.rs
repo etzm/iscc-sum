@@ -1,5 +1,6 @@
 // Rust implementation of the treewalk algorithm for deterministic file tree traversal
 
+use globset::{Glob, GlobSet, GlobSetBuilder};
 use std::cmp::Ordering;
 use std::fs;
 use std::io;
@@ -38,6 +39,99 @@ impl std::fmt::Display for TreewalkError {
 }
 
 impl std::error::Error for TreewalkError {}
+
+/// Wrapper around GlobSet for handling gitignore-style patterns
+#[derive(Debug, Clone, Default)]
+pub struct IgnoreSpec {
+    patterns: Vec<String>,
+}
+
+impl IgnoreSpec {
+    /// Create a new empty IgnoreSpec
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Parse gitignore-style patterns from lines
+    pub fn from_lines<I, S>(lines: I) -> Result<Self, TreewalkError>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<str>,
+    {
+        let mut patterns = Vec::new();
+
+        for line in lines {
+            let line = line.as_ref().trim();
+
+            // Skip empty lines and comments
+            if line.is_empty() || line.starts_with('#') {
+                continue;
+            }
+
+            patterns.push(line.to_string());
+        }
+
+        Ok(IgnoreSpec { patterns })
+    }
+
+    /// Combine two IgnoreSpec instances
+    pub fn combine(&self, other: &IgnoreSpec) -> IgnoreSpec {
+        let mut patterns = self.patterns.clone();
+        patterns.extend(other.patterns.clone());
+        IgnoreSpec { patterns }
+    }
+
+    /// Build a GlobSet from the accumulated patterns
+    fn build_globset(&self) -> Result<GlobSet, TreewalkError> {
+        let mut builder = GlobSetBuilder::new();
+
+        for pattern in &self.patterns {
+            // Handle negation patterns (not directly supported by globset)
+            // For now, we'll skip them and handle in a future iteration
+            if pattern.starts_with('!') {
+                continue;
+            }
+
+            // Convert gitignore pattern to glob pattern
+            let glob_pattern = if pattern.ends_with('/') {
+                // Directory pattern - match the directory and everything under it
+                format!("{}**", pattern)
+            } else if let Some(stripped) = pattern.strip_prefix('/') {
+                // Anchored pattern - match from root
+                stripped.to_string()
+            } else if pattern.contains('/') && !pattern.starts_with("**/") {
+                // Pattern with slash but not starting with **/ - make it relative
+                format!("**/{}", pattern)
+            } else {
+                // Simple pattern - match anywhere
+                format!("**/{}", pattern)
+            };
+
+            let glob = Glob::new(&glob_pattern).map_err(|e| {
+                TreewalkError::InvalidPath(format!("Invalid pattern '{}': {}", pattern, e))
+            })?;
+            builder.add(glob);
+        }
+
+        builder
+            .build()
+            .map_err(|e| TreewalkError::InvalidPath(format!("Failed to build pattern set: {}", e)))
+    }
+
+    /// Check if a path matches any ignore pattern
+    pub fn matches<P: AsRef<Path>>(&self, path: P) -> Result<bool, TreewalkError> {
+        let globset = self.build_globset()?;
+        Ok(globset.is_match(path.as_ref()))
+    }
+
+    /// Check if a path matches as a directory (with trailing slash)
+    pub fn matches_dir<P: AsRef<Path>>(&self, path: P) -> Result<bool, TreewalkError> {
+        let globset = self.build_globset()?;
+        let path_str = path.as_ref().to_string_lossy();
+        let dir_path = format!("{}/", path_str);
+        Ok(globset.is_match(&dir_path) || globset.is_match(path.as_ref()))
+    }
+}
 
 /// List directory entries with deterministic cross-platform sorting.
 ///
@@ -173,6 +267,140 @@ fn treewalk_recursive(
     // Recursively process directories
     for entry in &directories {
         treewalk_recursive(&entry.path, result)?;
+    }
+
+    Ok(())
+}
+
+/// Walk a directory tree while respecting ignore file patterns.
+///
+/// Yields paths in deterministic order while filtering based on accumulated
+/// ignore patterns from the root down to each subdirectory.
+///
+/// # Arguments
+///
+/// * `path` - Directory to walk
+/// * `ignore_file_name` - Name of the ignore-file to look for (e.g., ".gitignore")
+/// * `root_path` - Root directory for relative path calculations (defaults to the path argument)
+/// * `ignore_spec` - Existing IgnoreSpec with ignored patterns to extend
+///
+/// # Returns
+///
+/// Iterator of absolute file paths for non-ignored files
+pub fn treewalk_ignore<P: AsRef<Path>>(
+    path: P,
+    ignore_file_name: &str,
+    root_path: Option<&Path>,
+    ignore_spec: Option<&IgnoreSpec>,
+) -> Result<Vec<std::path::PathBuf>, TreewalkError> {
+    let path = path.as_ref();
+    let root_path = root_path.unwrap_or(path);
+
+    // Verify the path exists and is a directory
+    if !path.exists() {
+        return Err(TreewalkError::IoError(io::Error::new(
+            io::ErrorKind::NotFound,
+            format!("Path does not exist: {}", path.display()),
+        )));
+    }
+
+    if !path.is_dir() {
+        return Err(TreewalkError::IoError(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            format!("Path is not a directory: {}", path.display()),
+        )));
+    }
+
+    let mut result = Vec::new();
+    let base_spec = ignore_spec.cloned().unwrap_or_else(IgnoreSpec::new);
+    treewalk_ignore_recursive(path, ignore_file_name, root_path, &base_spec, &mut result)?;
+    Ok(result)
+}
+
+/// Helper function for recursive tree traversal with ignore patterns
+fn treewalk_ignore_recursive(
+    dir: &Path,
+    ignore_file_name: &str,
+    root_path: &Path,
+    ignore_spec: &IgnoreSpec,
+    result: &mut Vec<std::path::PathBuf>,
+) -> Result<(), TreewalkError> {
+    // Check for ignore file in current directory and update spec
+    let mut current_spec = ignore_spec.clone();
+    let ignore_file_path = dir.join(ignore_file_name);
+
+    if ignore_file_path.exists() && ignore_file_path.is_file() {
+        let contents = fs::read_to_string(&ignore_file_path).map_err(TreewalkError::IoError)?;
+        let lines: Vec<&str> = contents.lines().collect();
+        let new_spec = IgnoreSpec::from_lines(lines)?;
+        current_spec = current_spec.combine(&new_spec);
+    }
+
+    // Get sorted entries from the directory
+    let entries = listdir(dir)?;
+
+    // Separate entries into files and directories
+    let mut ignore_files = Vec::new();
+    let mut regular_files = Vec::new();
+    let mut directories = Vec::new();
+
+    for entry in entries {
+        if entry.is_dir {
+            directories.push(entry);
+        } else if entry.is_file {
+            // Check if this is an ignore file
+            if entry.name.starts_with('.') && entry.name.ends_with("ignore") {
+                ignore_files.push(entry);
+            } else {
+                regular_files.push(entry);
+            }
+        }
+    }
+
+    // Helper to check if a path should be ignored
+    let should_ignore = |path: &Path| -> Result<bool, TreewalkError> {
+        let rel_path = path.strip_prefix(root_path).map_err(|_| {
+            TreewalkError::InvalidPath(format!(
+                "Failed to compute relative path for: {}",
+                path.display()
+            ))
+        })?;
+        current_spec.matches(rel_path)
+    };
+
+    // Yield ignore files first (they are not filtered)
+    for entry in &ignore_files {
+        if !should_ignore(&entry.path)? {
+            result.push(entry.path.clone());
+        }
+    }
+
+    // Yield regular files second
+    for entry in &regular_files {
+        if !should_ignore(&entry.path)? {
+            result.push(entry.path.clone());
+        }
+    }
+
+    // Recursively process directories (check if directory itself is ignored)
+    for entry in &directories {
+        let rel_path = entry.path.strip_prefix(root_path).map_err(|_| {
+            TreewalkError::InvalidPath(format!(
+                "Failed to compute relative path for: {}",
+                entry.path.display()
+            ))
+        })?;
+
+        // Check if directory should be excluded
+        if !current_spec.matches_dir(rel_path)? {
+            treewalk_ignore_recursive(
+                &entry.path,
+                ignore_file_name,
+                root_path,
+                &current_spec,
+                result,
+            )?;
+        }
     }
 
     Ok(())
@@ -640,5 +868,309 @@ mod tests {
         assert!(filenames.contains(&"café.txt".to_string()));
         assert!(filenames.contains(&"日本語.txt".to_string()));
         assert!(filenames.contains(&"emoji🎉.txt".to_string()));
+    }
+
+    #[test]
+    fn test_ignore_spec_from_lines() {
+        // Test parsing basic patterns
+        let lines = vec!["*.tmp", "# comment", "", "build/", "/src/*.log"];
+        let spec = IgnoreSpec::from_lines(lines).unwrap();
+
+        assert_eq!(spec.patterns.len(), 3);
+        assert!(spec.patterns.contains(&"*.tmp".to_string()));
+        assert!(spec.patterns.contains(&"build/".to_string()));
+        assert!(spec.patterns.contains(&"/src/*.log".to_string()));
+    }
+
+    #[test]
+    fn test_ignore_spec_combine() {
+        let spec1 = IgnoreSpec::from_lines(vec!["*.tmp", "*.log"]).unwrap();
+        let spec2 = IgnoreSpec::from_lines(vec!["build/", "dist/"]).unwrap();
+
+        let combined = spec1.combine(&spec2);
+        assert_eq!(combined.patterns.len(), 4);
+        assert!(combined.patterns.contains(&"*.tmp".to_string()));
+        assert!(combined.patterns.contains(&"*.log".to_string()));
+        assert!(combined.patterns.contains(&"build/".to_string()));
+        assert!(combined.patterns.contains(&"dist/".to_string()));
+    }
+
+    #[test]
+    fn test_ignore_spec_matches() {
+        let spec = IgnoreSpec::from_lines(vec!["*.tmp", "*.log", "test_*.py"]).unwrap();
+
+        assert!(spec.matches("file.tmp").unwrap());
+        assert!(spec.matches("debug.log").unwrap());
+        assert!(spec.matches("test_foo.py").unwrap());
+        assert!(!spec.matches("file.txt").unwrap());
+        assert!(!spec.matches("script.py").unwrap());
+    }
+
+    #[test]
+    fn test_treewalk_ignore_basic() {
+        use std::fs::{self, File};
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Create .gitignore
+        fs::write(root.join(".gitignore"), "*.tmp\n*.log\n").unwrap();
+
+        // Create files
+        File::create(root.join("keep.txt")).unwrap();
+        File::create(root.join("temp.tmp")).unwrap();
+        File::create(root.join("debug.log")).unwrap();
+
+        let paths = treewalk_ignore(root, ".gitignore", None, None).unwrap();
+
+        // Convert to filenames for easier checking
+        let filenames: Vec<String> = paths
+            .iter()
+            .map(|p| p.file_name().unwrap().to_string_lossy().to_string())
+            .collect();
+
+        // Should include .gitignore and keep.txt, but not *.tmp or *.log files
+        assert_eq!(filenames.len(), 2);
+        assert!(filenames.contains(&".gitignore".to_string()));
+        assert!(filenames.contains(&"keep.txt".to_string()));
+        assert!(!filenames.contains(&"temp.tmp".to_string()));
+        assert!(!filenames.contains(&"debug.log".to_string()));
+    }
+
+    #[test]
+    fn test_treewalk_ignore_directory_exclusion() {
+        use std::fs::{self, File};
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Create .gitignore with directory pattern
+        fs::write(root.join(".gitignore"), "build/\nnode_modules/\n").unwrap();
+
+        // Create directory structure
+        fs::create_dir(root.join("src")).unwrap();
+        File::create(root.join("src/main.rs")).unwrap();
+
+        fs::create_dir(root.join("build")).unwrap();
+        File::create(root.join("build/output.exe")).unwrap();
+
+        fs::create_dir(root.join("node_modules")).unwrap();
+        File::create(root.join("node_modules/package.json")).unwrap();
+
+        let paths = treewalk_ignore(root, ".gitignore", None, None).unwrap();
+
+        // Convert to relative paths
+        let relative_paths: Vec<String> = paths
+            .iter()
+            .map(|p| {
+                p.strip_prefix(root)
+                    .unwrap()
+                    .to_string_lossy()
+                    .replace('\\', "/")
+            })
+            .collect();
+
+        // Should not include anything from build/ or node_modules/
+        assert!(relative_paths.contains(&".gitignore".to_string()));
+        assert!(relative_paths.contains(&"src/main.rs".to_string()));
+        assert!(!relative_paths.iter().any(|p| p.starts_with("build/")));
+        assert!(!relative_paths
+            .iter()
+            .any(|p| p.starts_with("node_modules/")));
+    }
+
+    #[test]
+    fn test_treewalk_ignore_cascading() {
+        use std::fs::{self, File};
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Root .gitignore
+        fs::write(root.join(".gitignore"), "*.tmp\n").unwrap();
+
+        // Create subdirectory with its own .gitignore
+        fs::create_dir(root.join("src")).unwrap();
+        fs::write(root.join("src/.gitignore"), "*.log\n").unwrap();
+
+        // Create files
+        File::create(root.join("root.txt")).unwrap();
+        File::create(root.join("root.tmp")).unwrap();
+        File::create(root.join("src/main.rs")).unwrap();
+        File::create(root.join("src/debug.log")).unwrap();
+        File::create(root.join("src/temp.tmp")).unwrap();
+
+        let paths = treewalk_ignore(root, ".gitignore", None, None).unwrap();
+
+        // Convert to relative paths
+        let relative_paths: Vec<String> = paths
+            .iter()
+            .map(|p| {
+                p.strip_prefix(root)
+                    .unwrap()
+                    .to_string_lossy()
+                    .replace('\\', "/")
+            })
+            .collect();
+
+        // Root level: *.tmp ignored
+        assert!(relative_paths.contains(&".gitignore".to_string()));
+        assert!(relative_paths.contains(&"root.txt".to_string()));
+        assert!(!relative_paths.contains(&"root.tmp".to_string()));
+
+        // Src level: both *.tmp (inherited) and *.log (local) ignored
+        assert!(relative_paths.contains(&"src/.gitignore".to_string()));
+        assert!(relative_paths.contains(&"src/main.rs".to_string()));
+        assert!(!relative_paths.contains(&"src/debug.log".to_string()));
+        assert!(!relative_paths.contains(&"src/temp.tmp".to_string()));
+    }
+
+    #[test]
+    fn test_treewalk_ignore_empty_gitignore() {
+        use std::fs::{self, File};
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Create empty .gitignore
+        fs::write(root.join(".gitignore"), "").unwrap();
+
+        // Create files
+        File::create(root.join("file1.txt")).unwrap();
+        File::create(root.join("file2.log")).unwrap();
+
+        let paths = treewalk_ignore(root, ".gitignore", None, None).unwrap();
+
+        // All files should be included
+        assert_eq!(paths.len(), 3); // .gitignore, file1.txt, file2.log
+    }
+
+    #[test]
+    fn test_treewalk_ignore_nonexistent_path() {
+        let result = treewalk_ignore("/this/path/should/not/exist", ".gitignore", None, None);
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            TreewalkError::IoError(e) => {
+                assert_eq!(e.kind(), io::ErrorKind::NotFound);
+            }
+            _ => panic!("Expected IoError with NotFound"),
+        }
+    }
+
+    #[test]
+    fn test_treewalk_ignore_file_not_directory() {
+        use std::fs::File;
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let file_path = temp_dir.path().join("file.txt");
+        File::create(&file_path).unwrap();
+
+        let result = treewalk_ignore(&file_path, ".gitignore", None, None);
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            TreewalkError::IoError(e) => {
+                assert_eq!(e.kind(), io::ErrorKind::InvalidInput);
+            }
+            _ => panic!("Expected IoError with InvalidInput"),
+        }
+    }
+
+    #[test]
+    fn test_treewalk_ignore_with_initial_spec() {
+        use std::fs::{self, File};
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Create initial spec with *.bak pattern
+        let initial_spec = IgnoreSpec::from_lines(vec!["*.bak"]).unwrap();
+
+        // Create .gitignore with additional patterns
+        fs::write(root.join(".gitignore"), "*.tmp\n").unwrap();
+
+        // Create files
+        File::create(root.join("keep.txt")).unwrap();
+        File::create(root.join("temp.tmp")).unwrap();
+        File::create(root.join("backup.bak")).unwrap();
+
+        let paths = treewalk_ignore(root, ".gitignore", None, Some(&initial_spec)).unwrap();
+
+        // Convert to filenames
+        let filenames: Vec<String> = paths
+            .iter()
+            .map(|p| p.file_name().unwrap().to_string_lossy().to_string())
+            .collect();
+
+        // Should exclude both *.tmp (from .gitignore) and *.bak (from initial spec)
+        assert_eq!(filenames.len(), 2);
+        assert!(filenames.contains(&".gitignore".to_string()));
+        assert!(filenames.contains(&"keep.txt".to_string()));
+        assert!(!filenames.contains(&"temp.tmp".to_string()));
+        assert!(!filenames.contains(&"backup.bak".to_string()));
+    }
+
+    #[test]
+    fn test_ignore_spec_matches_directory() {
+        let spec = IgnoreSpec::from_lines(vec!["build/", "dist/"]).unwrap();
+
+        // Directory patterns should match directories
+        assert!(spec.matches_dir("build").unwrap());
+        assert!(spec.matches_dir("dist").unwrap());
+
+        // But not files with the same name
+        assert!(!spec.matches("build").unwrap());
+        assert!(!spec.matches("dist").unwrap());
+    }
+
+    #[test]
+    fn test_treewalk_ignore_multiple_ignore_types() {
+        use std::fs::{self, File};
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Create both .gitignore and .customignore
+        fs::write(root.join(".gitignore"), "*.tmp\n").unwrap();
+        fs::write(root.join(".customignore"), "*.log\n").unwrap();
+
+        // Create files
+        File::create(root.join("keep.txt")).unwrap();
+        File::create(root.join("temp.tmp")).unwrap();
+        File::create(root.join("debug.log")).unwrap();
+
+        // Use .gitignore
+        let paths = treewalk_ignore(root, ".gitignore", None, None).unwrap();
+        let filenames: Vec<String> = paths
+            .iter()
+            .map(|p| p.file_name().unwrap().to_string_lossy().to_string())
+            .collect();
+
+        // .gitignore rules apply, .customignore is treated as regular file
+        assert!(filenames.contains(&".gitignore".to_string()));
+        assert!(filenames.contains(&".customignore".to_string()));
+        assert!(filenames.contains(&"keep.txt".to_string()));
+        assert!(filenames.contains(&"debug.log".to_string())); // Not ignored by .gitignore
+        assert!(!filenames.contains(&"temp.tmp".to_string())); // Ignored by .gitignore
+
+        // Use .customignore
+        let paths = treewalk_ignore(root, ".customignore", None, None).unwrap();
+        let filenames: Vec<String> = paths
+            .iter()
+            .map(|p| p.file_name().unwrap().to_string_lossy().to_string())
+            .collect();
+
+        // .customignore rules apply, .gitignore is treated as regular file
+        assert!(filenames.contains(&".gitignore".to_string()));
+        assert!(filenames.contains(&".customignore".to_string()));
+        assert!(filenames.contains(&"keep.txt".to_string()));
+        assert!(filenames.contains(&"temp.tmp".to_string())); // Not ignored by .customignore
+        assert!(!filenames.contains(&"debug.log".to_string())); // Ignored by .customignore
     }
 }
