@@ -99,6 +99,14 @@
 
 ## Additional Work Not in Original Plan
 
+### Unicode Normalization Tie-Breaking Fix:
+
+- [x] Updated treewalk-spec.md Section 4.1 to specify deterministic tie-breaking rule
+- [x] Updated listdir() implementation to use tuple sorting with original bytes as tie-breaker
+- [x] Fixed test expectations in spec to match correct byte ordering
+- [x] Added explicit test for unicode normalization tie-breaking behavior
+- [x] Verified all tests pass with 100% coverage
+
 ### Rust CLI Updates:
 
 - [ ] Remove deprecated options from Rust CLI (`--recursive`, `--no-recursive`, `--exclude`, `--max-depth`)

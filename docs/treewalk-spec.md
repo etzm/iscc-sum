@@ -148,8 +148,9 @@ All directory entries **MUST** be sorted using the following algorithm:
 3. Sort entries by comparing the resulting byte sequences lexicographically
 
 When multiple entries have identical names after NFC normalization, implementations **MUST** yield all such
-entries in the order they are returned by the storage system's listing API. This ensures deterministic output
-even when storage systems allow multiple entries with equivalent names.
+entries sorted by lexicographically comparing their original, pre-normalization UTF-8 encoded byte sequences as
+a tie-breaker. This ensures deterministic output even when storage systems allow multiple entries with
+equivalent names.
 
 > [!WARNING]
 > Some storage systems (e.g., case-insensitive filesystems) may prevent creation of entries with names that
@@ -167,8 +168,8 @@ After NFC normalization and UTF-8 encoding, the sorted order is:
 
 #### Why deterministic duplicate handling?
 
-When entries have identical normalized names, we yield all of them to ensure consistent output across
-implementations. This approach:
+When entries have identical normalized names, we yield all of them in a deterministic order based on their
+original byte sequences to ensure consistent output across implementations. This approach:
 
 - **Preserves information**: No entries are silently dropped
 - **Maintains determinism**: The same storage state always produces the same output
@@ -370,8 +371,8 @@ Implementations **MUST** produce identical ordering for these test cases:
 **Expected (Base Treewalk):**
 
 ```yaml
-- test_dir/Café.txt         # First NFC form
-- "test_dir/Cafe\u0301.txt" # NFD form (sorted by NFC but preserves original form)
+- "test_dir/Cafe\u0301.txt" # NFD form (comes first due to byte ordering)
+- test_dir/Café.txt         # NFC form
 - test_dir/caffe.txt
 - test_dir/café.txt
 ```
@@ -394,8 +395,8 @@ Implementations **MUST** produce identical ordering for these test cases:
 
 ```yaml
 # Both entries yielded if storage allows both, preserving their original forms
+- "test_dir/e\u0301.txt" # NFD form (comes first due to byte ordering)
 - test_dir/é.txt         # NFC form
-- "test_dir/e\u0301.txt" # NFD form
 ```
 
 > [!NOTE]

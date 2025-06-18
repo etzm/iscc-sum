@@ -34,7 +34,7 @@ def listdir(path):
     """
     with os.scandir(path) as it:
         filtered = [e for e in it if not e.is_symlink()]
-    return sorted(filtered, key=lambda e: normalize("NFC", e.name).encode("utf-8"))
+    return sorted(filtered, key=lambda e: (normalize("NFC", e.name).encode("utf-8"), e.name.encode("utf-8")))
 
 
 def treewalk(path):

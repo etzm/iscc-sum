@@ -98,6 +98,25 @@ class TestListdir:
         assert len(result) == 1
         assert result[0].name == "file.txt"
 
+    def test_unicode_normalization_tie_breaking(self, fs):
+        # type: (FakeFilesystem) -> None
+        """Test tie-breaking for entries with identical NFC-normalized names."""
+        fs.create_dir("/test")
+        # Create two files that normalize to the same NFC form
+        # but have different original byte sequences
+        fs.create_file("/test/Café.txt")  # NFC form: Caf\xc3\xa9.txt
+        fs.create_file("/test/Cafe\u0301.txt")  # NFD form: Cafe\xcc\x81.txt
+        result = listdir("/test")
+        names = [e.name for e in result]
+
+        # Both files should exist
+        assert len(names) == 2
+
+        # NFD form should come first due to byte ordering
+        # b'Cafe\xcc\x81.txt' < b'Caf\xc3\xa9.txt'
+        assert names[0] == "Cafe\u0301.txt"
+        assert names[1] == "Café.txt"
+
 
 class TestTreewalk:
     """Tests for the treewalk function."""
