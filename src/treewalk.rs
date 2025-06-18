@@ -530,6 +530,41 @@ fn treewalk_ignore_recursive(
     Ok(())
 }
 
+/// Walk a directory tree with ISCC-specific ignore rules.
+///
+/// Automatically filters out:
+/// - Files ending with '.iscc.json' (ISCC metadata files)
+/// - Paths matching patterns in '.isccignore' files
+///
+/// Uses the same deterministic ordering as treewalk_ignore.
+///
+/// # Arguments
+///
+/// * `path` - Directory path to walk
+///
+/// # Returns
+///
+/// Iterator of absolute file paths for non-ignored, non-ISCC metadata files
+pub fn treewalk_iscc<P: AsRef<Path>>(path: P) -> Result<Vec<std::path::PathBuf>, TreewalkError> {
+    let path = path.as_ref();
+
+    // Use treewalk_ignore with .isccignore files
+    let all_paths = treewalk_ignore(path, ".isccignore", None, None)?;
+
+    // Filter out files ending with .iscc.json
+    let filtered_paths: Vec<std::path::PathBuf> = all_paths
+        .into_iter()
+        .filter(|p| {
+            p.file_name()
+                .and_then(|name| name.to_str())
+                .map(|name| !name.ends_with(".iscc.json"))
+                .unwrap_or(true)
+        })
+        .collect();
+
+    Ok(filtered_paths)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1388,6 +1423,162 @@ mod tests {
         assert!(filenames.contains(&"keep.txt".to_string()));
         assert!(filenames.contains(&"temp.tmp".to_string())); // Not ignored by .customignore
         assert!(!filenames.contains(&"debug.log".to_string())); // Ignored by .customignore
+    }
+
+    #[test]
+    fn test_treewalk_iscc_filters_metadata() {
+        use std::fs::File;
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Create files including .iscc.json files
+        File::create(root.join("document.txt")).unwrap();
+        File::create(root.join("document.iscc.json")).unwrap();
+        File::create(root.join("image.png")).unwrap();
+        File::create(root.join("image.iscc.json")).unwrap();
+        File::create(root.join("data.iscc.json")).unwrap();
+
+        let paths = treewalk_iscc(root).unwrap();
+
+        // Convert to filenames
+        let filenames: Vec<String> = paths
+            .iter()
+            .map(|p| p.file_name().unwrap().to_string_lossy().to_string())
+            .collect();
+
+        // Should include regular files but not .iscc.json files
+        assert_eq!(filenames.len(), 2);
+        assert!(filenames.contains(&"document.txt".to_string()));
+        assert!(filenames.contains(&"image.png".to_string()));
+        assert!(!filenames.contains(&"document.iscc.json".to_string()));
+        assert!(!filenames.contains(&"image.iscc.json".to_string()));
+        assert!(!filenames.contains(&"data.iscc.json".to_string()));
+    }
+
+    #[test]
+    fn test_treewalk_iscc_respects_isccignore() {
+        use std::fs::{self, File};
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Create .isccignore with patterns
+        fs::write(root.join(".isccignore"), "*.tmp\nbuild/\n").unwrap();
+
+        // Create files and directories
+        File::create(root.join("keep.txt")).unwrap();
+        File::create(root.join("temp.tmp")).unwrap();
+        File::create(root.join("data.iscc.json")).unwrap();
+
+        fs::create_dir(root.join("build")).unwrap();
+        File::create(root.join("build/output.exe")).unwrap();
+        File::create(root.join("build/manifest.iscc.json")).unwrap();
+
+        fs::create_dir(root.join("src")).unwrap();
+        File::create(root.join("src/main.rs")).unwrap();
+        File::create(root.join("src/main.iscc.json")).unwrap();
+
+        let paths = treewalk_iscc(root).unwrap();
+
+        // Convert to relative paths
+        let relative_paths: Vec<String> = paths
+            .iter()
+            .map(|p| {
+                p.strip_prefix(root)
+                    .unwrap()
+                    .to_string_lossy()
+                    .replace('\\', "/")
+            })
+            .collect();
+
+        // Check that both .isccignore patterns and .iscc.json filtering work
+        assert!(relative_paths.contains(&".isccignore".to_string())); // ignore files are included
+        assert!(relative_paths.contains(&"keep.txt".to_string()));
+        assert!(relative_paths.contains(&"src/main.rs".to_string()));
+
+        // Should NOT include:
+        assert!(!relative_paths.contains(&"temp.tmp".to_string())); // ignored by pattern
+        assert!(!relative_paths.iter().any(|p| p.starts_with("build/"))); // ignored directory
+        assert!(!relative_paths.contains(&"data.iscc.json".to_string())); // .iscc.json file
+        assert!(!relative_paths.contains(&"src/main.iscc.json".to_string())); // .iscc.json file
+    }
+
+    #[test]
+    fn test_treewalk_iscc_cascading_ignore() {
+        use std::fs::{self, File};
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let root = temp_dir.path();
+
+        // Root .isccignore
+        fs::write(root.join(".isccignore"), "*.log\n").unwrap();
+
+        // Create subdirectory with its own .isccignore
+        fs::create_dir(root.join("subdir")).unwrap();
+        fs::write(root.join("subdir/.isccignore"), "*.tmp\n").unwrap();
+
+        // Create files
+        File::create(root.join("root.txt")).unwrap();
+        File::create(root.join("root.log")).unwrap();
+        File::create(root.join("root.iscc.json")).unwrap();
+
+        File::create(root.join("subdir/file.txt")).unwrap();
+        File::create(root.join("subdir/debug.log")).unwrap();
+        File::create(root.join("subdir/temp.tmp")).unwrap();
+        File::create(root.join("subdir/file.iscc.json")).unwrap();
+
+        let paths = treewalk_iscc(root).unwrap();
+
+        // Convert to relative paths
+        let relative_paths: Vec<String> = paths
+            .iter()
+            .map(|p| {
+                p.strip_prefix(root)
+                    .unwrap()
+                    .to_string_lossy()
+                    .replace('\\', "/")
+            })
+            .collect();
+
+        // Check cascading ignore rules + .iscc.json filtering
+        assert!(relative_paths.contains(&".isccignore".to_string()));
+        assert!(relative_paths.contains(&"root.txt".to_string()));
+        assert!(relative_paths.contains(&"subdir/.isccignore".to_string()));
+        assert!(relative_paths.contains(&"subdir/file.txt".to_string()));
+
+        // Should NOT include:
+        assert!(!relative_paths.contains(&"root.log".to_string())); // ignored by root .isccignore
+        assert!(!relative_paths.contains(&"root.iscc.json".to_string())); // .iscc.json file
+        assert!(!relative_paths.contains(&"subdir/debug.log".to_string())); // ignored by inherited pattern
+        assert!(!relative_paths.contains(&"subdir/temp.tmp".to_string())); // ignored by local .isccignore
+        assert!(!relative_paths.contains(&"subdir/file.iscc.json".to_string()));
+        // .iscc.json file
+    }
+
+    #[test]
+    fn test_treewalk_iscc_empty_directory() {
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let paths = treewalk_iscc(temp_dir.path()).unwrap();
+
+        assert_eq!(paths.len(), 0);
+    }
+
+    #[test]
+    fn test_treewalk_iscc_nonexistent_path() {
+        let result = treewalk_iscc("/this/path/should/not/exist");
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            TreewalkError::IoError(e) => {
+                assert_eq!(e.kind(), io::ErrorKind::NotFound);
+            }
+            _ => panic!("Expected IoError with NotFound"),
+        }
     }
 
     #[test]
