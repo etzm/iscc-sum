@@ -77,10 +77,12 @@ markdown_extensions:
 
 nav:
   - Overview: index.md
+  - Quick Start: quickstart.md
   - Specifications:
 #    - specifications/index.md
     - TreeWalk: specifications/treewalk.md
   - Developers:
-      Readme: developers/index.md
+      - Readme: developers/index.md
+
 
 
