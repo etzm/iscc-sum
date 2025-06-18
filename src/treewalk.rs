@@ -621,20 +621,29 @@ mod tests {
         // café (NFC: é as single codepoint U+00E9)
         File::create(dir_path.join("café")).unwrap();
         // café (NFD: e + combining acute accent U+0065 U+0301)
-        File::create(dir_path.join("cafe\u{0301}")).unwrap();
+        // Note: On macOS, this might result in the same file as above due to filesystem normalization
+        let _ = File::create(dir_path.join("cafe\u{0301}"));
         // Different file to ensure sorting works
         File::create(dir_path.join("cafd")).unwrap();
 
         let entries = listdir(dir_path).unwrap();
 
-        // Should have all 3 files
-        assert_eq!(entries.len(), 3);
+        // On macOS, the filesystem may normalize Unicode, so we might have 2 or 3 files
+        assert!(entries.len() >= 2);
 
-        // Verify correct ordering - normalized forms should sort together
+        // Verify correct ordering
         assert_eq!(entries[0].name, "cafd");
-        // The two café variants should be adjacent, original bytes determine order
-        assert!(entries[1].name == "café" || entries[1].name == "cafe\u{0301}");
-        assert!(entries[2].name == "café" || entries[2].name == "cafe\u{0301}");
+
+        // On macOS, both café representations will be normalized to the same file
+        // On other systems, we should have both variants
+        if entries.len() == 3 {
+            // The two café variants should be adjacent, original bytes determine order
+            assert!(entries[1].name == "café" || entries[1].name == "cafe\u{0301}");
+            assert!(entries[2].name == "café" || entries[2].name == "cafe\u{0301}");
+        } else {
+            // On macOS, we'll have just one café file (in NFD form)
+            assert!(entries[1].name.nfc().collect::<String>() == "café");
+        }
     }
 
     #[test]
@@ -648,28 +657,41 @@ mod tests {
         // Create files that normalize to the same string
         // These will have the same normalized form but different original bytes
         File::create(dir_path.join("Å")).unwrap(); // U+00C5 (Latin Capital Letter A with Ring Above)
-        File::create(dir_path.join("A\u{030A}")).unwrap(); // U+0041 U+030A (A + Combining Ring Above)
+        let _ = File::create(dir_path.join("A\u{030A}")); // U+0041 U+030A (A + Combining Ring Above)
         File::create(dir_path.join("B")).unwrap(); // Regular B for comparison
 
         let entries = listdir(dir_path).unwrap();
 
-        assert_eq!(entries.len(), 3);
+        // On macOS, the filesystem may normalize these to the same file
+        assert!(entries.len() >= 2);
 
-        // All entries should be present
+        // Check that we have B
         let names: Vec<&str> = entries.iter().map(|e| e.name.as_str()).collect();
-        assert!(names.contains(&"Å"));
-        assert!(names.contains(&"A\u{030A}"));
         assert!(names.contains(&"B"));
 
-        // The two forms of Å should be adjacent in the sorted list
-        let a_ring_positions: Vec<usize> = entries
-            .iter()
-            .enumerate()
-            .filter(|(_, e)| e.name == "Å" || e.name == "A\u{030A}")
-            .map(|(i, _)| i)
-            .collect();
-        assert_eq!(a_ring_positions.len(), 2);
-        assert_eq!(a_ring_positions[1] - a_ring_positions[0], 1); // They are adjacent
+        if entries.len() == 3 {
+            // On filesystems that preserve both forms
+            assert!(names.contains(&"Å"));
+            assert!(names.contains(&"A\u{030A}"));
+
+            // The two forms of Å should be adjacent in the sorted list
+            let a_ring_positions: Vec<usize> = entries
+                .iter()
+                .enumerate()
+                .filter(|(_, e)| e.name == "Å" || e.name == "A\u{030A}")
+                .map(|(i, _)| i)
+                .collect();
+            assert_eq!(a_ring_positions.len(), 2);
+            assert_eq!(a_ring_positions[1] - a_ring_positions[0], 1); // They are adjacent
+        } else {
+            // On macOS, we expect 2 files: one form of Å and B
+            assert_eq!(entries.len(), 2);
+            // Check that we have some form of Å (normalized)
+            let has_a_ring = names
+                .iter()
+                .any(|&name| name.nfc().collect::<String>() == "Å");
+            assert!(has_a_ring);
+        }
     }
 
     #[test]
