@@ -52,6 +52,11 @@ Both versions must be kept in sync.
 The project uses [Release Please](https://github.com/googleapis/release-please) for automated release
 management.
 
+!!! note "v0.1.0 Release Exception"
+    For the v0.1.0 release, the crates.io publishing step has been temporarily disabled in the release workflow.
+    Only the Python package will be published to PyPI. This is documented in issue #[TBD] and the crates.io
+    publishing will be restored for future releases.
+
 ### How It Works
 
 1. **Commit to main branch** - Use conventional commit messages:
