@@ -1,33 +1,63 @@
 # Quick Start Guide
 
 Get up and running with ISCC-SUM in minutes! This guide shows you how to install and use the command-line tool
-to generate content fingerprints for your files.
+to generate similarity-preserving ISCC checksums for files and directories.
 
-## Installation in 10 Seconds
+## :rocket: Installation in 10 Seconds
 
-The fastest way to use ISCC-SUM is with `uvx` (no installation required):
+The fastest way to use ISCC-SUM is with UV:
+
+### Step 1: Install UV (One-time Setup)
+
+UV is a modern Python tool installer that handles everything for you - including Python itself!
+
+=== "Linux/macOS"
+
+    ```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
+
+=== "Windows"
+
+    ```powershell
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+
+!!! tip "After Installation"
+    Close and reopen your terminal to ensure UV is available in your PATH.
+
+### Step 2: Run ISCC-SUM Instantly
+
+Now you can run ISCC-SUM without any further installation:
 
 ```bash
 uvx iscc-sum myfile.txt
 ```
 
-That's it! The tool downloads automatically and runs.
-
-## Permanent Installation
+## :package: Permanent Installation
 
 For frequent use, install ISCC-SUM globally:
 
 ```bash
-# Using uv (recommended)
 uv tool install iscc-sum
-
-# Or using pip
-pip install iscc-sum
 ```
 
-## Basic Examples
+After installation, you can simply type `iscc-sum` from anywhere in your terminal.
+
+## :sparkles: Basic Examples
+
+
+!!! question "What's an ISCC Checksum?"
+    Think of it like a unique ID for your file's content. If the file changes even slightly, the fingerprint 
+    changes too. This helps you:
+
+    - :mag: Detect if files have been modified
+    - :gemini: Find duplicate or similar files
+    - :shield: Verify file integrity
 
 ### Generate a checksum for a single file
+
+Open your terminal in the folder containing your file, then run:
 
 ```bash
 iscc-sum document.pdf
@@ -39,7 +69,11 @@ Output:
 ISCC:KAATT7GQ6V5CDXEHRJPQBU3YH7V2XMCSADJWV3CZQFOPH5LOGZQQ  document.pdf
 ```
 
+The long string starting with "ISCC:" is your file's unique fingerprint.
+
 ### Process multiple files
+
+To process all JPEG images in a folder:
 
 ```bash
 iscc-sum *.jpg
@@ -53,19 +87,26 @@ ISCC:KAAQZVGNJY4D2IFXEWV6DZF5JMHZ2C2ZXSOD5RCQGQEMAVVZ5VIA  image2.jpg
 ISCC:KAASFWXNH6S3S7OLJQMGOQNLSCZ74CTQV3SJVHGJJ76SUXKGDZXQ  image3.jpg
 ```
 
+!!! tip "Wildcard Patterns"
+    The `*` symbol means "all files". So `*.jpg` means "all files ending with .jpg"
+
 ### Verify file integrity
 
-Save checksums to a file:
+This is useful for checking if your files have been modified or corrupted.
+
+**Step 1: Save checksums to a file**
 
 ```bash
 iscc-sum *.txt -o checksums.iscc
 ```
 
-> [!NOTE]
-> The `-o` option ensures cross-platform compatible output (UTF-8, LF line endings), avoiding issues with shell
-> redirection on Windows.
+This creates a file called `checksums.iscc` containing fingerprints of all .txt files.
 
-Later, verify the files haven't changed:
+!!! note "Cross-platform Compatibility"
+    The `-o` option ensures cross-platform compatible output (UTF-8, LF line endings), avoiding issues with shell
+    redirection on Windows.
+
+**Step 2: Later, verify the files haven't changed**
 
 ```bash
 iscc-sum --check checksums.iscc
@@ -80,21 +121,29 @@ file3.txt: FAILED
 iscc-sum: WARNING: 1 computed checksum did NOT match
 ```
 
-## Tree Mode - Process Entire Directories
+This tells you that `file3.txt` has been modified since you created the checksums.
 
-Generate a single ISCC for an entire directory structure:
+## :file_folder: Tree Mode - Process Entire Directories
+
+Sometimes you want a single fingerprint for an entire folder and all its contents. This is called "tree mode".
 
 ```bash
 iscc-sum --tree ./my-project
 ```
 
-This creates a unique fingerprint for the complete directory, perfect for:
+!!! example "What Tree Mode Captures"
+    This creates one unique fingerprint that represents:
 
-- Versioning entire codebases
-- Archiving folder structures
-- Detecting changes in project directories
+    - :page_facing_up: All files in the folder
+    - :file_folder: All subfolders and their files
+    - :building_construction: The folder structure itself
 
-## Comparison with Familiar Tools
+!!! tip "When to use tree mode"
+    - :camera: Creating a "snapshot" of a project folder
+    - :mag: Checking if anything in a folder has changed
+    - :package: Archiving or backing up folder structures
+
+## :balance_scale: Comparison with Familiar Tools
 
 If you've used `md5sum` or `sha256sum`, you'll feel right at home:
 
@@ -102,23 +151,18 @@ If you've used `md5sum` or `sha256sum`, you'll feel right at home:
 | ------------ | -------------------- | ---------------------------- |
 | md5sum       | `md5sum file.txt`    | `md5sum -c sums.md5`         |
 | sha256sum    | `sha256sum file.txt` | `sha256sum -c sums.sha256`   |
-| **iscc-sum** | `iscc-sum file.txt`  | `iscc-sum --check sums.iscc` |
+| **iscc-sum** | `iscc-sum file.txt`  | `iscc-sum -c sums.iscc` |
 
-### Key Differences
+!!! success "Key Advantages"
+    Unlike traditional checksums, ISCC-SUM:
 
-Unlike traditional checksums, ISCC codes:
+    - :brain: Are **content-aware** - similar files produce similar codes
+    - :globe_with_meridians: Follow an **ISO standard** - ensuring global interoperability
+    - :zap: Process files **50-130x faster** than the ISO reference implementation
 
-- Are **content-aware** - similar files produce similar codes
-- Follow an **ISO standard** - ensuring global interoperability
-- Process files **50-130x faster** than the ISO reference implementation
+## :rocket: What's Next?
 
-## What's Next?
-
-- **CLI Power Users**: See the [User Guide](user-guide.md) for advanced options
-- **Python Developers**: Check out the [Developer Guide](developers/index.md) for API usage
-- **Learn More**: Read about [ISCC specifications](specifications/index.md)
-
-## Need Help?
-
-Run `iscc-sum --help` for a complete list of options, or check our [User Guide](user-guide.md) for detailed
-documentation.
+!!! abstract "Explore Further"
+    - :computer: **CLI Power Users**: See the [User Guide](user-guide.md) for advanced options
+    - :snake: **Python Developers**: Check out the [Developer Guide](developers/) for API usage
+    - :book: **Learn More**: Read about [ISCC specifications](specifications/)

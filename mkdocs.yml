@@ -47,10 +47,15 @@ plugins:
   - glightbox
 
 markdown_extensions:
+  - pymdownx.tabbed:
+      alternate_style: true
   - abbr
   - pymdownx.snippets:
       base_path: ["docs/includes"]
       auto_append: ["abbreviations.md"]
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - tables
   - meta
   - admonition
@@ -80,6 +85,7 @@ markdown_extensions:
 nav:
   - Overview: index.md
   - Quick Start: quickstart.md
+  - User Guide: userguide.md
   - Specifications:
     - Introduction: specifications/index.md
     - TREEWALK: specifications/treewalk.md

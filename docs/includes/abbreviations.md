@@ -30,6 +30,7 @@
 *[actor]: human or non-human (hardware or software) entity that interacts with a system
 *[merkle tree]: tree data structure in which every leaf node is labelled with the hash value of a data element and every non-leaf node is labelled with the hash value of the labels of its child nodes
 *[merkle root]: roor node of a merkle tree
+*[ISCC-SUM]: ISCC based checkum and simlilarity hash
 *[ISCC processor]: application that generates ISCCs for digital content
 *[ISCC]: International Standard Content Code
 *[plain text]: data with a known text encoding that can be transcoded to Unicode
