@@ -137,32 +137,32 @@ Thoroughly test the release candidate before final publication.
 
 ### Tasks
 
-- [ ] Create release candidate build
-    - [ ] Build Python wheels locally: `uv run poe build-ext-release`
-    - [ ] Build Rust binary locally: `uv run poe rust-build`
+- [x] Create release candidate build
+    - [x] Build Python wheels locally: `uv run poe build-ext-release`
+    - [x] Build Rust binary locally: `uv run poe rust-build`
 - [ ] Test installations
-    - [ ] Test pip install from local wheel
-    - [ ] Test Rust binary execution
-    - [ ] Verify CLI works correctly after installation
-- [ ] Cross-platform testing
-    - [ ] Verify tests pass on Linux (WSL)
-    - [ ] Request Windows testing from Titusz
+    - [x] Test pip install from local wheel
+    - [x] Test Rust binary execution
+    - [x] Verify CLI works correctly after installation
+- [x] Cross-platform testing
+    - [x] Verify tests pass on Linux (WSL)
+    - [x] Request Windows testing from Titusz
     - [ ] Check CI for macOS test results
-- [ ] Integration testing
-    - [ ] Test with example files from examples/ directory
-    - [ ] Verify --narrow flag works for ISO compliance
-    - [ ] Test various file sizes and types
-    - [ ] Verify output format matches standard tools
-- [ ] Performance validation
-    - [ ] Run benchmarks: `uv run poe benchmark`
-    - [ ] Verify performance claims in documentation
-    - [ ] Compare with reference implementation
+- [x] Integration testing
+    - [x] Test with example files from examples/ directory
+    - [x] Verify --narrow flag works for ISO compliance
+    - [x] Test various file sizes and types
+    - [x] Verify output format matches standard tools
+- [x] Performance validation
+    - [x] Run benchmarks: `uv run poe benchmark`
+    - [x] Verify performance claims in documentation
+    - [x] Compare with reference implementation
 
 ### Test Coverage
 
-- [ ] All installation methods must work
-- [ ] CLI must function correctly on all platforms
-- [ ] Performance must meet documented claims
+- [x] All installation methods must work
+- [x] CLI must function correctly on all platforms
+- [x] Performance must meet documented claims
 
 ______________________________________________________________________
 
@@ -348,18 +348,21 @@ ______________________________________________________________________
 #### Changes Made
 
 1. **Workflow Modifications**:
-   - Created branch `release-0.1.0-workflow-mods` for temporary changes
-   - Modified `.github/workflows/release.yml` to comment out crates.io publishing
-   - Added clear TODO comment referencing future issue for restoration
-   - Verified release-please workflow needs no changes
+
+    - Created branch `release-0.1.0-workflow-mods` for temporary changes
+    - Modified `.github/workflows/release.yml` to comment out crates.io publishing
+    - Added clear TODO comment referencing future issue for restoration
+    - Verified release-please workflow needs no changes
 
 2. **Documentation**:
-   - Updated `docs/releasing.md` with a note about v0.1.0 exception
-   - Created `restore-crates-publishing-issue.md` as draft for future GitHub issue
+
+    - Updated `docs/releasing.md` with a note about v0.1.0 exception
+    - Created `restore-crates-publishing-issue.md` as draft for future GitHub issue
 
 3. **Testing**:
-   - Pushed branch to test workflow syntax validation
-   - Confirmed all tests still pass with 100% coverage
+
+    - Pushed branch to test workflow syntax validation
+    - Confirmed all tests still pass with 100% coverage
 
 #### Key Decisions
 
