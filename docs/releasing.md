@@ -9,13 +9,13 @@ Python library with Rust extensions.
 
 1. **crates.io account** - For publishing the Rust crate
 
-   - Create an account at https://crates.io
-   - Generate an API token from your account settings
+    - Create an account at https://crates.io
+    - Generate an API token from your account settings
 
 2. **PyPI account** - For publishing the Python package
 
-   - The project uses PyPI trusted publishing (OIDC)
-   - No API token needed - authentication happens through GitHub Actions
+    - The project uses PyPI trusted publishing (OIDC)
+    - No API token needed - authentication happens through GitHub Actions
 
 ### GitHub Repository Secrets
 
@@ -56,29 +56,29 @@ management.
 
 1. **Commit to main branch** - Use conventional commit messages:
 
-   - `feat:` - New features (bumps MINOR version)
-   - `fix:` - Bug fixes (bumps PATCH version)
-   - `feat!:` or `BREAKING CHANGE:` - Breaking changes (bumps MAJOR version)
+    - `feat:` - New features (bumps MINOR version)
+    - `fix:` - Bug fixes (bumps PATCH version)
+    - `feat!:` or `BREAKING CHANGE:` - Breaking changes (bumps MAJOR version)
 
 2. **Release Please creates PR** - Automatically generated when commits are pushed to main
 
-   - Updates version numbers in `Cargo.toml`
-   - Generates/updates CHANGELOG.md
-   - Creates release notes
+    - Updates version numbers in `Cargo.toml`
+    - Generates/updates CHANGELOG.md
+    - Creates release notes
 
 3. **Merge the Release PR** - This triggers:
 
-   - Version sync to `pyproject.toml`
-   - Git tag creation (e.g., `v0.1.0`)
-   - GitHub release creation
+    - Version sync to `pyproject.toml`
+    - Git tag creation (e.g., `v0.1.0`)
+    - GitHub release creation
 
 4. **Release workflow runs** - Triggered by the version tag:
 
-   - Builds binaries for multiple platforms
-   - Builds Python wheels for multiple Python versions
-   - Publishes to crates.io
-   - Publishes to PyPI
-   - Uploads artifacts to GitHub release
+    - Builds binaries for multiple platforms
+    - Builds Python wheels for multiple Python versions
+    - Publishes to crates.io
+    - Publishes to PyPI
+    - Uploads artifacts to GitHub release
 
 ### Release Workflow Details
 
@@ -86,21 +86,21 @@ The release workflow (`release.yml`) performs:
 
 1. **Rust Binary Builds**
 
-   - Linux (x86_64)
-   - Windows (x86_64)
-   - macOS (x86_64, ARM64)
+    - Linux (x86_64)
+    - Windows (x86_64)
+    - macOS (x86_64, ARM64)
 
 2. **Python Wheel Builds**
 
-   - Python 3.10-3.13
-   - Linux, Windows, macOS
-   - Both x86_64 and ARM64 architectures where applicable
+    - Python 3.10-3.13
+    - Linux, Windows, macOS
+    - Both x86_64 and ARM64 architectures where applicable
 
 3. **Publishing**
 
-   - Publishes Rust crate to crates.io
-   - Publishes Python package to PyPI
-   - Creates GitHub release with all artifacts
+    - Publishes Rust crate to crates.io
+    - Publishes Python package to PyPI
+    - Creates GitHub release with all artifacts
 
 ## Manual Release Process
 
@@ -159,21 +159,21 @@ Before creating a release:
 
 1. **Run all checks locally**:
 
-   ```bash
-   uv run poe all
-   ```
+    ```bash
+    uv run poe all
+    ```
 
 2. **Verify CI passes** - Check that all GitHub Actions workflows are green
 
 3. **Test installations**:
 
-   ```bash
-   # Test Rust installation
-   cargo install --path .
+    ```bash
+    # Test Rust installation
+    cargo install --path .
 
-   # Test Python installation
-   pip install -e .
-   ```
+    # Test Python installation
+    pip install -e .
+    ```
 
 ## Troubleshooting
 
@@ -207,9 +207,9 @@ While in 0.x.x versions:
 After a successful release:
 
 1. Verify the release appears on:
-   - GitHub releases page
-   - crates.io
-   - PyPI
+    - GitHub releases page
+    - crates.io
+    - PyPI
 2. Test installation from the published packages
 3. Update any documentation that references the version
 4. Announce the release if appropriate

@@ -83,11 +83,11 @@ def parse_test_vectors_from_spec():
 
                     elif lines[j].startswith("**Expected"):
                         # Extract test type from the line
-                        if "Base Treewalk" in lines[j]:
+                        if "TREEWALK-BASE" in lines[j]:
                             test_case["test_type"] = "base"
-                        elif "Treewalk-Ignore" in lines[j]:
+                        elif "TREEWALK-IGNORE" in lines[j]:
                             test_case["test_type"] = "ignore"
-                        elif "Treewalk-ISCC" in lines[j]:
+                        elif "TREEWALK-ISCC" in lines[j]:
                             test_case["test_type"] = "iscc"
 
                         # Find the yaml block

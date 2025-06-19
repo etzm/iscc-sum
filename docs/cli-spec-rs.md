@@ -22,7 +22,7 @@ deterministic order to ensure consistent output across platforms.
 - `--help` - Display help message and exit
 - `--version` - Output version information and exit
 - `--narrow` - Generate narrow format (2×64-bit) conformant with ISO 24138:2024 (default: 2×128-bit extended
-  format)
+    format)
 
 ### Directory Processing Options
 
@@ -54,8 +54,8 @@ ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2M5AEGQY *document.pdf
 ### Extended Format (default, 256-bit)
 
 - Header: 2 bytes
-  - Byte 1: Main type (0101) | Sub type (0111)
-  - Byte 2: Version (0000) | Length (0000)
+    - Byte 1: Main type (0101) | Sub type (0111)
+    - Byte 2: Version (0000) | Length (0000)
 - Data-Code: 128 bits (16 bytes)
 - Instance-Code: 128 bits (16 bytes)
 - Total: 34 bytes → ~54 characters base32
@@ -63,8 +63,8 @@ ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2M5AEGQY *document.pdf
 ### Narrow Format (--narrow, 128-bit)
 
 - Header: 2 bytes
-  - Byte 1: Main type (0101) | Sub type (0101)
-  - Byte 2: Version (0000) | Length (0000)
+    - Byte 1: Main type (0101) | Sub type (0101)
+    - Byte 2: Version (0000) | Length (0000)
 - Data-Code: 64 bits (8 bytes)
 - Instance-Code: 64 bits (8 bytes)
 - Total: 18 bytes → ~29 characters base32
@@ -80,7 +80,7 @@ ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2M5AEGQY *document.pdf
 # Single file
 isum document.pdf
 
-# Multiple files  
+# Multiple files
 isum *.txt
 
 # Process directory recursively
@@ -112,10 +112,10 @@ cat document.pdf | isum
 6. Use existing Rust library code in `src/lib.rs`
 7. Keep implementation simple and focused on core functionality
 8. Directory traversal MUST produce identical results across platforms:
-   - Sort entries case-sensitively by filename (using UTF-8 byte order)
-   - Process regular files only (skip symlinks, devices, etc.)
-   - Continue processing remaining files if individual files fail
-   - Output files in the order they are processed
+    - Sort entries case-sensitively by filename (using UTF-8 byte order)
+    - Process regular files only (skip symlinks, devices, etc.)
+    - Continue processing remaining files if individual files fail
+    - Output files in the order they are processed
 
 ## Features NOT Included in Minimal Version
 

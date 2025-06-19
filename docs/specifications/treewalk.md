@@ -1,57 +1,23 @@
-# Treewalk - Storage Agnostic Deterministic Incremental Tree Traversal
+# TREEWALK
 
-> **At a Glance**: A deterministic algorithm for traversing hierarchical structures that produces consistent,
-> reproducible ordering across platforms and storage types.
+*Storage Agnostic Deterministic Incremental Tree Traversal*
+
+**Deterministic algorithms for traversing hierarchical structures that produces consistent, reproducible
+ordering across platforms and storage types.**
 
 ## Abstract
 
 This specification defines a layered approach to deterministic tree traversal, consisting of a core algorithm
-and two standard extensions. The base **Treewalk** algorithm provides consistent ordering for hierarchical
-storage structures. The **Treewalk-Ignore** extension adds gitignore-style pattern filtering, while
-**Treewalk-ISCC** provides domain-specific filtering for ISCC metadata. Each layer builds upon the previous,
-ensuring consistent cross-platform ordering while enabling progressive filtering capabilities. The specification
-applies to file systems, archive formats (ZIP, EPUB, DOCX), cloud storage (S3, Azure Blob), and any system with
-directory-like organization.
-
-## Relevance to Scientific Data: Zarr and OME-NGFF
-
-!!! note
-
-    The bioimaging community's adoption of Zarr-based formats like OME-NGFF makes deterministic tree traversal
-    essential for reproducible scientific workflows.
-
-### Why Treewalk Matters for Zarr/OME-NGFF
-
-**Zarr** stores N-dimensional arrays as hierarchical directory structures containing thousands of chunk files,
-while **OME-NGFF** (Next-Generation File Format) builds bioimaging standards on top of Zarr. Both formats face
-critical challenges that Treewalk addresses:
-
-1. **Cross-platform reproducibility**: Zarr hierarchies yield different traversal orders on different systems,
-   breaking checksums and making data verification impossible. Treewalk ensures identical ordering whether data
-   resides on Linux, Windows, S3, or within ZIP archives.
-
-2. **Version compatibility**: Zarr v2 uses `.zarray`/`.zgroup` metadata files while v3 uses `zarr.json`.
-   Treewalk's ignore-file prioritization ensures metadata is always discovered before data chunks, regardless of
-   version.
-
-3. **Scalable integrity verification**: Petabyte-scale OME-NGFF datasets contain millions of chunks. Treewalk
-   enables efficient, incremental checksumming by guaranteeing chunk processing order remains consistent across
-   implementations.
-
-4. **Storage-agnostic identification**: Whether Zarr data lives in local filesystems, cloud buckets, or is
-   packaged for distribution, Treewalk is the foundation for producing identical content identifiers, enabling
-   reliable data citation and provenance tracking.
-
-### Real-world Impact
-
-Without deterministic traversal, two researchers cannot verify they have identical Zarr datasets—file listing
-order varies by OS, locale, and storage backend. Treewalk makes reproducible computational science possible by
-ensuring that content-based identifiers remain stable across all environments where scientific data is stored,
-processed, and shared.
+and two standard extensions. The TREEWALK-BASE algorithm provides consistent ordering for hierarchical storage
+structures. The TREEWALK-IGNORE extension adds gitignore-style pattern filtering, while TREEWALK-ISCC provides
+domain-specific filtering for ISCC metadata. Each layer builds upon the previous, ensuring consistent
+cross-platform ordering while enabling progressive filtering capabilities. The specification applies to file
+systems, archive formats (ZIP, EPUB, DOCX), cloud storage (S3, Azure Blob), and any system with directory-like
+organization.
 
 ## Status
 
-This specification is DRAFT as of 2025-06-17.
+This specification is DRAFT as of 2025-06-19.
 
 ## 1. Introduction
 
@@ -64,24 +30,24 @@ layered approach that separates core traversal logic from filtering concerns.
 
 ### 1.2 Scope
 
-This specification defines three layers:
+This specification defines three algorithms:
 
-**Base Treewalk**:
+**TREEWALK-BASE**:
 
 - Deterministic ordering of hierarchical entries
 - Ignore file prioritization for early filtering opportunities
 - Security considerations for reference handling
 
-**Treewalk-Ignore Extension**:
+**TREEWALK-IGNORE Extension**:
 
 - Gitignore-style pattern matching
 - Cascading ignore rules from root to leaf directories
 - Pattern accumulation and inheritance
 
-**Treewalk-ISCC Extension**:
+**TREEWALK-ISCC Extension**:
 
-- ISCC-specific metadata filtering
-- Built on top of Treewalk-Ignore functionality
+- ISCC-specific pattern matching and filtering
+- Built on top of TREEWALK-IGNORE functionality
 - Domain-specific file exclusions
 
 It does NOT cover:
@@ -115,15 +81,15 @@ containing patterns for entries to exclude.
 
 ## 3. Architecture Overview
 
-The Treewalk specification defines a layered architecture where each extension builds upon the previous:
+The TREEWALK specification defines a layered architecture where each extension builds upon the previous:
 
 ```mermaid
 graph TD
-    A[Base Treewalk] --> B[Treewalk-Ignore]
-    B --> C[Treewalk-ISCC]
+    A[TREEWALK-BASE] --> B[TREEWALK-IGNORE]
+    B --> C[TREEWALK-ISCC]
     B --> D[Custom Extensions]
     
-    A -.- E[Deterministic Ordering<br/>Ignore File Priority<br/>Reference Handling]
+    A -.- E[Deterministic Ordering<br/>Ignore-File Priority<br/>Reference Handling]
     B -.- F[Pattern Matching<br/>Cascading Rules<br/>Progressive Filtering]
     C -.- G[ISCC Metadata Filtering<br/>.isccignore Support]
     D -.- H[Domain-specific Rules]
@@ -131,9 +97,9 @@ graph TD
 
 Each layer maintains the core guarantees while adding specific functionality:
 
-- **Base Treewalk**: Provides deterministic ordering across all platforms
-- **Treewalk-Ignore**: Adds configurable filtering with pattern inheritance
-- **Treewalk-ISCC**: Implements ISCC-specific requirements
+- **TREEWALK-BASE**: Provides deterministic ordering across all platforms
+- **TREEWALK-IGNORE**: Adds configurable filtering with pattern inheritance
+- **TREEWALK-ISCC**: Implements ISCC-specific requirements
 - **Custom Extensions**: Enable domain-specific adaptations
 
 ## 4. Core Algorithm Specification
@@ -157,8 +123,8 @@ equivalent names.
 
 !!! warning
 
-    Some storage systems (e.g., case-insensitive filesystems) may prevent creation of entries with names that
-    differ only in case or normalization. In such cases, only the accessible entry will be yielded.
+    Some storage systems (e.g., case-insensitive filesystems) may prevent creation of entries with names that differ
+    only in case or normalization. In such cases, only the accessible entry will be yielded.
 
 #### Example
 
@@ -180,20 +146,20 @@ original byte sequences to ensure consistent output across implementations. This
 - **Respects storage capabilities**: Systems that prevent duplicates naturally have none to yield
 - **Enables verification**: Consumers can detect and handle duplicates as needed
 
-### 4.2 Base Treewalk Algorithm
+### 4.2 TREEWALK-BASE Algorithm
 
 The base algorithm **MUST** yield entries in depth-first order following these rules:
 
 1. **Process each container**: For each directory/container in the traversal:
 
-   - **Ignore files first** - Yield files matching pattern `.*ignore` (e.g., .gitignore, .npmignore) in sorted
-     order
-   - **Regular files second** - Yield all other files in sorted order
-   - **Recurse into sub-containers** - Process subdirectories in sorted order
+    - **Ignore files first** - Yield files matching pattern `.*ignore` (e.g., .gitignore, .npmignore) in sorted
+        order
+    - **Regular files second** - Yield all other files in sorted order
+    - **Recurse into sub-containers** - Process subdirectories in sorted order
 
 2. **Directory representation**: Containers (directories) themselves **MUST NOT** appear in the output. Only
-   files within containers are yielded. The algorithm traverses into directories but does not yield them as
-   entries.
+    files within containers are yielded. The algorithm traverses into directories but does not yield them as
+    entries.
 
 !!! note
 
@@ -212,16 +178,16 @@ The algorithm **MUST NOT** follow references when:
 
 References (symbolic links, redirects) MUST NOT appear in traversal output AND MUST NOT be followed.
 
-## 5. Treewalk-Ignore Extension
+## 5. TREEWALK-IGNORE Extension
 
 ### 5.1 Overview
 
-The **Treewalk-Ignore** extension adds gitignore-style pattern filtering to the base algorithm. It maintains the
+The **TREEWALK-IGNORE** extension adds gitignore-style pattern filtering to the base algorithm. It maintains the
 same deterministic ordering while progressively filtering entries based on accumulated patterns.
 
 ### 5.2 Pattern Processing
 
-When using Treewalk-Ignore:
+When using TREEWALK-IGNORE:
 
 1. The implementation specifies which ignore file to process (e.g., `.gitignore` OR `.npmignore`)
 2. Check for the specified ignore file in each directory
@@ -270,25 +236,25 @@ Yields only:
 
     The ignore file itself is included in the output (unless excluded by a parent ignore file)
 
-## 6. Treewalk-ISCC Extension
+## 6. TREEWALK-ISCC Extension
 
 ### 6.1 Overview
 
-The **Treewalk-ISCC** extension provides ISCC-specific filtering on top of Treewalk-Ignore. It automatically
+The **TREEWALK-ISCC** extension provides ISCC-specific filtering on top of TREEWALK-IGNORE. It automatically
 filters metadata files while respecting `.isccignore` patterns.
 
 ### 6.2 Automatic Exclusions
 
-Treewalk-ISCC **MUST** exclude:
+TREEWALK-ISCC **MUST** exclude:
 
 - Files ending with `.iscc.json` (ISCC metadata files)
 - Any patterns specified in `.isccignore` files
 
 ### 6.3 Implementation
 
-Treewalk-ISCC is implemented as:
+TREEWALK-ISCC is implemented as:
 
-1. Apply Treewalk-Ignore with `.isccignore` as the ignore file name
+1. Apply TREEWALK-IGNORE with `.isccignore` as the ignore file name
 2. Additionally filter out files ending with `.iscc.json`
 
 This layered approach ensures consistent behavior while adding domain-specific rules.
@@ -348,7 +314,7 @@ Implementations **MAY** create additional extensions following the layered patte
 
 ### 8.2 Custom Ignore Files
 
-Treewalk-Ignore implementations **MAY** support different ignore file names by allowing the caller to specify
+TREEWALK-IGNORE implementations **MAY** support different ignore file names by allowing the caller to specify
 which ignore file to process:
 
 - `.gitignore` - Git-style ignores
@@ -364,32 +330,32 @@ which ignore file to process:
 
 Implementations **MUST** produce identical ordering for these test cases:
 
-### 9.1 Base Treewalk Tests
+### 9.1 TREEWALK-BASE Tests
 
 #### Test Case 1: Unicode Normalization
 
 **Structure:**
 
 ```yaml
-- path: Café.txt         # NFC form (U+00E9)
-- path: "Cafe\u0301.txt" # NFD form (U+0065 U+0301)
-- path: café.txt         # NFC form (U+00E9)
-- path: caffe.txt
+  - path: Café.txt       # NFC form (U+00E9)
+  - path: Café.txt      # NFD form (U+0065 U+0301)
+  - path: café.txt       # NFC form (U+00E9)
+  - path: caffe.txt
 ```
 
-**Expected (Base Treewalk):**
+**Expected (TREEWALK-BASE):**
 
 ```yaml
-- "test_dir/Cafe\u0301.txt" # NFD form (comes first due to byte ordering)
-- test_dir/Café.txt         # NFC form
-- test_dir/caffe.txt
-- test_dir/café.txt
+  - test_dir/Café.txt      # NFD form (comes first due to byte ordering)
+  - test_dir/Café.txt       # NFC form
+  - test_dir/caffe.txt
+  - test_dir/café.txt
 ```
 
 !!! note
 
-    On case-insensitive filesystems, only one of "Café.txt" or "café.txt" may be created, resulting in fewer
-    entries in the output.
+    On case-insensitive filesystems, only one of "Café.txt" or "café.txt" may be created, resulting in fewer entries
+    in the output.
 
 #### Test Case 2: Duplicate Normalized Names
 
@@ -397,16 +363,16 @@ Implementations **MUST** produce identical ordering for these test cases:
 
 ```yaml
 # These normalize to the same NFC form
-- path: é.txt          # U+00E9 (precomposed)
-- path: "e\u0301.txt"  # U+0065 U+0301 (decomposed)
+  - path: é.txt        # U+00E9 (precomposed)
+  - path: é.txt       # U+0065 U+0301 (decomposed)
 ```
 
-**Expected (Base Treewalk):**
+**Expected (TREEWALK-BASE):**
 
 ```yaml
 # Both entries yielded if storage allows both, preserving their original forms
-- "test_dir/e\u0301.txt" # NFD form (comes first due to byte ordering)
-- test_dir/é.txt         # NFC form
+  - test_dir/é.txt      # NFD form (comes first due to byte ordering)
+  - test_dir/é.txt       # NFC form
 ```
 
 !!! note
@@ -419,61 +385,61 @@ Implementations **MUST** produce identical ordering for these test cases:
 **Structure:**
 
 ```yaml
-- path: .gitignore
-- path: aaa.txt
-- path: zzz.txt
+  - path: .gitignore
+  - path: aaa.txt
+  - path: zzz.txt
 ```
 
-**Expected (Base Treewalk):**
+**Expected (TREEWALK-BASE):**
 
 ```yaml
-- test_dir/.gitignore
-- test_dir/aaa.txt
-- test_dir/zzz.txt
+  - test_dir/.gitignore
+  - test_dir/aaa.txt
+  - test_dir/zzz.txt
 ```
 
-### 9.2 Treewalk-Ignore Tests
+### 9.2 TREEWALK-IGNORE Tests
 
 #### Test Case 4: Pattern Filtering
 
 **Structure:**
 
 ```yaml
-- path: .gitignore
-  content: "*.log"
-- path: app.py
-- path: debug.log
-- path: error.log
+  - path: .gitignore
+    content: '*.log'
+  - path: app.py
+  - path: debug.log
+  - path: error.log
 ```
 
-**Expected (Treewalk-Ignore with .gitignore):**
+**Expected (TREEWALK-IGNORE with .gitignore):**
 
 ```yaml
-- test_dir/.gitignore
-- test_dir/app.py
+  - test_dir/.gitignore
+  - test_dir/app.py
 ```
 
-### 9.3 Treewalk-ISCC Tests
+### 9.3 TREEWALK-ISCC Tests
 
 #### Test Case 5: ISCC Metadata Filtering
 
 **Structure:**
 
 ```yaml
-- path: .isccignore
-  content: "temp/"
-- path: data.txt
-- path: data.txt.iscc.json
-- path: temp
-  type: dir
-- path: temp/cache.dat
+  - path: .isccignore
+    content: temp/
+  - path: data.txt
+  - path: data.txt.iscc.json
+  - path: temp
+    type: dir
+  - path: temp/cache.dat
 ```
 
-**Expected (Treewalk-ISCC):**
+**Expected (TREEWALK-ISCC):**
 
 ```yaml
-- test_dir/.isccignore
-- test_dir/data.txt
+  - test_dir/.isccignore
+  - test_dir/data.txt
 ```
 
 !!! note

@@ -54,15 +54,13 @@ dev-dependencies = [
     "ruff>=0.5.0",
     "mypy>=1.0",
     "poethepoet>=0.25.0",
-    "mdformat>=0.7.22",
-    "mdformat-gfm>=0.4.1",
-    "mdformat-gfm-alerts>=2.0.0",
     "build>=1.0",
     "bandit>=1.8.3",
     "pyfakefs>=5.8.0",
     "mkdocs-material>=9.6.14",
     "mkdocs-glightbox>=0.4.0",
-    "mdformat-tables>=1.0.0",
+    "mdformat>=0.7.22",
+    "mdformat-mkdocs[recommended]>=4.3.0",
 ]
 
 [tool.ruff]
@@ -109,7 +107,7 @@ py-coverage = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=
 py-coverage-all = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100"
 
 # Markdown formatting
-md-format = { shell = "mdformat --wrap 112 --end-of-line lf *.md docs/*.md", help = "Markdown formating with mdformat" }
+md-format = { shell = "mdformat --wrap 112 --end-of-line lf *.md docs", help = "Markdown formating with mdformat" }
 
 # Check security
 check-security = { cmd = "uv run bandit -r src/ -q", help = "Run security check with bandit" }

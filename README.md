@@ -143,18 +143,18 @@ iscc-sum --similar --threshold 6 *.pdf
 iscc-sum --help  # Show all available options
 
 Options:
-  -c, --check      Read checksums from files and check them
-  --narrow         Generate shorter 128-bit checksums
-  --tag            Create a BSD-style checksum
-  --units          Show Data-Code and Instance-Code components
-  -z, --zero       End each output line with NUL
-  --similar        Find files with similar Data-Codes
-  --threshold      Hamming distance threshold for similarity (default: 12)
-  -t, --tree       Process directory as single unit with combined checksum
-  -q, --quiet      Don't print OK for each verified file
-  --status         Don't output anything, exit code shows success
-  -w, --warn       Warn about improperly formatted lines
-  --strict         Exit non-zero for improperly formatted lines
+-c, --check      Read checksums from files and check them
+--narrow         Generate shorter 128-bit checksums
+--tag            Create a BSD-style checksum
+--units          Show Data-Code and Instance-Code components
+-z, --zero       End each output line with NUL
+--similar        Find files with similar Data-Codes
+--threshold      Hamming distance threshold for similarity (default: 12)
+-t, --tree       Process directory as single unit with combined checksum
+-q, --quiet      Don't print OK for each verified file
+--status         Don't output anything, exit code shows success
+-w, --warn       Warn about improperly formatted lines
+--strict         Exit non-zero for improperly formatted lines
 ```
 
 #### Examples

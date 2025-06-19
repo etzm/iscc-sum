@@ -79,9 +79,10 @@ nav:
   - Overview: index.md
   - Quick Start: quickstart.md
   - Specifications:
-#    - specifications/index.md
-    - TreeWalk: specifications/treewalk.md
-    - ISCC-SUM CLI: specifications/cli.md
+    - Introduction: specifications/index.md
+    - TREEWALK: specifications/treewalk.md
+    - ISCC SUBTYPE WIDE: specifications/wide.md
+    - ISCC CHECKSUM API: specifications/cli.md
   - Developers:
       - Readme: developers/index.md
 
