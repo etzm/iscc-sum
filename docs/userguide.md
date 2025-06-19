@@ -158,7 +158,7 @@ iscc-sum --tag file.txt
 
 #### Narrow Format (128-bit)
 
-For ISO 24138:2024 conformant 128-bit checksums:
+For ISO 24138:2024 conformant 128-bit ISCCs:
 
 ```bash
 iscc-sum --narrow file.txt
