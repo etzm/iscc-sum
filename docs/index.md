@@ -178,15 +178,13 @@ iscc-sum /data/microscopy/*.tiff > checksums.txt
 
 ## Performance Benchmarks
 
-!!! success "Real-world performance on scientific datasets"
+!!! success "Real-world performance of in-memory data processing"
 
-
-Data Size    | Reference | ISCC-SUM     | Speedup
--------------|-------------|------------|---------
-  1 MB        | 5.97 MB/s   | 476.17 MB/s  | 79x
- 10 MB        | 6.48 MB/s   | 956.14 MB/   | 147×
-100 MB       | 6.09 MB/s    | 1121.44 MB/s | 184×
-
+    | Data Size | Reference | ISCC-SUM     | Speedup |
+    | --------- | --------- | ------------ | ------- |
+    | 1 MB      | 5.97 MB/s | 476.17 MB/s  | 79x     |
+    | 10 MB     | 6.48 MB/s | 956.14 MB/   | 147×    |
+    | 100 MB    | 6.09 MB/s | 1121.44 MB/s | 184×    |
 
 ## Get Started Today
 
@@ -226,5 +224,4 @@ ______________________________________________________________________
     Agreement No 101060954). Our mission is to make advanced content identification accessible to the global
     scientific community.
 
-[:material-information-outline: Learn more about ISCC](https://iscc.codes){ .md-button .md-button--primary }
-[:material-email: Contact Us](mailto:info@iscc.codes){ .md-button }
+[:material-information-outline: Learn more about ISCC](https://iscc.io){ .md-button .md-button--primary }
