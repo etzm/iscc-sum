@@ -1,11 +1,13 @@
-"""Copy README.md to documentation index.md"""
+"""Copy README.md and CHANGELOG.md to documentation"""
 
 import re
 from os.path import abspath, dirname, join
 
 HERE = dirname(abspath(__file__))
-SRC = join(HERE, "../README.md")
-DST = join(HERE, "../docs/developers.md")
+README_SRC = join(HERE, "../README.md")
+README_DST = join(HERE, "../docs/developers.md")
+CHANGELOG_SRC = join(HERE, "../CHANGELOG.md")
+CHANGELOG_DST = join(HERE, "../docs/changelog.md")
 
 
 def convert_github_alerts_to_admonitions(text):
@@ -46,14 +48,25 @@ def convert_github_alerts_to_admonitions(text):
 
 def main():
     """Copy root files to documentation site."""
-    with open(SRC, "rt", encoding="utf-8") as infile:
+    # Copy README.md to developers.md
+    with open(README_SRC, "rt", encoding="utf-8") as infile:
         text = infile.read()
 
     # Convert GitHub alerts to mkdocs-material admonitions
     text = convert_github_alerts_to_admonitions(text)
 
-    with open(DST, "wt", encoding="utf-8", newline="\n") as outf:
+    with open(README_DST, "wt", encoding="utf-8", newline="\n") as outf:
         outf.write(text)
+
+    # Copy CHANGELOG.md to changelog.md
+    with open(CHANGELOG_SRC, "rt", encoding="utf-8") as infile:
+        changelog_text = infile.read()
+
+    # Convert GitHub alerts in changelog if any
+    changelog_text = convert_github_alerts_to_admonitions(changelog_text)
+
+    with open(CHANGELOG_DST, "wt", encoding="utf-8", newline="\n") as outf:
+        outf.write(changelog_text)
 
 
 if __name__ == "__main__":

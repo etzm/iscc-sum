@@ -92,6 +92,7 @@ nav:
     - ISCC SUBTYPE WIDE: specifications/wide.md
     - ISCC CHECKSUM API: specifications/cli.md
   - Developers: developers.md
+  - Changelog: changelog.md
 
 
 
