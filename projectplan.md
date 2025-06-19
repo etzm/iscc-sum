@@ -330,10 +330,16 @@ ______________________________________________________________________
    - Ready to merge to main for release
 
 3. **Next Steps**:
-   - Merge current branch to main
-   - Create release commit (version already bumped to 0.1.0)
-   - Push to trigger Release Please workflow
-   - Monitor automated release process
+   - ✅ Merged current branch to main
+   - ✅ Pushed to trigger Release Please workflow
+   - ⚠️ **Issue Found**: GitHub Actions lacks permissions to create PRs
+   - **Action Required**: Repository settings need to be updated to allow GitHub Actions to create pull requests
+
+4. **Alternative Manual Release Process**:
+   Since Release Please cannot create PRs due to permissions, we can proceed with a manual release:
+   - Create a git tag: `git tag v0.1.0`
+   - Push the tag: `git push origin v0.1.0`
+   - This will trigger the Release workflow to build and publish to PyPI
 
 ______________________________________________________________________
 
