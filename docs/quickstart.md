@@ -3,6 +3,64 @@
 Get up and running with ISCC-SUM in minutes! This guide shows you how to install and use the command-line tool
 to generate similarity-preserving ISCC checksums for files and directories.
 
+??? info "New to Terminal/Command Line? Start Here!"
+
+    If you've never used a terminal (also called command line) before, don't worry! Here's a quick primer:
+
+    **What is a Terminal?**
+
+    A terminal is a text-based way to interact with your computer. Instead of clicking buttons, you type commands.
+
+    **How to Open a Terminal:**
+
+    === "Windows"
+
+        - Press ++windows+r++, type `cmd` or `powershell`, and press ++enter++
+        - Or: Right-click the Start button and select "Windows Terminal" or "Command Prompt"
+
+    === "macOS"
+
+        - Press ++cmd+space++, type `terminal`, and press ++enter++
+        - Or: Go to Applications → Utilities → Terminal
+
+    === "Linux"
+
+        - Press ++ctrl+alt+t++
+        - Or: Look for "Terminal" in your applications menu
+
+    **Basic Terminal Commands You'll Need:**
+
+    - `cd foldername` - Navigate into a folder (cd = "change directory")
+    - `cd ..` - Go back to the parent folder
+    - `ls` (macOS/Linux) or `dir` (Windows) - List files in current folder
+    - `pwd` - Show current folder path (print working directory)
+
+    **Example Navigation:**
+
+    ```bash
+    # See where you are
+    pwd
+
+    # List files in current folder
+    ls                    # macOS/Linux
+    dir                   # Windows
+
+    # Navigate to your Documents folder
+    cd Documents
+
+    # Go back one level
+    cd ..
+    ```
+
+    **Tips for Beginners:**
+
+    - :bulb: Commands are case-sensitive on macOS/Linux
+    - :bulb: Press ++tab++ to auto-complete file/folder names
+    - :bulb: Press ++up++ to recall previous commands
+    - :bulb: Type `clear` (macOS/Linux) or `cls` (Windows) to clear the screen
+    - :bulb: Copy text: ++ctrl+c++ (Windows/Linux) or ++cmd+c++ (macOS)
+    - :bulb: Paste text: ++ctrl+v++ (Windows/Linux) or ++cmd+v++ (macOS)
+
 ## :rocket: Installation in 10 Seconds
 
 The fastest way to use ISCC-SUM is with UV:
@@ -170,6 +228,6 @@ If you've used `md5sum` or `sha256sum`, you'll feel right at home:
 
 !!! abstract "Explore Further"
 
-    - :computer: **CLI Power Users**: See the [User Guide](user-guide.md) for advanced options
+    - :computer: **CLI Power Users**: See the [User Guide](user-guide/) for advanced options
     - :snake: **Python Developers**: Check out the [Developer Guide](developers/) for API usage
     - :book: **Learn More**: Read about [ISCC specifications](specifications/)
