@@ -1,5 +1,9 @@
 # ISCC-SUM: High-Performance Content Identification for Science
 
+!!! danger "Early Release - Work In Progress"
+
+    This project is in its early development stage.
+
 <div class="grid cards" markdown>
 
 - :rocket:{ .lg .middle } **50-130× Faster**
