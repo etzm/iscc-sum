@@ -24,6 +24,7 @@ UV is a modern Python tool installer that handles everything for you - including
     ```
 
 !!! tip "After Installation"
+
     Close and reopen your terminal to ensure UV is available in your PATH.
 
 ### Step 2: Run ISCC-SUM Instantly
@@ -46,10 +47,10 @@ After installation, you can simply type `iscc-sum` from anywhere in your termina
 
 ## :sparkles: Basic Examples
 
-
 !!! question "What's an ISCC Checksum?"
-    Think of it like a unique ID for your file's content. If the file changes even slightly, the fingerprint 
-    changes too. This helps you:
+
+    Think of it like a unique ID for your file's content. If the file changes even slightly, the fingerprint changes
+    too. This helps you:
 
     - :mag: Detect if files have been modified
     - :gemini: Find duplicate or similar files
@@ -88,6 +89,7 @@ ISCC:KAASFWXNH6S3S7OLJQMGOQNLSCZ74CTQV3SJVHGJJ76SUXKGDZXQ  image3.jpg
 ```
 
 !!! tip "Wildcard Patterns"
+
     The `*` symbol means "all files". So `*.jpg` means "all files ending with .jpg"
 
 ### Verify file integrity
@@ -103,6 +105,7 @@ iscc-sum *.txt -o checksums.iscc
 This creates a file called `checksums.iscc` containing fingerprints of all .txt files.
 
 !!! note "Cross-platform Compatibility"
+
     The `-o` option ensures cross-platform compatible output (UTF-8, LF line endings), avoiding issues with shell
     redirection on Windows.
 
@@ -132,6 +135,7 @@ iscc-sum --tree ./my-project
 ```
 
 !!! example "What Tree Mode Captures"
+
     This creates one unique fingerprint that represents:
 
     - :page_facing_up: All files in the folder
@@ -139,6 +143,7 @@ iscc-sum --tree ./my-project
     - :building_construction: The folder structure itself
 
 !!! tip "When to use tree mode"
+
     - :camera: Creating a "snapshot" of a project folder
     - :mag: Checking if anything in a folder has changed
     - :package: Archiving or backing up folder structures
@@ -147,13 +152,14 @@ iscc-sum --tree ./my-project
 
 If you've used `md5sum` or `sha256sum`, you'll feel right at home:
 
-| Tool         | Generate Checksum    | Verify Files                 |
-| ------------ | -------------------- | ---------------------------- |
-| md5sum       | `md5sum file.txt`    | `md5sum -c sums.md5`         |
-| sha256sum    | `sha256sum file.txt` | `sha256sum -c sums.sha256`   |
-| **iscc-sum** | `iscc-sum file.txt`  | `iscc-sum -c sums.iscc` |
+| Tool         | Generate Checksum    | Verify Files               |
+| ------------ | -------------------- | -------------------------- |
+| md5sum       | `md5sum file.txt`    | `md5sum -c sums.md5`       |
+| sha256sum    | `sha256sum file.txt` | `sha256sum -c sums.sha256` |
+| **iscc-sum** | `iscc-sum file.txt`  | `iscc-sum -c sums.iscc`    |
 
 !!! success "Key Advantages"
+
     Unlike traditional checksums, ISCC-SUM:
 
     - :brain: Are **content-aware** - similar files produce similar codes
@@ -163,6 +169,7 @@ If you've used `md5sum` or `sha256sum`, you'll feel right at home:
 ## :rocket: What's Next?
 
 !!! abstract "Explore Further"
+
     - :computer: **CLI Power Users**: See the [User Guide](user-guide.md) for advanced options
     - :snake: **Python Developers**: Check out the [Developer Guide](developers/) for API usage
     - :book: **Learn More**: Read about [ISCC specifications](specifications/)
