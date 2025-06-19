@@ -228,6 +228,6 @@ If you've used `md5sum` or `sha256sum`, you'll feel right at home:
 
 !!! abstract "Explore Further"
 
-    - :computer: **CLI Power Users**: See the [User Guide](user-guide/) for advanced options
-    - :snake: **Python Developers**: Check out the [Developer Guide](developers/) for API usage
-    - :book: **Learn More**: Read about [ISCC specifications](specifications/)
+    - :computer: **CLI Power Users**: See the [User Guide](/userguide/) for advanced options
+    - :snake: **Python Developers**: Check out the [Developer Guide](/developers/) for API usage
+    - :book: **Learn More**: Read about [ISCC extensions for BioCodes](/specifications/)

@@ -100,7 +100,13 @@ class TestCrossPlatformCompatibility:
         native_path = str(test_file)
         result = runner.invoke(cli, [native_path])
         assert result.exit_code == 0
-        assert native_path in result.output
+
+        # On all platforms, output should use forward slashes
+        normalized_path = native_path.replace("\\", "/")
+        assert normalized_path in result.output
+
+        # Ensure no backslashes in output (cross-platform consistency)
+        assert "\\" not in result.output
 
         # Test with Path object (should work through Click's path handling)
         result = runner.invoke(cli, [str(test_file)])

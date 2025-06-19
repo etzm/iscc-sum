@@ -16,6 +16,23 @@ EXIT_VERIFICATION_FAILURE = 1
 EXIT_ERROR = 2
 
 
+def _normalize_path_display(path):
+    # type: (str) -> str
+    """Normalize file path for display by converting backslashes to forward slashes.
+
+    This ensures consistent output across platforms, particularly on Windows.
+
+    Args:
+        path: The file path to normalize
+
+    Returns:
+        Normalized path with forward slashes
+    """
+    if path == "-":  # stdin
+        return path
+    return path.replace("\\", "/")
+
+
 def get_version():
     # type: () -> str
     """Get the version of iscc-sum package."""
@@ -308,7 +325,7 @@ def _handle_tree_mode(directory, narrow, units, tag, zero, output_file=None):
 
         # Format output with trailing slash to indicate tree mode
         terminator = "\0" if zero else "\n"
-        display_name = directory.rstrip("/") + "/"
+        display_name = _normalize_path_display(directory.rstrip("/") + "/")
 
         if tag:
             # BSD-style output
@@ -376,7 +393,7 @@ def _handle_checksum_generation(files, narrow, units, tag, zero, output_file=Non
                             break
                         processor.update(chunk)
 
-                display_name = filepath
+                display_name = _normalize_path_display(filepath)
 
             # Get result
             result = processor.result(wide=not narrow, add_units=units)
@@ -732,10 +749,11 @@ def _handle_similarity(files, threshold, narrow, tag, zero, output_file=None):
 
             # Output similar files with distance indicator
             for sim_path, sim_iscc, distance in similar_files:
+                normalized_sim_path = _normalize_path_display(sim_path)
                 if tag:
-                    output = f"  ~{distance:02d} ISCC-SUM ({sim_path}) = {sim_iscc}"
+                    output = f"  ~{distance:02d} ISCC-SUM ({normalized_sim_path}) = {sim_iscc}"
                 else:
-                    output = f"  ~{distance:02d} {sim_iscc} *{sim_path}"
+                    output = f"  ~{distance:02d} {sim_iscc} *{normalized_sim_path}"
 
                 click.echo(output, nl=not zero, file=output_file)
                 if zero:
@@ -757,10 +775,11 @@ def _handle_similarity(files, threshold, narrow, tag, zero, output_file=None):
 def _output_checksum(iscc, filepath, tag, zero, output_file=None):
     # type: (str, str, bool, bool, IO[Any] | None) -> None
     """Output a checksum in the specified format."""
+    normalized_path = _normalize_path_display(filepath)
     if tag:
-        output = f"ISCC-SUM ({filepath}) = {iscc}"
+        output = f"ISCC-SUM ({normalized_path}) = {iscc}"
     else:
-        output = f"{iscc} *{filepath}"
+        output = f"{iscc} *{normalized_path}"
 
     click.echo(output, nl=not zero, file=output_file)
     if zero:

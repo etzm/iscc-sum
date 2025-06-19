@@ -573,7 +573,7 @@ iscc-sum [OPTION]... [FILE|DIR]...
 
 ## :link: See Also
 
-- [Quick Start Guide](quickstart.md) - Getting started with ISCC-SUM
-- [Developer Guide](developers.md) - Using ISCC-SUM in your Python code
-- [Specifications](specifications/) - Technical details and standards
+- [Quick Start Guide](/quickstart/) - Getting started with ISCC-SUM
+- [Developer Guide](/developers/) - Using ISCC-SUM in your Python code
+- [Specifications](/specifications/) - Technical details and standards
 - [GitHub Repository](https://github.com/bio-codes/iscc-sum) - Source code and issue tracking
