@@ -1,6 +1,6 @@
 [package]
 name = "iscc-sum"
-version = "0.1.0-alpha.1"
+version = "0.1.0"
 edition = "2021"
 authors = ["Titusz Pan <titusz.pan@gmail.com>"]
 description = "High-performance ISCC Data-Code and Instance-Code hashing"

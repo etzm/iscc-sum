@@ -1,6 +1,6 @@
 [project]
 name = "iscc-sum"
-version = "0.1.0-alpha.1"
+version = "0.1.0"
 description = "High-performance ISCC Data-Code and Instance-Code hashing"
 readme = "README.md"
 license = "Apache-2.0"
