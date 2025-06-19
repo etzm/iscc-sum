@@ -8,17 +8,17 @@ iscc-sum [OPTION]... [FILE|DIR]...
 
 ## Description
 
-The `iscc-sum` command computes ISCC (International Standard Content Code) checksums for files. Each checksum
-consists of a 2-byte self-describing header followed by a composite of Data-Code and Instance-Code (BLAKE3)
-components. All files are processed as binary data.
+The `iscc-sum` command computes ISCC (International Standard Content Code) checksums for files and directories.
+Each checksum consists of a 2-byte self-describing header followed by a composite of Data-Code and Instance-Code
+(BLAKE3) components. All files are processed as binary data.
 
 Unlike traditional checksum tools that only verify exact matches, `iscc-sum` enables similarity detection
-between files through the Data-Code component. Files with similar content will have similar Data-Codes, allowing
-similarity matching based on hamming distance.
+through the Data-Code component. Files (or directories) with similar content will have similar Data-Codes,
+allowing similarity matching based on hamming distance.
 
-When given directories as arguments, `iscc-sum` processes all files recursively within them using the
-`treewalk_iscc` function in a deterministic order to ensure consistent output across platforms. Files are
-filtered according to `.isccignore` rules if present.
+When given directories as arguments, `iscc-sum` processes all files recursively within them in a deterministig
+order using the `TREEWALK-ISCC` algorithm to ensure consistent output across platforms. Files are filtered
+according to `.isccignore` rules if present.
 
 ## Options
 
@@ -41,16 +41,16 @@ filtered according to `.isccignore` rules if present.
 ### ISCC-Specific Options
 
 - `--narrow` - Generate narrow format (2×64-bit) conformant with ISO 24138:2024 (default: 2×128-bit extended
-  format)
+    format)
 - `--units` - Include individual Data-Code and Instance-Code units in output (verification mode: ignored)
 
 ### Similarity Matching Options
 
 - `--similar` - Group files by similarity based on Data-Code hamming distance
-  - Cannot be used with `-c/--check`
-  - Requires at least 2 files to compare
+    - Cannot be used with `-c/--check`
+    - Requires at least 2 files to compare
 - `--threshold <N>` - Maximum hamming distance for similarity matching (default: 12)
-  - Hamming distance is calculated on Data-Code bits: 128 bits (extended) or 64 bits (narrow)
+    - Hamming distance is calculated on Data-Code bits: 128 bits (extended) or 64 bits (narrow)
 
 ### Directory Processing Options
 
@@ -135,8 +135,8 @@ The checksum represents all files in the directory processed as a single unit.
 ### Extended Format (default, 256-bit)
 
 - Header: 2 bytes
-  - Byte 1: Main type (0101) | Sub type (0111)
-  - Byte 2: Version (0000) | Length (0000)
+    - Byte 1: Main type (0101) | Sub type (0111)
+    - Byte 2: Version (0000) | Length (0000)
 - Data-Code: 128 bits (16 bytes)
 - Instance-Code: 128 bits (16 bytes)
 - Total: 34 bytes → ~54 characters base32
@@ -144,8 +144,8 @@ The checksum represents all files in the directory processed as a single unit.
 ### Narrow Format (--narrow, 128-bit)
 
 - Header: 2 bytes
-  - Byte 1: Main type (0101) | Sub type (0101)
-  - Byte 2: Version (0000) | Length (0000)
+    - Byte 1: Main type (0101) | Sub type (0101)
+    - Byte 2: Version (0000) | Length (0000)
 - Data-Code: 64 bits (8 bytes)
 - Instance-Code: 64 bits (8 bytes)
 - Total: 18 bytes → ~29 characters base32
@@ -164,7 +164,7 @@ The checksum represents all files in the directory processed as a single unit.
 # Single file
 iscc-sum document.pdf
 
-# Multiple files  
+# Multiple files
 iscc-sum *.txt
 
 # BSD-style output
@@ -220,27 +220,18 @@ iscc-sum --tree --tag /path/to/project
 
 ## Implementation Notes
 
-01. The tool MUST process all files as binary data (no text encoding/decoding)
-02. File reading SHOULD use 2MB chunks for efficiency
-03. The tool MUST support reading from stdin when no FILE is specified
-04. Output MUST be deterministic for the same input
-05. The base32 encoding MUST use RFC4648 alphabet without padding
-06. The tool SHOULD auto-detect checksum format when verifying
-07. Unlike traditional checksum tools, iscc-sum has no text mode - all files are processed as binary
-08. Hamming distance MUST be calculated on the decoded bits of the Data-Code component only (excluding the
+1. The tool MUST process all files as binary data (no text encoding/decoding)
+2. The tool MUST support reading from stdin when no FILE is specified
+3. Output MUST be deterministic for the same input
+4. The checksum base32 encoding MUST use RFC4648 alphabet without padding
+5. The tool SHOULD auto-detect checksum format when verifying
+6. Hamming distance MUST be calculated on the decoded bits of the Data-Code component only (excluding the
     2-byte header)
-09. Directory traversal MUST use the `treewalk_iscc` function to ensure identical results across platforms:
-    - Process regular files only (skip symlinks, devices, etc.)
-    - Sort paths by UTF-8 byte representation in ascending lexicographic order
-    - Use Unicode Normalization Form C (NFC) for all paths
-    - Apply `.isccignore` rules if present
-    - Continue processing remaining files if individual files fail
-    - Output files in the deterministic sorted order
-10. File and directory arguments can be mixed; shell patterns are still expanded by the shell
-11. Tree mode (`--tree`) requires exactly one directory argument and processes all files within that directory
+7. Directory traversal MUST use the `TREEWALK-ISCC` algorithm to ensure identical results across platforms.
+8. Tree mode (`--tree`) requires exactly one directory argument and processes all files within that directory
     as a single unit, producing one combined checksum for the entire directory tree
-12. Tree mode checksums can be verified; the tool will automatically detect the trailing slash and process the
+9. Tree mode checksums can be verified; the tool will automatically detect the trailing slash and process the
     directory accordingly
-13. Checksum files MUST be UTF-8 encoded without BOM for cross-platform compatibility
-14. When using `-o/--output`, the tool MUST write UTF-8 with LF line endings on all platforms
-15. When reading checksum files with `--check`, the tool expects UTF-8 encoding
+10. Checksum files MUST be UTF-8 encoded without BOM for cross-platform compatibility
+11. When using `-o/--output`, the tool MUST write UTF-8 with LF line endings on all platforms
+12. When reading checksum files with `--check`, the tool expects UTF-8 encoding
