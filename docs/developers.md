@@ -11,14 +11,16 @@ Originally created to handle massive microscopic imaging datasets where existing
 
 ## Project Status
 
-> [!CAUTION]
-> **Early Release** — This project is in its early development stage.
+!!! danger
 
-> [!NOTE]
-> By default, this tool creates ISCC-CODEs of SubType WIDE, introduced for large-scale secure checksum support
-> with data similarity matching capabilities. This SubType is not yet part of the ISO 24138:2024 standard but is
-> supported by the latest version of the [Iscc-Core](https://github.com/iscc/iscc-core) reference
-> implementation. For ISO 24138:2024 conformant ISCC-CODEs, use the `--narrow` flag in the CLI tool.
+    **Early Release** — This project is in its early development stage.
+
+!!! note
+
+    By default, this tool creates ISCC-CODEs of SubType WIDE, introduced for large-scale secure checksum support
+    with data similarity matching capabilities. This SubType is not yet part of the ISO 24138:2024 standard but is
+    supported by the latest version of the [Iscc-Core](https://github.com/iscc/iscc-core) reference implementation.
+    For ISO 24138:2024 conformant ISCC-CODEs, use the `--narrow` flag in the CLI tool.
 
 ## Performance
 

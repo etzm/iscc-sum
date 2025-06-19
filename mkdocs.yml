@@ -24,12 +24,14 @@ theme:
   language: en
   font: false
   features:
-    - navigation.tabs
-#    - toc.integrate
-#    - navigation.indexes
-#    - navigation.tracking
+    - navigation.indexes
+    - navigation.tracking
+    - navigation.expand
+#    - navigation.tabs
 #    - navigation.tabs.sticky
-#    - navigation.expand
+#   - navigation.expand
+#    - toc.integrate
+
   palette:
     - scheme: default
       toggle:
@@ -83,8 +85,7 @@ nav:
     - TREEWALK: specifications/treewalk.md
     - ISCC SUBTYPE WIDE: specifications/wide.md
     - ISCC CHECKSUM API: specifications/cli.md
-  - Developers:
-      - Readme: developers/index.md
+  - Developers: developers.md
 
 
 

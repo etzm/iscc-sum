@@ -7,7 +7,7 @@
 Create a minimal but high-quality documentation site that clearly communicates what iscc-sum is, why it matters,
 and how to use it. Focus on the most critical content that can be completed in a few hours.
 
----
+______________________________________________________________________
 
 ## Checkpoint 1: Navigation & About Page (30 minutes)
 
@@ -21,7 +21,7 @@ and how to use it. Focus on the most critical content that can be completed in a
 - [x] Add funding acknowledgment (EU Horizon Europe, BIO-CODES)
 - [x] Keep it concise - 1-2 pages maximum
 
----
+______________________________________________________________________
 
 ## Checkpoint 2: Quick Start Guide
 
@@ -33,7 +33,7 @@ and how to use it. Focus on the most critical content that can be completed in a
 - [x] Show basic examples: single file checksum, verification, tree mode
 - [x] Include comparison to familiar tools (md5sum, sha256sum)
 
----
+______________________________________________________________________
 
 ## Checkpoint 3: Developer Introduction (45 minutes)
 
@@ -47,7 +47,7 @@ and how to use it. Focus on the most critical content that can be completed in a
 - [ ] Link to API reference (type stubs) and examples directory
 - [ ] Keep focused on "getting started" not comprehensive API docs
 
----
+______________________________________________________________________
 
 ## Checkpoint 4: Polish & Integration (30 minutes)
 
@@ -62,7 +62,7 @@ and how to use it. Focus on the most critical content that can be completed in a
 - [ ] Quick proofread for clarity and typos
 - [ ] Verify site builds and looks good locally
 
----
+______________________________________________________________________
 
 ## Final Structure
 
