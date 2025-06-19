@@ -1,8 +1,8 @@
 # ISCC-SUM: High-Performance Content Identification for Science
 
-!!! danger "Early Release - Work In Progress"
+!!! info "Version 0.1.0"
 
-    This project is in its early development stage.
+    First optimized implementation of ISCC Data-Code and Instance-Code generation.
 
 <div class="grid cards" markdown>
 

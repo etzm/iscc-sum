@@ -11,9 +11,7 @@ Originally created to handle massive microscopic imaging datasets where existing
 
 ## Project Status
 
-!!! danger
-
-    **Early Release** — This project is in its early development stage.
+**Version 0.1.0** — Initial release for Data-Code and Instance-Code generation.
 
 !!! note
 

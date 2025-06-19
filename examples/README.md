@@ -11,10 +11,10 @@ A Python script for creating and verifying backup checksums.
 **Usage:**
 ```bash
 # Create checksums for all files in a directory
-./backup-verification.sh create /path/to/backup
+./backup-verification.py create /path/to/backup
 
 # Verify checksums to ensure backup integrity
-./backup-verification.sh verify /path/to/backup
+./backup-verification.py verify /path/to/backup
 ```
 
 **Features:**
@@ -52,10 +52,10 @@ A Python script for monitoring file system integrity, useful for detecting unaut
 **Usage:**
 ```bash
 # Initialize monitoring for /etc directory
-./integrity-monitor.sh /etc
+./integrity-monitor.py /etc
 
 # Check for changes (run periodically via cron)
-./integrity-monitor.sh /etc
+./integrity-monitor.py /etc
 ```
 
 **Features:**
@@ -134,12 +134,12 @@ chmod +x *.py
 
 Before archiving data to external storage:
 ```bash
-./backup-verification.sh create /home/user/important-data
+./backup-verification.py create /home/user/important-data
 ```
 
 After restoring from archive:
 ```bash
-./backup-verification.sh verify /home/user/important-data
+./backup-verification.py verify /home/user/important-data
 ```
 
 ### Scenario 2: Managing Photo Collections
