@@ -1,14 +1,47 @@
 [package]
-name = "iscc_sum"
+name = "iscc-sum"
 version = "0.1.0"
 edition = "2021"
+authors = ["Titusz Pan <titusz.pan@gmail.com>"]
+description = "High-performance ISCC Data-Code and Instance-Code hashing"
+repository = "https://github.com/bio-codes/iscc-sum"
+license = "Apache-2.0"
+readme = "README.md"
+keywords = ["iscc", "hash", "checksum", "content-hash"]
+categories = ["command-line-utilities", "cryptography"]
 
 [lib]
 name = "_core"
 # "cdylib" is necessary to produce a shared library for Python to import from.
-crate-type = ["cdylib"]
+# "lib" is added to support benchmarks and tests
+crate-type = ["cdylib", "lib"]
+
+[[bin]]
+name = "isum"
+path = "src/main.rs"
 
 [dependencies]
 # "extension-module" tells pyo3 we want to build an extension module (skips linking against libpython.so)
-# "abi3-py39" tells pyo3 (and maturin) to build using the stable ABI with minimum Python version 3.9
-pyo3 = { version = "0.22.4", features = ["extension-module", "abi3-py39"] }
+# "abi3-py310" tells pyo3 (and maturin) to build using the stable ABI with minimum Python version 3.10
+pyo3 = { version = "0.25.1", features = ["extension-module", "abi3-py310"] }
+rayon = "1.10.0"
+xxhash-rust = { version = "0.8.15", features = ["xxh32"] }
+blake3 = "1.8.2"
+hex = "0.4.3"
+base32 = "0.5.0"
+clap = { version = "4.5", features = ["derive"] }
+walkdir = "2.5"
+globset = "0.4"
+unicode-normalization = "0.1"
+
+[dev-dependencies]
+tempfile = "3.10"
+assert_cmd = "2.0"
+predicates = "3.1"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"

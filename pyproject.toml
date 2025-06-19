@@ -1,16 +1,41 @@
 [project]
 name = "iscc-sum"
 version = "0.1.0"
-description = "Add your description here"
+description = "High-performance ISCC Data-Code and Instance-Code hashing"
 readme = "README.md"
+license = "Apache-2.0"
 authors = [
     { name = "Titusz Pan", email = "titusz.pan@gmail.com" }
 ]
-requires-python = ">=3.12"
-dependencies = []
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Rust",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Filesystems",
+]
+dependencies = [
+    "blake3>=1.0.5",
+    "click>=8.0.0",
+    "pathspec>=0.12.1",
+    "universal-pathlib>=0.2.6",
+    "xxhash>=3.5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/bio-codes/iscc-sum"
+Repository = "https://github.com/bio-codes/iscc-sum"
+Issues = "https://github.com/bio-codes/iscc-sum/issues"
 
 [project.scripts]
-iscc-sum = "iscc_sum:main"
+iscc-sum = "iscc_sum.cli:cli"
 
 [tool.maturin]
 module-name = "iscc_sum._core"
@@ -20,3 +45,106 @@ python-source = "src"
 [build-system]
 requires = ["maturin>=1.0,<2.0"]
 build-backend = "maturin"
+
+[tool.uv]
+dev-dependencies = [
+    "maturin>=1.0",
+    "pytest>=8.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.5.0",
+    "mypy>=1.0",
+    "poethepoet>=0.25.0",
+    "build>=1.0",
+    "bandit>=1.8.3",
+    "pyfakefs>=5.8.0",
+    "mkdocs-material>=9.6.14",
+    "mkdocs-glightbox>=0.4.0",
+    "mdformat>=0.7.22",
+    "mdformat-mkdocs>=4.3.0",
+    "mdformat-footnote>=0.1.1",
+    "mdformat-tables>=1.0.0",
+    "mdformat-gfm-alerts>=2.0.0",
+]
+
+[tool.ruff]
+line-length = 112
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["F401"]  # Ignore unused imports - needed for type annotations
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+    "slow: marks tests as slow (deselected by default)"
+]
+
+[tool.coverage.run]
+source = ["iscc_sum"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+fail_under = 100
+show_missing = true
+skip_covered = false
+
+[tool.poe.tasks]
+# Developer setup - requires Rust to be installed first
+setup = { shell = "rustup component add rustfmt clippy && echo 'Rust components installed successfully!'" }
+check-rust = { shell = "rustup --version && cargo --version && echo 'Rust toolchain is ready!'" }
+
+# Python formatting and linting
+py-format = { shell = "ruff format . && ruff check --fix ." }
+py-format-check = { shell = "ruff format --check . && ruff check ." }
+py-typecheck = "mypy src"
+py-test = "pytest -v -m 'not slow'"
+py-test-all = "pytest -v"
+py-coverage = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100 -m 'not slow'"
+py-coverage-all = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100"
+
+# Markdown formatting
+md-format = { shell = "mdformat --wrap 112 --end-of-line lf *.md docs", help = "Markdown formating with mdformat" }
+
+# Check security
+check-security = { cmd = "uv run bandit -r src/ -q", help = "Run security check with bandit" }
+
+# Rust formatting and linting
+rust-format = "cargo fmt"
+rust-format-check = "cargo fmt -- --check"
+rust-clippy = "cargo clippy --quiet --all-targets --all-features -- -D warnings"
+rust-test = "cargo test"
+rust-build = "cargo build --release --bin isum"
+
+# Documentation tasks
+docs-build = { script = "scripts.build_docs:main", help = "Copy README.md to /docs" }
+
+# Python extension building
+build-ext = "maturin develop"
+build-ext-release = "maturin develop --release"
+
+# Combined commands
+format = ["rust-format", "py-format", "md-format"]
+test = ["rust-test", "py-test"]
+test-all = ["rust-test", "py-test-all"]
+typecheck = "mypy src"
+coverage = "pytest --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100 -m 'not slow'"
+
+# Pre-commit all-in-one command
+all = ["docs-build", "md-format", "rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext-release", "py-coverage", "check-security", "dogfood-generate"]
+# CI command that includes slow tests and dogfood verification
+ci = ["rust-format", "rust-clippy", "rust-test", "py-format", "py-typecheck", "build-ext", "py-test-all", "dogfood-verify"]
+
+# Benchmarking
+benchmark = { sequence = ["build-ext-release", { cmd = "python scripts/benchmark.py" }], help = "Run performance benchmarks with release build" }
+
+# Dogfooding
+dogfood = { cmd = "python scripts/dogfood.py", help = "Generate or verify ISCC hash for the repository (default: generate)" }
+dogfood-generate = { cmd = "python scripts/dogfood.py generate", help = "Generate ISCC hash for the repository" }
+dogfood-verify = { cmd = "python scripts/dogfood.py verify", help = "Verify repository against stored ISCC hash" }

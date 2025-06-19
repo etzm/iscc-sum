@@ -1,0 +1,22 @@
+# Set the default behavior for line endings
+* text=auto
+
+# Explicitly set text files to have LF line endings
+*.py text eol=lf
+*.rs text eol=lf
+*.toml text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.txt text eol=lf
+
+# Ensure LICENSE file always has LF line endings for consistent hashing
+LICENSE text eol=lf
+
+# Binary files that should not be normalized
+*.so binary
+*.pyd binary
+*.dll binary
+*.exe binary
+*.whl binary

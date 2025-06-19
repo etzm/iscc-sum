@@ -1,0 +1,98 @@
+site_name: ISCC-SUM
+site_description: 'Fast Single-Pass ISCC Data-Code & Instance Code'
+site_author: 'Titusz Pan'
+site_url: 'https://sum.iscc.codes'
+docs_dir: docs
+
+# Repository
+repo_name: 'bio-codes/iscc-sum'
+repo_url: 'https://github.com/bio-codes/iscc-sum'
+edit_uri: 'edit/main/docs/'
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  analytics:
+    provider: custom
+
+theme:
+  name: material
+  custom_dir: docs/overrides
+  logo: images/iscc-logo-icon-white.svg
+  favicon: images/iscc-logo-icon-black.svg
+  language: en
+  font: false
+  features:
+    - navigation.indexes
+    - navigation.tracking
+    - navigation.expand
+#    - navigation.tabs
+#    - navigation.tabs.sticky
+#   - navigation.expand
+#    - toc.integrate
+
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+    - scheme: slate
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+
+plugins:
+  - search
+  - glightbox
+
+markdown_extensions:
+  - pymdownx.tabbed:
+      alternate_style: true
+  - abbr
+  - pymdownx.snippets:
+      base_path: ["docs/includes"]
+      auto_append: ["abbreviations.md"]
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - meta
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - footnotes
+  - toc:
+      permalink: "#"
+      toc_depth: 3
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.magiclink
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Overview: index.md
+  - Quick Start: quickstart.md
+  - User Guide: userguide.md
+  - Specifications:
+    - Introduction: specifications/index.md
+    - TREEWALK: specifications/treewalk.md
+    - ISCC SUBTYPE WIDE: specifications/wide.md
+    - ISCC CHECKSUM API: specifications/cli.md
+  - Developers: developers.md
+  - Changelog: changelog.md
+
+
+
