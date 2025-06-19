@@ -1,0 +1,1317 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Fast Single-Pass ISCC Data-Code & Instance Code">
+      
+      
+        <meta name="author" content="Titusz Pan">
+      
+      
+        <link rel="canonical" href="https://sum.iscc.codes/specifications/cli/">
+      
+      
+        <link rel="prev" href="../wide/">
+      
+      
+        <link rel="next" href="../../developers/">
+      
+      
+      <link rel="icon" href="../../images/iscc-logo-icon-black.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    
+    
+      
+        <title>ISCC CHECKSUM API - ISCC-SUM</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  <script defer data-domain="sum.iscc.codes" src="https://stats.iscc.codes/js/plausible.js"></script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#iscc-sum-cli-specification" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ISCC-SUM" class="md-header__button md-logo" aria-label="ISCC-SUM" data-md-component="logo">
+      
+  <img src="../../images/iscc-logo-icon-white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ISCC-SUM
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ISCC CHECKSUM API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bio-codes/iscc-sum" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bio-codes/iscc-sum
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ISCC-SUM" class="md-nav__button md-logo" aria-label="ISCC-SUM" data-md-component="logo">
+      
+  <img src="../../images/iscc-logo-icon-white.svg" alt="logo">
+
+    </a>
+    ISCC-SUM
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bio-codes/iscc-sum" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bio-codes/iscc-sum
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../userguide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    User Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Specifications
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Specifications
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../treewalk/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    TREEWALK
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ISCC SUBTYPE WIDE
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    ISCC CHECKSUM API
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    ISCC CHECKSUM API
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#command-synopsis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Command Synopsis
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    <span class="md-ellipsis">
+      Description
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-options-gnu-coreutils-compatible" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Options (GNU coreutils compatible)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verification-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Verification Options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iscc-specific-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      ISCC-Specific Options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#similarity-matching-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Similarity Matching Options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#directory-processing-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Directory Processing Options
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Output Format
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Output Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#default-format-untagged" class="md-nav__link">
+    <span class="md-ellipsis">
+      Default Format (untagged)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bsd-tagged-format-tag" class="md-nav__link">
+    <span class="md-ellipsis">
+      BSD-Tagged Format (--tag)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extended-output-with-units-units" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extended Output with Units (--units)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#similarity-matching-output-similar" class="md-nav__link">
+    <span class="md-ellipsis">
+      Similarity Matching Output (--similar)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tree-mode-output-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tree Mode Output (--tree)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checksum-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checksum Structure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Checksum Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#extended-format-default-256-bit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extended Format (default, 256-bit)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#narrow-format-narrow-128-bit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Narrow Format (--narrow, 128-bit)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exit-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exit Status
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generate-checksums" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generate checksums
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verify-checksums" class="md-nav__link">
+    <span class="md-ellipsis">
+      Verify checksums
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find-similar-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Find similar files
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Notes
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Developers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#command-synopsis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Command Synopsis
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    <span class="md-ellipsis">
+      Description
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-options-gnu-coreutils-compatible" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Options (GNU coreutils compatible)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verification-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Verification Options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iscc-specific-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      ISCC-Specific Options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#similarity-matching-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Similarity Matching Options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#directory-processing-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Directory Processing Options
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Output Format
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Output Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#default-format-untagged" class="md-nav__link">
+    <span class="md-ellipsis">
+      Default Format (untagged)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bsd-tagged-format-tag" class="md-nav__link">
+    <span class="md-ellipsis">
+      BSD-Tagged Format (--tag)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extended-output-with-units-units" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extended Output with Units (--units)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#similarity-matching-output-similar" class="md-nav__link">
+    <span class="md-ellipsis">
+      Similarity Matching Output (--similar)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tree-mode-output-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tree Mode Output (--tree)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checksum-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checksum Structure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Checksum Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#extended-format-default-256-bit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extended Format (default, 256-bit)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#narrow-format-narrow-128-bit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Narrow Format (--narrow, 128-bit)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exit-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exit Status
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generate-checksums" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generate checksums
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verify-checksums" class="md-nav__link">
+    <span class="md-ellipsis">
+      Verify checksums
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find-similar-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Find similar files
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Notes
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="iscc-sum-cli-specification"><abbr title="ISCC based checkum and simlilarity hash">ISCC-SUM</abbr> CLI Specification<a class="headerlink" href="#iscc-sum-cli-specification" title="Permanent link">#</a></h1>
+<h2 id="command-synopsis">Command Synopsis<a class="headerlink" href="#command-synopsis" title="Permanent link">#</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>iscc-sum [OPTION]... [FILE|DIR]...
+</code></pre></div>
+<h2 id="description">Description<a class="headerlink" href="#description" title="Permanent link">#</a></h2>
+<p>The <code>iscc-sum</code> command computes <abbr title="International Standard Content Code">ISCC</abbr> (International Standard Content Code) checksums for files and directories.
+Each checksum consists of a 2-<abbr title="sequence of 8 bits">byte</abbr> self-describing header followed by a composite of Data-Code and Instance-Code
+(BLAKE3) components. All files are processed as binary <abbr title="ordered sequence of bits">data</abbr>.</p>
+<p>Unlike traditional checksum tools that only verify exact matches, <code>iscc-sum</code> enables similarity detection
+through the Data-Code component. Files (or directories) with similar <abbr title="information organized to provide value to a user">content</abbr> will have similar Data-Codes,
+allowing similarity matching based on hamming distance.</p>
+<p>When given directories as arguments, <code>iscc-sum</code> processes all files recursively within them in a deterministig
+order using the <code>TREEWALK-ISCC</code> <abbr title="set of instructions">algorithm</abbr> to ensure consistent output across platforms. Files are filtered
+according to <code>.isccignore</code> rules if present.</p>
+<h2 id="options">Options<a class="headerlink" href="#options" title="Permanent link">#</a></h2>
+<h3 id="core-options-gnu-coreutils-compatible">Core Options (GNU coreutils compatible)<a class="headerlink" href="#core-options-gnu-coreutils-compatible" title="Permanent link">#</a></h3>
+<ul>
+<li><code>-c, --check</code> - Read checksums from FILEs and verify them</li>
+<li><code>-o, --output FILE</code> - Write checksums to FILE instead of stdout (ensures UTF-8, LF encoding)</li>
+<li><code>--tag</code> - Create a BSD-style checksum output</li>
+<li><code>-z, --zero</code> - End each output line with NUL, not newline</li>
+<li><code>--help</code> - Display help message and exit</li>
+<li><code>--version</code> - Output version information and exit</li>
+</ul>
+<h3 id="verification-options">Verification Options<a class="headerlink" href="#verification-options" title="Permanent link">#</a></h3>
+<ul>
+<li><code>-q, --quiet</code> - Don't print OK for successfully verified files</li>
+<li><code>--status</code> - Don't output anything, status code shows success</li>
+<li><code>-w, --warn</code> - Warn about improperly formatted checksum lines</li>
+<li><code>--strict</code> - Exit non-zero for improperly formatted checksum lines</li>
+</ul>
+<h3 id="iscc-specific-options"><abbr title="International Standard Content Code">ISCC</abbr>-Specific Options<a class="headerlink" href="#iscc-specific-options" title="Permanent link">#</a></h3>
+<ul>
+<li><code>--narrow</code> - Generate narrow format (2×64-<abbr title="atomic unit of information in a computer system">bit</abbr>) conformant with <abbr title="International Organization for Standardization">ISO</abbr> 24138:2024 (default: 2×128-<abbr title="atomic unit of information in a computer system">bit</abbr> extended
+    format)</li>
+<li><code>--units</code> - Include individual Data-Code and Instance-Code units in output (verification mode: ignored)</li>
+</ul>
+<h3 id="similarity-matching-options">Similarity Matching Options<a class="headerlink" href="#similarity-matching-options" title="Permanent link">#</a></h3>
+<ul>
+<li><code>--similar</code> - Group files by similarity based on Data-Code hamming distance<ul>
+<li>Cannot be used with <code>-c/--check</code></li>
+<li>Requires at least 2 files to compare</li>
+</ul>
+</li>
+<li><code>--threshold &lt;N&gt;</code> - Maximum hamming distance for similarity matching (default: 12)<ul>
+<li>Hamming distance is calculated on Data-Code bits: 128 bits (extended) or 64 bits (narrow)</li>
+</ul>
+</li>
+</ul>
+<h3 id="directory-processing-options">Directory Processing Options<a class="headerlink" href="#directory-processing-options" title="Permanent link">#</a></h3>
+<ul>
+<li><code>-t, --tree</code> - Process directory as a single unit with combined checksum (requires single directory argument)</li>
+</ul>
+<h2 id="output-format">Output Format<a class="headerlink" href="#output-format" title="Permanent link">#</a></h2>
+<h3 id="default-format-untagged">Default Format (untagged)<a class="headerlink" href="#default-format-untagged" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>&lt;ISCC_CHECKSUM&gt; *&lt;FILENAME&gt;
+</code></pre></div>
+<ul>
+<li><code>&lt;ISCC_CHECKSUM&gt;</code>: <abbr title="International Standard Content Code">ISCC</abbr> code starting with "<abbr title="International Standard Content Code">ISCC</abbr>:" followed by base32 encoded value</li>
+<li><code>*</code>: Binary mode indicator (always present as iscc-sum only processes binary <abbr title="ordered sequence of bits">data</abbr>)</li>
+<li><code>&lt;FILENAME&gt;</code>: Path to the <abbr title="stored data with a known number of bits and a filename">file</abbr></li>
+</ul>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2M5AEGQY *document.pdf
+</code></pre></div>
+<h3 id="bsd-tagged-format-tag">BSD-Tagged Format (--tag)<a class="headerlink" href="#bsd-tagged-format-tag" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>ISCC-SUM (&lt;FILENAME&gt;) = &lt;ISCC_CHECKSUM&gt;
+</code></pre></div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>ISCC-SUM (document.pdf) = ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2M5AEGQY
+</code></pre></div>
+<h3 id="extended-output-with-units-units">Extended Output with Units (--units)<a class="headerlink" href="#extended-output-with-units-units" title="Permanent link">#</a></h3>
+<p>When <code>--units</code> is specified, output additional lines with component codes:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>&lt;ISCC_CHECKSUM&gt; *&lt;FILENAME&gt;
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  Data-Code: &lt;DATA_CODE_ISCC&gt;
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>  Instance-Code: &lt;INSTANCE_CODE_ISCC&gt;
+</code></pre></div>
+<h3 id="similarity-matching-output-similar">Similarity Matching Output (--similar)<a class="headerlink" href="#similarity-matching-output-similar" title="Permanent link">#</a></h3>
+<p>Files are grouped by similarity with the first <abbr title="stored data with a known number of bits and a filename">file</abbr> in each group as reference:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>&lt;ISCC_CHECKSUM&gt; *&lt;REFERENCE_FILE&gt;
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>  0: &lt;ISCC_CHECKSUM&gt; *&lt;IDENTICAL_FILE&gt;
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>  5: &lt;ISCC_CHECKSUM&gt; *&lt;SIMILAR_FILE&gt;
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>  12: &lt;ISCC_CHECKSUM&gt; *&lt;SIMILAR_FILE&gt;
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>&lt;ISCC_CHECKSUM&gt; *&lt;ANOTHER_REFERENCE_FILE&gt;
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>  3: &lt;ISCC_CHECKSUM&gt; *&lt;SIMILAR_FILE&gt;
+</code></pre></div>
+<p>Numbers indicate hamming distance between Data-Code components.</p>
+<h3 id="tree-mode-output-tree">Tree Mode Output (--tree)<a class="headerlink" href="#tree-mode-output-tree" title="Permanent link">#</a></h3>
+<p>When processing a directory with <code>--tree</code>, output shows the directory path with a trailing slash:</p>
+<h4 id="default-format">Default format:<a class="headerlink" href="#default-format" title="Permanent link">#</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>&lt;ISCC_CHECKSUM&gt; *&lt;DIRECTORY_PATH&gt;/
+</code></pre></div>
+<h4 id="bsd-tagged-format">BSD-tagged format:<a class="headerlink" href="#bsd-tagged-format" title="Permanent link">#</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>ISCC-SUM (&lt;DIRECTORY_PATH&gt;/) = &lt;ISCC_CHECKSUM&gt;
+</code></pre></div>
+<p>The checksum represents all files in the directory processed as a single unit.</p>
+<h2 id="checksum-structure">Checksum Structure<a class="headerlink" href="#checksum-structure" title="Permanent link">#</a></h2>
+<h3 id="extended-format-default-256-bit">Extended Format (default, 256-<abbr title="atomic unit of information in a computer system">bit</abbr>)<a class="headerlink" href="#extended-format-default-256-bit" title="Permanent link">#</a></h3>
+<ul>
+<li>Header: 2 bytes<ul>
+<li>Byte 1: Main type (0101) | Sub type (0111)</li>
+<li>Byte 2: Version (0000) | Length (0000)</li>
+</ul>
+</li>
+<li>Data-Code: 128 bits (16 bytes)</li>
+<li>Instance-Code: 128 bits (16 bytes)</li>
+<li>Total: 34 bytes → ~54 characters base32</li>
+</ul>
+<h3 id="narrow-format-narrow-128-bit">Narrow Format (--narrow, 128-<abbr title="atomic unit of information in a computer system">bit</abbr>)<a class="headerlink" href="#narrow-format-narrow-128-bit" title="Permanent link">#</a></h3>
+<ul>
+<li>Header: 2 bytes<ul>
+<li>Byte 1: Main type (0101) | Sub type (0101)</li>
+<li>Byte 2: Version (0000) | Length (0000)</li>
+</ul>
+</li>
+<li>Data-Code: 64 bits (8 bytes)</li>
+<li>Instance-Code: 64 bits (8 bytes)</li>
+<li>Total: 18 bytes → ~29 characters base32</li>
+</ul>
+<h2 id="exit-status">Exit Status<a class="headerlink" href="#exit-status" title="Permanent link">#</a></h2>
+<ul>
+<li><code>0</code> - Success (all checksums matched when verifying; files processed successfully)</li>
+<li><code>1</code> - Verification failure (one or more checksums didn't match)</li>
+<li><code>2</code> - I/O or format error</li>
+</ul>
+<h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">#</a></h2>
+<h3 id="generate-checksums">Generate checksums<a class="headerlink" href="#generate-checksums" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Single file</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>iscc-sum<span class="w"> </span>document.pdf
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Multiple files</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>iscc-sum<span class="w"> </span>*.txt
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1"># BSD-style output</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>iscc-sum<span class="w"> </span>--tag<span class="w"> </span>document.pdf
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="c1"># Narrow format (ISO 24138:2024)</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>iscc-sum<span class="w"> </span>--narrow<span class="w"> </span>document.pdf
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="c1"># With component units</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>iscc-sum<span class="w"> </span>--units<span class="w"> </span>document.pdf
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="c1"># Output to file (cross-platform compatible)</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>iscc-sum<span class="w"> </span>-o<span class="w"> </span>checksums.iscc<span class="w"> </span>*.txt
+</code></pre></div>
+<h3 id="verify-checksums">Verify checksums<a class="headerlink" href="#verify-checksums" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Verify from checksum file</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>iscc-sum<span class="w"> </span>-c<span class="w"> </span>checksums.txt
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Quiet verification (only show failures)</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>iscc-sum<span class="w"> </span>-c<span class="w"> </span>--quiet<span class="w"> </span>checksums.txt
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1"># Silent verification (exit code only)</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>iscc-sum<span class="w"> </span>-c<span class="w"> </span>--status<span class="w"> </span>checksums.txt
+</code></pre></div>
+<h3 id="find-similar-files">Find similar files<a class="headerlink" href="#find-similar-files" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Group similar files</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>iscc-sum<span class="w"> </span>--similar<span class="w"> </span>*.jpg
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># Use custom similarity threshold (hamming distance)</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>iscc-sum<span class="w"> </span>--similar<span class="w"> </span>--threshold<span class="w"> </span><span class="m">20</span><span class="w"> </span>documents/*.pdf
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="c1"># Find similar files in directory</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>iscc-sum<span class="w"> </span>--similar<span class="w"> </span>/path/to/images
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="c1"># Process entire directory as single unit</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>iscc-sum<span class="w"> </span>--tree<span class="w"> </span>/path/to/project
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="c1"># Generate checksums for all files in directory</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>iscc-sum<span class="w"> </span>/path/to/directory
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="c1"># Process directory tree and create a single checksum</span>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>iscc-sum<span class="w"> </span>--tree<span class="w"> </span>/path/to/project
+<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="c1"># BSD-style tree checksum</span>
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>iscc-sum<span class="w"> </span>--tree<span class="w"> </span>--tag<span class="w"> </span>/path/to/project
+</code></pre></div>
+<h2 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">#</a></h2>
+<ol>
+<li>The tool MUST process all files as binary <abbr title="ordered sequence of bits">data</abbr> (no text encoding/decoding)</li>
+<li>The tool MUST support reading from stdin when no FILE is specified</li>
+<li>Output MUST be deterministic for the same input</li>
+<li>The checksum base32 encoding MUST use RFC4648 alphabet without padding</li>
+<li>The tool SHOULD auto-detect checksum format when verifying</li>
+<li>Hamming distance MUST be calculated on the decoded bits of the Data-Code component only (excluding the
+    2-<abbr title="sequence of 8 bits">byte</abbr> header)</li>
+<li>Directory traversal MUST use the <code>TREEWALK-ISCC</code> <abbr title="set of instructions">algorithm</abbr> to ensure identical results across platforms.</li>
+<li>Tree mode (<code>--tree</code>) requires exactly one directory argument and processes all files within that directory
+    as a single unit, producing one combined checksum for the entire directory tree</li>
+<li>Tree mode checksums can be verified; the tool will automatically detect the trailing slash and process the
+    directory accordingly</li>
+<li>Checksum files MUST be UTF-8 encoded without BOM for cross-platform compatibility</li>
+<li>When using <code>-o/--output</code>, the tool MUST write UTF-8 with LF line endings on all platforms</li>
+<li>When reading checksum files with <code>--check</code>, the tool expects UTF-8 encoding</li>
+</ol>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.indexes", "navigation.tracking", "navigation.expand"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

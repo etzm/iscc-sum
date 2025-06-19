@@ -1,0 +1,1092 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Fast Single-Pass ISCC Data-Code & Instance Code">
+      
+      
+        <meta name="author" content="Titusz Pan">
+      
+      
+        <link rel="canonical" href="https://sum.iscc.codes/quickstart/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../userguide/">
+      
+      
+      <link rel="icon" href="../images/iscc-logo-icon-black.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    
+    
+      
+        <title>Quick Start - ISCC-SUM</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  <script defer data-domain="sum.iscc.codes" src="https://stats.iscc.codes/js/plausible.js"></script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+    
+   <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#quick-start-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ISCC-SUM" class="md-header__button md-logo" aria-label="ISCC-SUM" data-md-component="logo">
+      
+  <img src="../images/iscc-logo-icon-white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ISCC-SUM
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Quick Start
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bio-codes/iscc-sum" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bio-codes/iscc-sum
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ISCC-SUM" class="md-nav__button md-logo" aria-label="ISCC-SUM" data-md-component="logo">
+      
+  <img src="../images/iscc-logo-icon-white.svg" alt="logo">
+
+    </a>
+    ISCC-SUM
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bio-codes/iscc-sum" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bio-codes/iscc-sum
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Quick Start
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation-in-10-seconds" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation in 10 Seconds
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation in 10 Seconds">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-install-uv-one-time-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Install UV (One-time Setup)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-run-iscc-sum-instantly" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Run ISCC-SUM Instantly
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permanent-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Permanent Installation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#basic-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Basic Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generate-a-checksum-for-a-single-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generate a checksum for a single file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#process-multiple-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Process multiple files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verify-file-integrity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Verify file integrity
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tree-mode-process-entire-directories" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tree Mode - Process Entire Directories
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-with-familiar-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comparison with Familiar Tools
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#whats-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      What's Next?
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../userguide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    User Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../specifications/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Specifications
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Specifications
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../specifications/treewalk/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    TREEWALK
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../specifications/wide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ISCC SUBTYPE WIDE
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../specifications/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ISCC CHECKSUM API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Developers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation-in-10-seconds" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation in 10 Seconds
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation in 10 Seconds">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-install-uv-one-time-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Install UV (One-time Setup)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-run-iscc-sum-instantly" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Run ISCC-SUM Instantly
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permanent-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Permanent Installation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#basic-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Basic Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generate-a-checksum-for-a-single-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generate a checksum for a single file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#process-multiple-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Process multiple files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verify-file-integrity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Verify file integrity
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tree-mode-process-entire-directories" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tree Mode - Process Entire Directories
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-with-familiar-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comparison with Familiar Tools
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#whats-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      What's Next?
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="quick-start-guide">Quick Start Guide<a class="headerlink" href="#quick-start-guide" title="Permanent link">#</a></h1>
+<p>Get up and running with <abbr title="ISCC based checkum and simlilarity hash">ISCC-SUM</abbr> in minutes! This guide shows you how to install and use the command-line tool
+to generate similarity-preserving <abbr title="International Standard Content Code">ISCC</abbr> checksums for files and directories.</p>
+<details class="info">
+<summary>New to Terminal/Command Line? Start Here!</summary>
+<p>If you've never used a terminal (also called command line) before, don't worry! Here's a quick primer:</p>
+<p><strong>What is a Terminal?</strong></p>
+<p>A terminal is a text-based way to interact with your computer. Instead of clicking buttons, you type commands.</p>
+<p><strong>How to Open a Terminal:</strong></p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Windows</label><label for="__tabbed_1_2">macOS</label><label for="__tabbed_1_3">Linux</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<ul>
+<li>Press <span class="keys"><kbd class="key-windows">Win</kbd><span>+</span><kbd class="key-r">R</kbd></span>, type <code>cmd</code> or <code>powershell</code>, and press <span class="keys"><kbd class="key-enter">Enter</kbd></span></li>
+<li>Or: Right-click the Start button and select "Windows Terminal" or "Command Prompt"</li>
+</ul>
+</div>
+<div class="tabbed-block">
+<ul>
+<li>Press <span class="keys"><kbd class="key-command">Cmd</kbd><span>+</span><kbd class="key-space">Space</kbd></span>, type <code>terminal</code>, and press <span class="keys"><kbd class="key-enter">Enter</kbd></span></li>
+<li>Or: Go to Applications → Utilities → Terminal</li>
+</ul>
+</div>
+<div class="tabbed-block">
+<ul>
+<li>Press <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-alt">Alt</kbd><span>+</span><kbd class="key-t">T</kbd></span></li>
+<li>Or: Look for "Terminal" in your applications menu</li>
+</ul>
+</div>
+</div>
+</div>
+<p><strong>Basic Terminal Commands You'll Need:</strong></p>
+<ul>
+<li><code>cd foldername</code> - Navigate into a folder (cd = "change directory")</li>
+<li><code>cd ..</code> - Go back to the parent folder</li>
+<li><code>ls</code> (macOS/Linux) or <code>dir</code> (Windows) - List files in current folder</li>
+<li><code>pwd</code> - Show current folder path (print working directory)</li>
+</ul>
+<p><strong>Example Navigation:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># See where you are</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">pwd</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># List files in current folder</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>ls<span class="w">                    </span><span class="c1"># macOS/Linux</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>dir<span class="w">                   </span><span class="c1"># Windows</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># Navigate to your Documents folder</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="nb">cd</span><span class="w"> </span>Documents
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1"># Go back one level</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="nb">cd</span><span class="w"> </span>..
+</code></pre></div>
+<p><strong>Tips for Beginners:</strong></p>
+<ul>
+<li><img alt="💡" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4a1.svg" title=":bulb:" /> Commands are case-sensitive on macOS/Linux</li>
+<li><img alt="💡" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4a1.svg" title=":bulb:" /> Press <span class="keys"><kbd class="key-tab">Tab</kbd></span> to auto-complete <abbr title="stored data with a known number of bits and a filename">file</abbr>/folder names</li>
+<li><img alt="💡" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4a1.svg" title=":bulb:" /> Press <span class="keys"><kbd class="key-arrow-up">Up</kbd></span> to recall previous commands</li>
+<li><img alt="💡" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4a1.svg" title=":bulb:" /> Type <code>clear</code> (macOS/Linux) or <code>cls</code> (Windows) to clear the screen</li>
+<li><img alt="💡" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4a1.svg" title=":bulb:" /> Copy text: <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-c">C</kbd></span> (Windows/Linux) or <span class="keys"><kbd class="key-command">Cmd</kbd><span>+</span><kbd class="key-c">C</kbd></span> (macOS)</li>
+<li><img alt="💡" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4a1.svg" title=":bulb:" /> Paste text: <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-v">V</kbd></span> (Windows/Linux) or <span class="keys"><kbd class="key-command">Cmd</kbd><span>+</span><kbd class="key-v">V</kbd></span> (macOS)</li>
+</ul>
+</details>
+<h2 id="installation-in-10-seconds"><img alt="🚀" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f680.svg" title=":rocket:" /> Installation in 10 Seconds<a class="headerlink" href="#installation-in-10-seconds" title="Permanent link">#</a></h2>
+<p>The fastest way to use <abbr title="ISCC based checkum and simlilarity hash">ISCC-SUM</abbr> is with UV:</p>
+<h3 id="step-1-install-uv-one-time-setup">Step 1: Install UV (One-time Setup)<a class="headerlink" href="#step-1-install-uv-one-time-setup" title="Permanent link">#</a></h3>
+<p>UV is a modern Python tool installer that handles everything for you - including Python itself!</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Linux/macOS</label><label for="__tabbed_2_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://astral.sh/uv/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">powershell</span> <span class="n">-ExecutionPolicy</span> <span class="n">ByPass</span> <span class="n">-c</span> <span class="s2">&quot;irm https://astral.sh/uv/install.ps1 | iex&quot;</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">After Installation</p>
+<p>Close and reopen your terminal to ensure UV is available in your PATH.</p>
+</div>
+<h3 id="step-2-run-iscc-sum-instantly">Step 2: Run <abbr title="ISCC based checkum and simlilarity hash">ISCC-SUM</abbr> Instantly<a class="headerlink" href="#step-2-run-iscc-sum-instantly" title="Permanent link">#</a></h3>
+<p>Now you can run <abbr title="ISCC based checkum and simlilarity hash">ISCC-SUM</abbr> without any further installation:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>uvx<span class="w"> </span>iscc-sum<span class="w"> </span>myfile.txt
+</code></pre></div>
+<h2 id="permanent-installation"><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e6.svg" title=":package:" /> Permanent Installation<a class="headerlink" href="#permanent-installation" title="Permanent link">#</a></h2>
+<p>For frequent use, install <abbr title="ISCC based checkum and simlilarity hash">ISCC-SUM</abbr> globally:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>uv<span class="w"> </span>tool<span class="w"> </span>install<span class="w"> </span>iscc-sum
+</code></pre></div>
+<p>After installation, you can simply type <code>iscc-sum</code> from anywhere in your terminal.</p>
+<h2 id="basic-examples"><img alt="✨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2728.svg" title=":sparkles:" /> Basic Examples<a class="headerlink" href="#basic-examples" title="Permanent link">#</a></h2>
+<div class="admonition question">
+<p class="admonition-title">What's an <abbr title="International Standard Content Code">ISCC</abbr> Checksum?</p>
+<p>Think of it like a unique ID for your <abbr title="stored data with a known number of bits and a filename">file</abbr>'s <abbr title="information organized to provide value to a user">content</abbr>. If the <abbr title="stored data with a known number of bits and a filename">file</abbr> changes even slightly, the fingerprint changes
+too. This helps you:</p>
+<ul>
+<li><img alt="🔍" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f50d.svg" title=":mag:" /> Detect if files have been modified</li>
+<li><img alt="♊" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/264a.svg" title=":gemini:" /> Find duplicate or similar files</li>
+<li><img alt="🛡" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6e1.svg" title=":shield:" /> Verify <abbr title="stored data with a known number of bits and a filename">file</abbr> integrity</li>
+</ul>
+</div>
+<h3 id="generate-a-checksum-for-a-single-file">Generate a checksum for a single <abbr title="stored data with a known number of bits and a filename">file</abbr><a class="headerlink" href="#generate-a-checksum-for-a-single-file" title="Permanent link">#</a></h3>
+<p>Open your terminal in the folder containing your <abbr title="stored data with a known number of bits and a filename">file</abbr>, then run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>iscc-sum<span class="w"> </span>document.pdf
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>ISCC:KAATT7GQ6V5CDXEHRJPQBU3YH7V2XMCSADJWV3CZQFOPH5LOGZQQ  document.pdf
+</code></pre></div>
+<p>The long string starting with "<abbr title="International Standard Content Code">ISCC</abbr>:" is your <abbr title="stored data with a known number of bits and a filename">file</abbr>'s unique fingerprint.</p>
+<h3 id="process-multiple-files">Process multiple files<a class="headerlink" href="#process-multiple-files" title="Permanent link">#</a></h3>
+<p>To process all JPEG images in a folder:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>iscc-sum<span class="w"> </span>*.jpg
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>ISCC:KAAUSPE5KJYTY43L5OR4A5YLKQVVIMRYVFVJDVCZV5YKOEAPH3JA  image1.jpg
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>ISCC:KAAQZVGNJY4D2IFXEWV6DZF5JMHZ2C2ZXSOD5RCQGQEMAVVZ5VIA  image2.jpg
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>ISCC:KAASFWXNH6S3S7OLJQMGOQNLSCZ74CTQV3SJVHGJJ76SUXKGDZXQ  image3.jpg
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Wildcard Patterns</p>
+<p>The <code>*</code> symbol means "all files". So <code>*.jpg</code> means "all files ending with .jpg"</p>
+</div>
+<h3 id="verify-file-integrity">Verify <abbr title="stored data with a known number of bits and a filename">file</abbr> integrity<a class="headerlink" href="#verify-file-integrity" title="Permanent link">#</a></h3>
+<p>This is useful for checking if your files have been modified or corrupted.</p>
+<p><strong>Step 1: Save checksums to a <abbr title="stored data with a known number of bits and a filename">file</abbr></strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>iscc-sum<span class="w"> </span>*.txt<span class="w"> </span>-o<span class="w"> </span>checksums.iscc
+</code></pre></div>
+<p>This creates a <abbr title="stored data with a known number of bits and a filename">file</abbr> called <code>checksums.iscc</code> containing fingerprints of all .txt files.</p>
+<div class="admonition note">
+<p class="admonition-title">Cross-platform Compatibility</p>
+<p>The <code>-o</code> option ensures cross-platform compatible output (UTF-8, LF line endings), avoiding issues with shell
+redirection on Windows.</p>
+</div>
+<p><strong>Step 2: Later, verify the files haven't changed</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>iscc-sum<span class="w"> </span>--check<span class="w"> </span>checksums.iscc
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>file1.txt: OK
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>file2.txt: OK
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>file3.txt: FAILED
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>iscc-sum: WARNING: 1 computed checksum did NOT match
+</code></pre></div>
+<p>This tells you that <code>file3.txt</code> has been modified since you created the checksums.</p>
+<h2 id="tree-mode-process-entire-directories"><img alt="📁" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c1.svg" title=":file_folder:" /> Tree Mode - Process Entire Directories<a class="headerlink" href="#tree-mode-process-entire-directories" title="Permanent link">#</a></h2>
+<p>Sometimes you want a single fingerprint for an entire folder and all its contents. This is called "tree mode".</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>iscc-sum<span class="w"> </span>--tree<span class="w"> </span>./my-project
+</code></pre></div>
+<div class="admonition example">
+<p class="admonition-title">What Tree Mode Captures</p>
+<p>This creates one unique fingerprint that represents:</p>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> All files in the folder</li>
+<li><img alt="📁" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c1.svg" title=":file_folder:" /> All subfolders and their files</li>
+<li><img alt="🏗" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3d7.svg" title=":building_construction:" /> The folder structure itself</li>
+</ul>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">When to use tree mode</p>
+<ul>
+<li><img alt="📷" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4f7.svg" title=":camera:" /> Creating a "snapshot" of a project folder</li>
+<li><img alt="🔍" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f50d.svg" title=":mag:" /> Checking if anything in a folder has changed</li>
+<li><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e6.svg" title=":package:" /> Archiving or backing up folder structures</li>
+</ul>
+</div>
+<h2 id="comparison-with-familiar-tools"><img alt="⚖" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2696.svg" title=":balance_scale:" /> Comparison with Familiar Tools<a class="headerlink" href="#comparison-with-familiar-tools" title="Permanent link">#</a></h2>
+<p>If you've used <code>md5sum</code> or <code>sha256sum</code>, you'll feel right at home:</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Generate Checksum</th>
+<th>Verify Files</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>md5sum</td>
+<td><code>md5sum file.txt</code></td>
+<td><code>md5sum -c sums.md5</code></td>
+</tr>
+<tr>
+<td>sha256sum</td>
+<td><code>sha256sum file.txt</code></td>
+<td><code>sha256sum -c sums.sha256</code></td>
+</tr>
+<tr>
+<td><strong>iscc-sum</strong></td>
+<td><code>iscc-sum file.txt</code></td>
+<td><code>iscc-sum -c sums.iscc</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition success">
+<p class="admonition-title">Key Advantages</p>
+<p>Unlike traditional checksums, <abbr title="ISCC based checkum and simlilarity hash">ISCC-SUM</abbr>:</p>
+<ul>
+<li><img alt="🧠" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9e0.svg" title=":brain:" /> Are <strong><abbr title="information organized to provide value to a user">content</abbr>-aware</strong> - similar files produce similar codes</li>
+<li><img alt="🌐" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f310.svg" title=":globe_with_meridians:" /> Follow an <strong><abbr title="International Organization for Standardization">ISO</abbr> standard</strong> - ensuring global interoperability</li>
+<li><img alt="⚡" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/26a1.svg" title=":zap:" /> Process files <strong>50-130x faster</strong> than the <abbr title="International Organization for Standardization">ISO</abbr> reference implementation</li>
+</ul>
+</div>
+<h2 id="whats-next"><img alt="🚀" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f680.svg" title=":rocket:" /> What's Next?<a class="headerlink" href="#whats-next" title="Permanent link">#</a></h2>
+<div class="admonition abstract">
+<p class="admonition-title">Explore Further</p>
+<ul>
+<li><img alt="💻" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4bb.svg" title=":computer:" /> <strong>CLI Power Users</strong>: See the <a href="/userguide/">User Guide</a> for advanced options</li>
+<li><img alt="🐍" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f40d.svg" title=":snake:" /> <strong>Python Developers</strong>: Check out the <a href="/developers/">Developer Guide</a> for API usage</li>
+<li><img alt="📖" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4d6.svg" title=":book:" /> <strong>Learn More</strong>: Read about <a href="/specifications/"><abbr title="International Standard Content Code">ISCC</abbr> extensions for BioCodes</a></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.indexes", "navigation.tracking", "navigation.expand"], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>
