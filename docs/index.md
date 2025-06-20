@@ -32,11 +32,9 @@
 
 </div>
 
-## Solving Real Scientific Challenges
-
 !!! success "From the BIO-CODES Project"
 
-    ISCC-SUM addresses fundamental challenges in scientific data management, particularly for bioimaging and
+    ISCC-SUM addresses fundamental challenges in scientific data identification, particularly for bioimaging and
     large-scale research datasets.
 
 ### :material-database: **Challenge: Large Data Volumes**
@@ -60,10 +58,10 @@ Scientific data comes in hundreds of specialized formats - from DICOM medical im
 === "Container Formats"
 
     ```
+    ✓ OME-ZARR (microscopy)
     ✓ HDF5 (hierarchical data)
     ✓ NetCDF (climate/ocean data)
     ✓ DICOM (medical imaging)
-    ✓ OME-TIFF (microscopy)
     ```
 
 === "Raw Data"
@@ -83,8 +81,8 @@ Researchers need tools that integrate seamlessly with existing workflows.
 
 ```bash
 # Just like md5sum or sha256sum
-iscc-sum experiment_001.h5
-ISCC:KAA7WQPPQ6J54VLNZJ4LSMDTTEMI2DDUEHCG5DQVWCJVKENQCHSTOSA  experiment_001.h5
+iscc-sum --tree imagedata.zarr
+ISCC:KAA7WQPPQ6J54VLNZJ4LSMDTTEMI2DDUEHCG5DQVWCJVKENQCHSTOSA  *imagedata.zarr/
 
 # Process entire datasets
 iscc-sum /data/microscopy/*.tiff > checksums.txt
@@ -96,7 +94,7 @@ iscc-sum /data/microscopy/*.tiff > checksums.txt
 
 - **Rust Library** - High-performance implementations of Data-Code and Instance-Code algorithms (1)
 - **Python Extensions** - Native bindings for seamless Python integration
-- **CLI Tool** - Unix-style command familiar to every researcher
+- **CLI Tool** - Unix-style command familiar to developers
 - **Single-Pass Processing** - Generate both codes reading data only once
 
 </div>
@@ -112,12 +110,11 @@ iscc-sum /data/microscopy/*.tiff > checksums.txt
 
 ### Unique Advantages for Research
 
-| Feature                       | Traditional Checksums                            | ISCC-SUM                                 |
-| ----------------------------- | ------------------------------------------------ | ---------------------------------------- |
-| **Speed**                     | :material-speedometer-slow: Slow for large files | :material-speedometer: 50-130× faster    |
-| **Data Similarity Detection** | :x: No                                           | :white_check_mark: Built-in              |
-| **Container Level Checksums** | :x: No                                           | :white_check_mark: Yes, storage agnostic |
-| **Standard Compliance**       | :warning: Various standards                      | :white_check_mark: ISO 24138:2024        |
+| Feature                       | Traditional Checksums       | ISCC-SUM                                 |
+| ----------------------------- | --------------------------- | ---------------------------------------- |
+| **Data Similarity Detection** | :x: No                      | :white_check_mark: Built-in              |
+| **Container Level Checksums** | :x: No                      | :white_check_mark: Yes, storage agnostic |
+| **Standard Compliance**       | :warning: Various standards | :white_check_mark: ISO 24138:2024        |
 
 ## Real-World Applications
 
@@ -184,11 +181,11 @@ iscc-sum /data/microscopy/*.tiff > checksums.txt
 
 !!! success "Real-world performance of in-memory data processing"
 
-    | Data Size | Reference | ISCC-SUM     | Speedup |
-    | --------- | --------- | ------------ | ------- |
-    | 1 MB      | 5.97 MB/s | 476.17 MB/s  | 79x     |
-    | 10 MB     | 6.48 MB/s | 956.14 MB/   | 147×    |
-    | 100 MB    | 6.09 MB/s | 1121.44 MB/s | 184×    |
+    | Data Size | ISO Reference | ISCC-SUM     | Speedup |
+    | --------- | ------------- | ------------ | ------- |
+    | 1 MB      | 5.97 MB/s     | 476.17 MB/s  | 79x     |
+    | 10 MB     | 6.48 MB/s     | 956.14 MB/   | 147×    |
+    | 100 MB    | 6.09 MB/s     | 1121.44 MB/s | 184×    |
 
 ## Get Started Today
 
@@ -200,13 +197,13 @@ iscc-sum /data/microscopy/*.tiff > checksums.txt
 
     Install and generate your first ISCC in under 5 minutes
 
-- :material-book-open-variant:{ .lg .middle } **[User Guide](user-guide.md)**
+- :material-book-open-variant:{ .lg .middle } **[User Guide](userguide.md)**
 
     ______________________________________________________________________
 
     Comprehensive documentation for all features
 
-- :material-api:{ .lg .middle } **[API Reference](developers/api-reference.md)**
+- :material-api:{ .lg .middle } **[API Reference](developers/#python-api)**
 
     ______________________________________________________________________
 
