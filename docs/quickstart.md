@@ -216,7 +216,7 @@ This tells you that `file3.txt` has been modified since you created the checksum
 Sometimes you want a single fingerprint for an entire folder and all its contents. This is called "tree mode".
 
 ```bash
-iscc-sum --tree ./my-project
+iscc-sum --tree ./my-subfolder
 ```
 
 !!! example "What Tree Mode Captures"
