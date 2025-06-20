@@ -18,6 +18,13 @@ where:
 
 ## Format
 
+The ISCC-CODE SubType WIDE shall have the data format illustrated in Figure 1:
+
+<figure markdown>
+  ![Figure 1 - Data format of the ISCC-WIDE](/images/iscc-figure-iscc-wide.png)
+  <figcaption>Figure 1 - Data format of the ISCC-WIDE</figcaption>
+</figure>
+
 An ISCC-CODE with SubType WIDE shall consist of:
 
 1. An ISCC-HEADER with MainType ISCC and SubType WIDE;
