@@ -39,7 +39,7 @@
     ISCC-SUM addresses fundamental challenges in scientific data management, particularly for bioimaging and
     large-scale research datasets.
 
-### :material-database: **Challenge: Massive Data Volumes**
+### :material-database: **Challenge: Large Data Volumes**
 
 Scientific instruments generate terabytes of data daily.
 
@@ -125,7 +125,7 @@ iscc-sum /data/microscopy/*.tiff > checksums.txt
 
     ### :microscope: Microscopy Facilities
 
-    - **Duplicate Detection**: Identify redundant acquisitions across experiments
+    - **Duplicate Detection**: Identify redundant datasets across different studies
     - **Data Integrity**: Verify images haven't been corrupted during transfer
     - **Collaboration**: Share verifiable references to specific datasets
 
@@ -170,7 +170,7 @@ iscc-sum /data/microscopy/*.tiff > checksums.txt
 
 <div class="grid" markdown>
 
-:material-tree:{ .lg } **TREEWALK** : Efficient deterministik storage tree hashing for large dataset collections
+:material-tree:{ .lg } **TREEWALK** : Efficient deterministic storage tree hashing for large dataset collections
 
 :material-expand-all:{ .lg } **SUBTYPE WIDE** : Extended codes for higher precision in similarity detection
 
