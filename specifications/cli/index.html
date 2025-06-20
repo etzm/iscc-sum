@@ -1061,8 +1061,8 @@
 
 <h1 id="iscc-sum-cli-specification"><abbr title="ISCC based checkum and simlilarity hash">ISCC-SUM</abbr> CLI Specification<a class="headerlink" href="#iscc-sum-cli-specification" title="Permanent link">#</a></h1>
 <h2 id="command-synopsis">Command Synopsis<a class="headerlink" href="#command-synopsis" title="Permanent link">#</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>iscc-sum [OPTION]... [FILE|DIR]...
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>iscc-sum [OPTION]... [FILE|DIR]...
+</span></code></pre></div>
 <h2 id="description">Description<a class="headerlink" href="#description" title="Permanent link">#</a></h2>
 <p>The <code>iscc-sum</code> command computes <abbr title="International Standard Content Code">ISCC</abbr> (International Standard Content Code) checksums for files and directories.
 Each checksum consists of a 2-<abbr title="sequence of 8 bits">byte</abbr> self-describing header followed by a composite of Data-Code and Instance-Code
@@ -1114,47 +1114,47 @@ according to <code>.isccignore</code> rules if present.</p>
 </ul>
 <h2 id="output-format">Output Format<a class="headerlink" href="#output-format" title="Permanent link">#</a></h2>
 <h3 id="default-format-untagged">Default Format (untagged)<a class="headerlink" href="#default-format-untagged" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>&lt;ISCC_CHECKSUM&gt; *&lt;FILENAME&gt;
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>&lt;ISCC_CHECKSUM&gt; *&lt;FILENAME&gt;
+</span></code></pre></div>
 <ul>
 <li><code>&lt;ISCC_CHECKSUM&gt;</code>: <abbr title="International Standard Content Code">ISCC</abbr> code starting with "<abbr title="International Standard Content Code">ISCC</abbr>:" followed by base32 encoded value</li>
 <li><code>*</code>: Binary mode indicator (always present as iscc-sum only processes binary <abbr title="ordered sequence of bits">data</abbr>)</li>
 <li><code>&lt;FILENAME&gt;</code>: Path to the <abbr title="stored data with a known number of bits and a filename">file</abbr></li>
 </ul>
 <p>Example:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2M5AEGQY *document.pdf
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2M5AEGQY *document.pdf
+</span></code></pre></div>
 <h3 id="bsd-tagged-format-tag">BSD-Tagged Format (--tag)<a class="headerlink" href="#bsd-tagged-format-tag" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>ISCC-SUM (&lt;FILENAME&gt;) = &lt;ISCC_CHECKSUM&gt;
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>ISCC-SUM (&lt;FILENAME&gt;) = &lt;ISCC_CHECKSUM&gt;
+</span></code></pre></div>
 <p>Example:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>ISCC-SUM (document.pdf) = ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2M5AEGQY
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>ISCC-SUM (document.pdf) = ISCC:KACYPXW445FTYNJ3CYSXHAFJMA2HUWULUNRFE3BLHRSCXYH2M5AEGQY
+</span></code></pre></div>
 <h3 id="extended-output-with-units-units">Extended Output with Units (--units)<a class="headerlink" href="#extended-output-with-units-units" title="Permanent link">#</a></h3>
 <p>When <code>--units</code> is specified, output additional lines with component codes:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>&lt;ISCC_CHECKSUM&gt; *&lt;FILENAME&gt;
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  Data-Code: &lt;DATA_CODE_ISCC&gt;
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>  Instance-Code: &lt;INSTANCE_CODE_ISCC&gt;
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>&lt;ISCC_CHECKSUM&gt; *&lt;FILENAME&gt;
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  Data-Code: &lt;DATA_CODE_ISCC&gt;
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>  Instance-Code: &lt;INSTANCE_CODE_ISCC&gt;
+</span></code></pre></div>
 <h3 id="similarity-matching-output-similar">Similarity Matching Output (--similar)<a class="headerlink" href="#similarity-matching-output-similar" title="Permanent link">#</a></h3>
 <p>Files are grouped by similarity with the first <abbr title="stored data with a known number of bits and a filename">file</abbr> in each group as reference:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>&lt;ISCC_CHECKSUM&gt; *&lt;REFERENCE_FILE&gt;
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>  0: &lt;ISCC_CHECKSUM&gt; *&lt;IDENTICAL_FILE&gt;
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>  5: &lt;ISCC_CHECKSUM&gt; *&lt;SIMILAR_FILE&gt;
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>  12: &lt;ISCC_CHECKSUM&gt; *&lt;SIMILAR_FILE&gt;
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>&lt;ISCC_CHECKSUM&gt; *&lt;ANOTHER_REFERENCE_FILE&gt;
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>  3: &lt;ISCC_CHECKSUM&gt; *&lt;SIMILAR_FILE&gt;
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>&lt;ISCC_CHECKSUM&gt; *&lt;REFERENCE_FILE&gt;
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>  0: &lt;ISCC_CHECKSUM&gt; *&lt;IDENTICAL_FILE&gt;
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>  5: &lt;ISCC_CHECKSUM&gt; *&lt;SIMILAR_FILE&gt;
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>  12: &lt;ISCC_CHECKSUM&gt; *&lt;SIMILAR_FILE&gt;
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>&lt;ISCC_CHECKSUM&gt; *&lt;ANOTHER_REFERENCE_FILE&gt;
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>  3: &lt;ISCC_CHECKSUM&gt; *&lt;SIMILAR_FILE&gt;
+</span></code></pre></div>
 <p>Numbers indicate hamming distance between Data-Code components.</p>
 <h3 id="tree-mode-output-tree">Tree Mode Output (--tree)<a class="headerlink" href="#tree-mode-output-tree" title="Permanent link">#</a></h3>
 <p>When processing a directory with <code>--tree</code>, output shows the directory path with a trailing slash:</p>
 <h4 id="default-format">Default format:<a class="headerlink" href="#default-format" title="Permanent link">#</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>&lt;ISCC_CHECKSUM&gt; *&lt;DIRECTORY_PATH&gt;/
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>&lt;ISCC_CHECKSUM&gt; *&lt;DIRECTORY_PATH&gt;/
+</span></code></pre></div>
 <h4 id="bsd-tagged-format">BSD-tagged format:<a class="headerlink" href="#bsd-tagged-format" title="Permanent link">#</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>ISCC-SUM (&lt;DIRECTORY_PATH&gt;/) = &lt;ISCC_CHECKSUM&gt;
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>ISCC-SUM (&lt;DIRECTORY_PATH&gt;/) = &lt;ISCC_CHECKSUM&gt;
+</span></code></pre></div>
 <p>The checksum represents all files in the directory processed as a single unit.</p>
 <h2 id="checksum-structure">Checksum Structure<a class="headerlink" href="#checksum-structure" title="Permanent link">#</a></h2>
 <h3 id="extended-format-default-256-bit">Extended Format (default, 256-<abbr title="atomic unit of information in a computer system">bit</abbr>)<a class="headerlink" href="#extended-format-default-256-bit" title="Permanent link">#</a></h3>
@@ -1187,56 +1187,56 @@ according to <code>.isccignore</code> rules if present.</p>
 </ul>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">#</a></h2>
 <h3 id="generate-checksums">Generate checksums<a class="headerlink" href="#generate-checksums" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Single file</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>iscc-sum<span class="w"> </span>document.pdf
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Multiple files</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>iscc-sum<span class="w"> </span>*.txt
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1"># BSD-style output</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>iscc-sum<span class="w"> </span>--tag<span class="w"> </span>document.pdf
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
-<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="c1"># Narrow format (ISO 24138:2024)</span>
-<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>iscc-sum<span class="w"> </span>--narrow<span class="w"> </span>document.pdf
-<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
-<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="c1"># With component units</span>
-<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>iscc-sum<span class="w"> </span>--units<span class="w"> </span>document.pdf
-<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>
-<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="c1"># Output to file (cross-platform compatible)</span>
-<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>iscc-sum<span class="w"> </span>-o<span class="w"> </span>checksums.iscc<span class="w"> </span>*.txt
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Single file</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>iscc-sum<span class="w"> </span>document.pdf
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Multiple files</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>iscc-sum<span class="w"> </span>*.txt
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1"># BSD-style output</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>iscc-sum<span class="w"> </span>--tag<span class="w"> </span>document.pdf
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="c1"># Narrow format (ISO 24138:2024)</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>iscc-sum<span class="w"> </span>--narrow<span class="w"> </span>document.pdf
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="c1"># With component units</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>iscc-sum<span class="w"> </span>--units<span class="w"> </span>document.pdf
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="c1"># Output to file (cross-platform compatible)</span>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>iscc-sum<span class="w"> </span>-o<span class="w"> </span>checksums.iscc<span class="w"> </span>*.txt
+</span></code></pre></div>
 <h3 id="verify-checksums">Verify checksums<a class="headerlink" href="#verify-checksums" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Verify from checksum file</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>iscc-sum<span class="w"> </span>-c<span class="w"> </span>checksums.txt
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Quiet verification (only show failures)</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>iscc-sum<span class="w"> </span>-c<span class="w"> </span>--quiet<span class="w"> </span>checksums.txt
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1"># Silent verification (exit code only)</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>iscc-sum<span class="w"> </span>-c<span class="w"> </span>--status<span class="w"> </span>checksums.txt
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Verify from checksum file</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>iscc-sum<span class="w"> </span>-c<span class="w"> </span>checksums.txt
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Quiet verification (only show failures)</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>iscc-sum<span class="w"> </span>-c<span class="w"> </span>--quiet<span class="w"> </span>checksums.txt
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1"># Silent verification (exit code only)</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>iscc-sum<span class="w"> </span>-c<span class="w"> </span>--status<span class="w"> </span>checksums.txt
+</span></code></pre></div>
 <h3 id="find-similar-files">Find similar files<a class="headerlink" href="#find-similar-files" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Group similar files</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>iscc-sum<span class="w"> </span>--similar<span class="w"> </span>*.jpg
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># Use custom similarity threshold (hamming distance)</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>iscc-sum<span class="w"> </span>--similar<span class="w"> </span>--threshold<span class="w"> </span><span class="m">20</span><span class="w"> </span>documents/*.pdf
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="c1"># Find similar files in directory</span>
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>iscc-sum<span class="w"> </span>--similar<span class="w"> </span>/path/to/images
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>
-<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="c1"># Process entire directory as single unit</span>
-<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>iscc-sum<span class="w"> </span>--tree<span class="w"> </span>/path/to/project
-<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>
-<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="c1"># Generate checksums for all files in directory</span>
-<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>iscc-sum<span class="w"> </span>/path/to/directory
-<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>
-<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="c1"># Process directory tree and create a single checksum</span>
-<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>iscc-sum<span class="w"> </span>--tree<span class="w"> </span>/path/to/project
-<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>
-<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="c1"># BSD-style tree checksum</span>
-<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>iscc-sum<span class="w"> </span>--tree<span class="w"> </span>--tag<span class="w"> </span>/path/to/project
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Group similar files</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>iscc-sum<span class="w"> </span>--similar<span class="w"> </span>*.jpg
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># Use custom similarity threshold (hamming distance)</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>iscc-sum<span class="w"> </span>--similar<span class="w"> </span>--threshold<span class="w"> </span><span class="m">20</span><span class="w"> </span>documents/*.pdf
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="c1"># Find similar files in directory</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>iscc-sum<span class="w"> </span>--similar<span class="w"> </span>/path/to/images
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="c1"># Process entire directory as single unit</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>iscc-sum<span class="w"> </span>--tree<span class="w"> </span>/path/to/project
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="c1"># Generate checksums for all files in directory</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>iscc-sum<span class="w"> </span>/path/to/directory
+</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>
+</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="c1"># Process directory tree and create a single checksum</span>
+</span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>iscc-sum<span class="w"> </span>--tree<span class="w"> </span>/path/to/project
+</span><span id="__span-11-18"><a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>
+</span><span id="__span-11-19"><a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="c1"># BSD-style tree checksum</span>
+</span><span id="__span-11-20"><a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>iscc-sum<span class="w"> </span>--tree<span class="w"> </span>--tag<span class="w"> </span>/path/to/project
+</span></code></pre></div>
 <h2 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">#</a></h2>
 <ol>
 <li>The tool MUST process all files as binary <abbr title="ordered sequence of bits">data</abbr> (no text encoding/decoding)</li>
@@ -1305,7 +1305,7 @@ according to <code>.isccignore</code> rules if present.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.indexes", "navigation.tracking", "navigation.expand"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.indexes", "navigation.tracking", "navigation.expand", "content.code.copy"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
