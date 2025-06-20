@@ -87,11 +87,38 @@ UV is a modern Python tool installer that handles everything for you - including
 
 ### Step 2: Run ISCC-SUM Instantly
 
-Now you can run ISCC-SUM without any further installation:
+Now you can run ISCC-SUM without any further installation. Let's try it with a test file:
 
-```bash
-uvx iscc-sum myfile.txt
+```shell
+# Create a test file
+echo "Hello ISCC!" > test.txt
+
+# Generate its ISCC checksum
+uvx iscc-sum test.txt
 ```
+
+You should see output like this:
+
+```
+ISCC:K4AND37MEJ2QHCZ2DK5OUWSF7FGIYKDWBBPG3VOKM6FE5NPXZXA33SI *test.txt
+```
+
+!!! success "It worked!"
+
+    Congratulations! You just generated your first ISCC checksum. The long string starting with "ISCC:" is a unique
+    fingerprint of your file's content.
+
+!!! tip "Using with your own files"
+
+    To process your own files, simply navigate to their location first:
+
+    ```bash
+    # Navigate to the folder with your files
+    cd Documents
+
+    # Run ISCC-SUM on any file
+    uvx iscc-sum myfile.pdf
+    ```
 
 ## :package: Permanent Installation
 
