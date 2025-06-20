@@ -18,6 +18,7 @@ from typing import Iterator
 from unicodedata import normalize
 
 import pathspec
+from upath import UPath
 
 
 def listdir(path):
@@ -35,6 +36,53 @@ def listdir(path):
     with os.scandir(path) as it:
         filtered = [e for e in it if not e.is_symlink()]
     return sorted(filtered, key=lambda e: (normalize("NFC", e.name).encode("utf-8"), e.name.encode("utf-8")))
+
+
+def listdir_upath(path):
+    # type: (UPath|str|Path) -> list[UPath]
+    """
+    List directory entries as UPath objects with deterministic cross-platform sorting.
+
+    Similar to listdir() but works with UPath objects, enabling support for various
+    file systems and protocols (local files, S3, HTTP, etc.) through fsspec backends.
+    Returns directory entries sorted by NFC-normalized UTF-8 encoded names,
+    ensuring consistent ordering across different filesystems and locales.
+    Symlinks are excluded where the backend supports symlink detection.
+
+    :param path: Directory path to list (UPath, string, or Path object)
+    :return: Sorted list of UPath objects (excluding symlinks where detectable)
+    :raises: FileNotFoundError if the path doesn't exist
+    :raises: NotADirectoryError if the path is not a directory
+    """
+    # Convert to UPath if needed
+    if not isinstance(path, UPath):
+        path = UPath(path)
+
+    # Ensure path exists and is a directory
+    if not path.exists():
+        raise FileNotFoundError(f"Directory not found: {path}")
+    if not path.is_dir():
+        raise NotADirectoryError(f"Path is not a directory: {path}")
+
+    # Get all entries using iterdir()
+    entries = []
+    try:
+        for entry in path.iterdir():
+            # Check for symlinks only if the backend supports it
+            # Some fsspec backends don't have is_symlink method
+            try:
+                if hasattr(entry, "is_symlink") and entry.is_symlink():
+                    continue
+            except (AttributeError, NotImplementedError):
+                # Backend doesn't support symlink detection, include the entry
+                pass
+            entries.append(entry)
+    except Exception as e:
+        # Handle any backend-specific errors
+        raise OSError(f"Error listing directory {path}: {e}")
+
+    # Sort by NFC-normalized UTF-8 encoded names for deterministic ordering
+    return sorted(entries, key=lambda e: (normalize("NFC", e.name).encode("utf-8"), e.name.encode("utf-8")))
 
 
 def treewalk(path):

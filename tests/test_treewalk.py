@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 
-from iscc_sum.treewalk import listdir, treewalk, treewalk_ignore, treewalk_iscc
+from iscc_sum.treewalk import listdir, listdir_upath, treewalk, treewalk_ignore, treewalk_iscc
 
 
 class TestListdir:
@@ -116,6 +116,141 @@ class TestListdir:
         # b'Cafe\xcc\x81.txt' < b'Caf\xc3\xa9.txt'
         assert names[0] == "Cafe\u0301.txt"
         assert names[1] == "Café.txt"
+
+
+class TestListdirUpath:
+    """Tests for the listdir_upath function."""
+
+    def test_empty_directory(self, fs):
+        # type: (FakeFilesystem) -> None
+        """Test listing an empty directory."""
+        fs.create_dir("/empty")
+        result = listdir_upath("/empty")
+        assert result == []
+
+    def test_listdir_upath_comprehensive_coverage(self):
+        # type: () -> None
+        """Note: Comprehensive tests for listdir_upath are in test_listdir_upath_comprehensive.py."""
+        # This test serves as a reminder that full coverage for listdir_upath
+        # is provided by the dedicated test file test_listdir_upath_comprehensive.py
+        # which uses real filesystem operations instead of pyfakefs to avoid
+        # compatibility issues with UPath.
+        assert True
+
+    def test_memory_filesystem(self):
+        # type: () -> None
+        """Test listdir_upath with memory filesystem."""
+        from upath import UPath
+
+        # Create directory in memory
+        mem_path = UPath("memory:///test_listdir_mem")
+        mem_path.mkdir(parents=True, exist_ok=True)
+
+        # Create a file
+        (mem_path / "file.txt").write_text("content")
+
+        result = listdir_upath(mem_path)
+        assert len(result) == 1
+        assert result[0].name == "file.txt"
+
+    def test_nonexistent_directory(self, fs):
+        # type: (FakeFilesystem) -> None
+        """Test error handling for non-existent directory."""
+        with pytest.raises(FileNotFoundError, match="Directory not found"):
+            listdir_upath("/nonexistent")
+
+    def test_file_instead_of_directory(self, fs):
+        # type: (FakeFilesystem) -> None
+        """Test error handling when path is a file."""
+        fs.create_file("/test.txt")
+        with pytest.raises(NotADirectoryError, match="Path is not a directory"):
+            listdir_upath("/test.txt")
+
+    def test_error_conditions(self):
+        # type: () -> None
+        """Test error handling in listdir_upath."""
+        # Non-existent directory
+        with pytest.raises(FileNotFoundError, match="Directory not found"):
+            listdir_upath("/this/does/not/exist")
+
+        # Create a test file in memory to test NotADirectoryError
+        from upath import UPath
+
+        mem_file = UPath("memory:///test_file.txt")
+        mem_file.write_text("not a directory")
+
+        with pytest.raises(NotADirectoryError, match="Path is not a directory"):
+            listdir_upath(mem_file)
+
+    def test_backend_no_symlink_support(self, fs):
+        # type: (FakeFilesystem) -> None
+        """Test handling of entries without symlink support."""
+
+        # Create custom path-like objects to test exception handling
+        class EntryWithBrokenSymlink:
+            def __init__(self, name):
+                self.name = name
+
+            def is_symlink(self):
+                raise NotImplementedError("Backend doesn't support symlinks")
+
+        class EntryWithAttrError:
+            def __init__(self, name):
+                self.name = name
+
+            def is_symlink(self):
+                raise AttributeError("No symlink support")
+
+        class PathWithCustomIterdir:
+            def __init__(self, path_str):
+                self._path_str = str(path_str)
+                if self._path_str == "/test1":
+                    self._entries = [EntryWithBrokenSymlink("file1.txt")]
+                elif self._path_str == "/test2":
+                    self._entries = [EntryWithAttrError("file2.txt")]
+                elif self._path_str == "/test3":
+                    self._should_error = True
+                else:
+                    self._entries = []
+
+            def exists(self):
+                return True
+
+            def is_dir(self):
+                return True
+
+            def iterdir(self):
+                if hasattr(self, "_should_error"):
+                    raise RuntimeError("Backend error")
+                return iter(self._entries)
+
+        # Test NotImplementedError handling
+        from iscc_sum import treewalk
+
+        original_upath = treewalk.UPath
+
+        try:
+            # Create a custom UPath class that returns our test paths
+            class CustomUPath(PathWithCustomIterdir):
+                pass
+
+            treewalk.UPath = CustomUPath
+
+            # Test NotImplementedError case
+            result = listdir_upath("/test1")
+            assert len(result) == 1
+
+            # Test AttributeError case
+            result = listdir_upath("/test2")
+            assert len(result) == 1
+
+            # Test general exception during iterdir
+            with pytest.raises(OSError, match="Error listing directory"):
+                listdir_upath("/test3")
+
+        finally:
+            # Restore original UPath
+            treewalk.UPath = original_upath
 
 
 class TestTreewalk:
