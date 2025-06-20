@@ -13,11 +13,9 @@ Originally created to handle massive microscopic imaging datasets where existing
 
 **Version 0.1.0** — Initial release for Data-Code and Instance-Code generation.
 
-> [!NOTE]
-> By default, this tool creates ISCC-CODEs of SubType WIDE, introduced for large-scale secure checksum support
-> with data similarity matching capabilities. This SubType is not yet part of the ISO 24138:2024 standard but is
-> supported by the latest version of the [Iscc-Core](https://github.com/iscc/iscc-core) reference
-> implementation. For ISO 24138:2024 conformant ISCC-CODEs, use the `--narrow` flag in the CLI tool.
+> [!WARNING]
+> This package is under active development, and breaking changes may be released at any time. Be sure to pin to
+> specific versions if you're using this package in a production environment.
 
 ## Performance
 
@@ -40,22 +38,6 @@ uv tool install iscc-sum
 **Note:** To install uv, run: `curl -LsSf https://astral.sh/uv/install.sh | sh` (or see
 [other installation methods](https://docs.astral.sh/uv/getting-started/installation/))
 
-Alternatively, install from PyPI:
-
-```bash
-pip install iscc-sum
-```
-
-### Rust CLI Tool
-
-Install from crates.io:
-
-```bash
-cargo install iscc-sum
-```
-
-Or download pre-built binaries from the [releases page](https://github.com/bio-codes/iscc-sum/releases).
-
 ## Usage
 
 ### Command Line Interface
@@ -77,6 +59,12 @@ iscc-sum *.txt
 echo "Hello, World!" | iscc-sum
 cat document.txt | iscc-sum
 ```
+
+> [!NOTE]
+> By default, this tool creates ISCC-CODEs of SubType WIDE, introduced for large-scale secure checksum support
+> with data similarity matching capabilities. This SubType is not yet part of the ISO 24138:2024 standard but is
+> supported by the latest version of the [Iscc-Core](https://github.com/iscc/iscc-core) reference
+> implementation. For ISO 24138:2024 conformant ISCC-CODEs, use the `--narrow` flag in the CLI tool.
 
 #### Checksum Verification
 
@@ -154,27 +142,6 @@ Options:
 --status         Don't output anything, exit code shows success
 -w, --warn       Warn about improperly formatted lines
 --strict         Exit non-zero for improperly formatted lines
-```
-
-#### Examples
-
-See the [examples](examples/) directory for practical scripts demonstrating:
-
-- Backup verification workflows
-- Duplicate file detection
-- File integrity monitoring
-- Download verification
-
-#### Rust CLI Tool
-
-A standalone Rust binary is also available:
-
-```bash
-# Install from crates.io
-cargo install iscc-sum
-
-# Run the Rust CLI
-isum
 ```
 
 ### Python API
