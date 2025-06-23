@@ -58,7 +58,7 @@ Scientific data comes in hundreds of specialized formats - from DICOM medical im
 === "Container Formats"
 
     ```
-    ✓ OME-ZARR (microscopy)
+    ✓ ZARR (multidimensional array data)
     ✓ HDF5 (hierarchical data)
     ✓ NetCDF (climate/ocean data)
     ✓ DICOM (medical imaging)
