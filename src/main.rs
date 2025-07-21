@@ -68,7 +68,7 @@ const BUFFER_SIZE: usize = 2 * 1024 * 1024;
 
 /// Print an error message to stderr and exit with error code
 fn error_exit(message: &str) -> ! {
-    eprintln!("isum: {}", message);
+    eprintln!("isum: {message}");
     process::exit(EXIT_ERROR);
 }
 
@@ -77,15 +77,14 @@ fn build_exclude_set(patterns: &[String]) -> io::Result<Option<GlobSet>> {
     let mut builder = GlobSetBuilder::new();
 
     for pattern in patterns {
-        let glob = Glob::new(pattern).map_err(|e| {
-            io::Error::other(format!("Invalid exclude pattern '{}': {}", pattern, e))
-        })?;
+        let glob = Glob::new(pattern)
+            .map_err(|e| io::Error::other(format!("Invalid exclude pattern '{pattern}': {e}")))?;
         builder.add(glob);
     }
 
     let globset = builder
         .build()
-        .map_err(|e| io::Error::other(format!("Failed to build exclude patterns: {}", e)))?;
+        .map_err(|e| io::Error::other(format!("Failed to build exclude patterns: {e}")))?;
 
     Ok(Some(globset))
 }
