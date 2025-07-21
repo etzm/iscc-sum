@@ -152,9 +152,9 @@ impl IgnoreSpec {
             }
         }
 
-        let ignore_set = ignore_builder.build().map_err(|e| {
-            TreewalkError::InvalidPath(format!("Failed to build ignore set: {e}"))
-        })?;
+        let ignore_set = ignore_builder
+            .build()
+            .map_err(|e| TreewalkError::InvalidPath(format!("Failed to build ignore set: {e}")))?;
         let whitelist_set = whitelist_builder.build().map_err(|e| {
             TreewalkError::InvalidPath(format!("Failed to build whitelist set: {e}"))
         })?;
