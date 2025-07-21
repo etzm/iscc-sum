@@ -32,8 +32,8 @@ impl From<io::Error> for TreewalkError {
 impl std::fmt::Display for TreewalkError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            TreewalkError::IoError(err) => write!(f, "IO error: {}", err),
-            TreewalkError::InvalidPath(path) => write!(f, "Invalid path: {}", path),
+            TreewalkError::IoError(err) => write!(f, "IO error: {err}"),
+            TreewalkError::InvalidPath(path) => write!(f, "Invalid path: {path}"),
         }
     }
 }
@@ -153,10 +153,10 @@ impl IgnoreSpec {
         }
 
         let ignore_set = ignore_builder.build().map_err(|e| {
-            TreewalkError::InvalidPath(format!("Failed to build ignore set: {}", e))
+            TreewalkError::InvalidPath(format!("Failed to build ignore set: {e}"))
         })?;
         let whitelist_set = whitelist_builder.build().map_err(|e| {
-            TreewalkError::InvalidPath(format!("Failed to build whitelist set: {}", e))
+            TreewalkError::InvalidPath(format!("Failed to build whitelist set: {e}"))
         })?;
 
         Ok((ignore_set, whitelist_set))
@@ -178,7 +178,7 @@ impl IgnoreSpec {
 
         // For directories, also check with trailing slash
         let dir_path = if is_dir {
-            Some(format!("{}/", path_str))
+            Some(format!("{path_str}/"))
         } else {
             None
         };
@@ -224,8 +224,8 @@ impl IgnoreSpec {
             }
 
             // Check if this whitelist pattern could match something under this directory
-            if entry.pattern.starts_with(&format!("{}/", dir_str))
-                || entry.pattern.starts_with(&format!("{}", dir_str))
+            if entry.pattern.starts_with(&format!("{dir_str}/"))
+                || entry.pattern.starts_with(&format!("{dir_str}"))
             {
                 return Ok(true);
             }
@@ -945,9 +945,9 @@ mod tests {
 
         // Create a deeply nested structure
         for i in 0..5 {
-            current = current.join(format!("level{}", i));
+            current = current.join(format!("level{i}"));
             fs::create_dir(&current).unwrap();
-            File::create(current.join(format!("file{}.txt", i))).unwrap();
+            File::create(current.join(format!("file{i}.txt"))).unwrap();
         }
 
         let paths = treewalk(temp_dir.path()).unwrap();
@@ -958,7 +958,7 @@ mod tests {
         // Verify all files are found
         for (i, path) in paths.iter().enumerate() {
             let filename = path.file_name().unwrap().to_string_lossy();
-            assert_eq!(filename, format!("file{}.txt", i));
+            assert_eq!(filename, format!("file{i}.txt"));
         }
     }
 
