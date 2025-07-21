@@ -52,7 +52,7 @@ impl IsccSumResult {
             "datahash" => Ok(self.datahash.as_str().into_pyobject(py)?.into_any()),
             "filesize" => Ok(self.filesize.into_pyobject(py)?.into_any()),
             "units" => Ok(self.units.as_ref().into_pyobject(py)?.into_any()),
-            _ => Err(PyKeyError::new_err(format!("Key '{}' not found", key))),
+            _ => Err(PyKeyError::new_err(format!("Key '{key}' not found"))),
         }
     }
 
@@ -124,7 +124,7 @@ impl IsccSumProcessor {
 
         // Base32 encode without padding
         let iscc_code = base32::encode(base32::Alphabet::Rfc4648 { padding: false }, &iscc_bytes);
-        let iscc = format!("ISCC:{}", iscc_code);
+        let iscc = format!("ISCC:{iscc_code}");
 
         // Get datahash and filesize
         let datahash = self.instance_hasher.multihash();
@@ -143,7 +143,7 @@ impl IsccSumProcessor {
                 base32::Alphabet::Rfc4648 { padding: false },
                 &data_iscc_bytes,
             );
-            let data_iscc = format!("ISCC:{}", data_iscc_code);
+            let data_iscc = format!("ISCC:{data_iscc_code}");
 
             // Create full 256-bit Instance-Code ISCC
             let instance_header_byte1: u8 = 0b0100 << 4; // Instance type + subtype
@@ -154,7 +154,7 @@ impl IsccSumProcessor {
                 base32::Alphabet::Rfc4648 { padding: false },
                 &instance_iscc_bytes,
             );
-            let instance_iscc = format!("ISCC:{}", instance_iscc_code);
+            let instance_iscc = format!("ISCC:{instance_iscc_code}");
 
             unit_list.push(data_iscc);
             unit_list.push(instance_iscc);
@@ -201,14 +201,14 @@ impl IsccSumProcessor {
 pub fn code_iscc_sum(filepath: &str, wide: bool, add_units: bool) -> PyResult<IsccSumResult> {
     let path = Path::new(filepath);
     let mut file = File::open(path)
-        .map_err(|e| pyo3::exceptions::PyIOError::new_err(format!("Failed to open file: {}", e)))?;
+        .map_err(|e| pyo3::exceptions::PyIOError::new_err(format!("Failed to open file: {e}")))?;
 
     let mut processor = IsccSumProcessor::new();
     let mut buffer = vec![0; 2 * 1024 * 1024]; // 2MB buffer
 
     loop {
         let bytes_read = file.read(&mut buffer).map_err(|e| {
-            pyo3::exceptions::PyIOError::new_err(format!("Failed to read file: {}", e))
+            pyo3::exceptions::PyIOError::new_err(format!("Failed to read file: {e}"))
         })?;
         if bytes_read == 0 {
             break;
