@@ -35,7 +35,7 @@ fn test_unicode_filenames() {
 
     for filename in &test_files {
         let file_path = temp_dir.path().join(filename);
-        fs::write(&file_path, format!("content for {}", filename)).unwrap();
+        fs::write(&file_path, format!("content for {filename}")).unwrap();
     }
 
     let mut cmd = Command::cargo_bin("isum").unwrap();
@@ -47,7 +47,7 @@ fn test_unicode_filenames() {
     let output = cmd.output().unwrap();
     let stdout = String::from_utf8_lossy(&output.stdout);
     for filename in &test_files {
-        assert!(stdout.contains(filename), "Missing file: {}", filename);
+        assert!(stdout.contains(filename), "Missing file: {filename}");
     }
 }
 
@@ -173,7 +173,7 @@ fn test_special_characters_in_filenames() {
 
     for filename in &special_files {
         let file_path = temp_dir.path().join(filename);
-        fs::write(&file_path, format!("content: {}", filename)).unwrap();
+        fs::write(&file_path, format!("content: {filename}")).unwrap();
     }
 
     let mut cmd = Command::cargo_bin("isum").unwrap();
@@ -187,8 +187,7 @@ fn test_special_characters_in_filenames() {
     for filename in &special_files {
         assert!(
             stdout.contains(filename),
-            "Missing special file: {}",
-            filename
+            "Missing special file: {filename}"
         );
     }
 }
@@ -201,8 +200,7 @@ fn test_long_paths() {
     let mut current_path = temp_dir.path().to_path_buf();
     for i in 0..10 {
         current_path = current_path.join(format!(
-            "very_long_directory_name_number_{}_that_makes_the_path_longer",
-            i
+            "very_long_directory_name_number_{i}_that_makes_the_path_longer"
         ));
         fs::create_dir(&current_path).unwrap();
     }
