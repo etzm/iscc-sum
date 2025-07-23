@@ -157,9 +157,8 @@ jobs:
       - name: Run tests with coverage
         run: uv run pytest -v --cov=iscc_sum --cov-report=term-missing --cov-fail-under=100
       
-      # Verify dogfood hash - only on one job to avoid duplication
+      # Verify dogfood hash on all OS/Python combinations to ensure cross-platform compatibility
       - name: Verify repository ISCC hash
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
         run: uv run poe dogfood-verify
 
   # Wheel installation test - one Python version per OS
