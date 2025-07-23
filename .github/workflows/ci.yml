@@ -173,6 +173,15 @@ jobs:
       # Verify dogfood hash on all OS/Python combinations to ensure cross-platform compatibility
       - name: Verify repository ISCC hash
         run: uv run poe dogfood-verify
+      
+      # Debug output for Windows failures
+      - name: Debug ISCC generation (Windows only)
+        if: runner.os == 'Windows' && failure()
+        run: |
+          uv run python scripts/debug_dogfood.py
+          Write-Host "`nShowing debug output:"
+          Get-Content debug_output.txt | Select-Object -First 50
+        shell: pwsh
 
   # Wheel installation test - one Python version per OS
   test-wheel-install:
