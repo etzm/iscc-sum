@@ -1,15 +1,15 @@
 # Ignore all subdirectories by default
-*/
+*
 
 # Include the following
 
-!/README.md
-!/CHANGELOG.md
-!/LICENSE
-!/pyproject.toml
-!/uv.lock
-!/Cargo.toml
-!/Cargo.lock
+!README.md
+!CHANGELOG.md
+!LICENSE
+!pyproject.toml
+!uv.lock
+!Cargo.toml
+!Cargo.lock
 
 !.github/**
 !docs/**

@@ -203,10 +203,10 @@ def verify(file: Optional[Path]):
     click.echo(f"Current ISCC: {current_iscc}")
 
     if stored_iscc == current_iscc:
-        click.echo("\n✓ Repository matches stored ISCC")
+        click.echo("\n[OK] Repository matches stored ISCC")
         sys.exit(0)
     else:
-        click.echo("\n✗ Repository has changed", err=True)
+        click.echo("\n[FAIL] Repository has changed", err=True)
 
         # Calculate hamming distance for data-code units
         try:
