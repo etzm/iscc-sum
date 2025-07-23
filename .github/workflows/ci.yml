@@ -19,10 +19,12 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     
     steps:
-      - uses: actions/checkout@v4
-      
       - name: Configure Git line endings
-        run: git config --global core.autocrlf false
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      
+      - uses: actions/checkout@v4
       
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -99,10 +101,12 @@ jobs:
             python-version: "3.10"
     
     steps:
-      - uses: actions/checkout@v4
-      
       - name: Configure Git line endings
-        run: git config --global core.autocrlf false
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      
+      - uses: actions/checkout@v4
       
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -172,10 +176,12 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     
     steps:
-      - uses: actions/checkout@v4
-      
       - name: Configure Git line endings
-        run: git config --global core.autocrlf false
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      
+      - uses: actions/checkout@v4
       
       - name: Set up Python
         uses: actions/setup-python@v5
