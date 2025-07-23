@@ -22,3 +22,16 @@
 *.pyc
 *.so
 *.pyd
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+*.egg-info/
+.eggs/
+build/
+dist/
+*.pdb
+target/
+.maturin/
