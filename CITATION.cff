@@ -5,7 +5,9 @@ authors:
   - family-names: Pan
     given-names: Titusz
     email: tp@iscc.io
+    orcid: https://orcid.org/0000-0002-0521-4214
 title: "BIO-CODES/ISCC-SUM: High-Performance ISCC Generation for Bioimaging Data - OSCARS Project"
+doi: 10.5281/zenodo.16541262
 version: 0.1.0
 date-released: 2025-07-28
 url: "https://github.com/bio-codes/iscc-sum"
@@ -24,4 +26,6 @@ keywords:
   - similarity-hash
   - deduplication
 license: Apache-2.0
-
+funding:
+  - name: "OSCARS - Open Science Clusters' Action for Research and Society"
+    award: "101129751"

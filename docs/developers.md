@@ -3,6 +3,7 @@
 [![CI](https://github.com/bio-codes/iscc-sum/actions/workflows/ci.yml/badge.svg)](https://github.com/bio-codes/iscc-sum/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/iscc-sum.svg)](https://pypi.org/project/iscc-sum/)
 [![Crates.io](https://img.shields.io/crates/v/iscc-sum.svg)](https://crates.io/crates/iscc-sum)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16541262.svg)](https://doi.org/10.5281/zenodo.16541262)
 
 A blazing-fast ISCC Data-Code and Instance-Code hashing tool built in Rust with Python bindings. Delivers
 **50-130x faster** performance than reference implementations, processing data at over 1 GB/s.
@@ -270,3 +271,23 @@ project (Enhancing AI-Readiness of Bioimaging Data with Content-Based Identifier
 ## License
 
 This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## Citation
+
+if you use ISCC-SUM in your research, please cite:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16541262.svg)](https://doi.org/10.5281/zenodo.16541262)
+
+```bibtex
+@software{pan2025isccsum,
+    title        = {BIO-CODES/ISCC-SUM: High-Performance ISCC Generation for Bioimaging Data - OSCARS Project},
+    author       = {Pan, Titusz},
+    year         = 2025,
+    month        = jul,
+    publisher    = {Zenodo},
+    doi          = {10.5281/zenodo.16541262},
+    url          = {https://doi.org/10.5281/zenodo.16541262},
+    note         = {Supported by OSCARS (Open Science Clusters' Action for Research and Society) under European Commission grant agreement Nº101129751},
+    version      = {0.1.0}
+}
+```
