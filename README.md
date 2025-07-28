@@ -258,8 +258,10 @@ maturin build --release
 
 ## Funding
 
-This project has received funding from the European Commission's Horizon Europe Research and Innovation
-programme under grant agreement No. 101129751 as part of the
+This work was supported through the Open Science Clusters’ Action for Research and Society (OSCARS) European
+project under grant agreement Nº101129751.
+
+See:
 [BIO-CODES](https://oscars-project.eu/projects/bio-codes-enhancing-ai-readiness-bioimaging-data-content-based-identifiers)
 project (Enhancing AI-Readiness of Bioimaging Data with Content-Based Identifiers).
 

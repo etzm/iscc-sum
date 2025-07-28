@@ -5,7 +5,7 @@ authors:
   - family-names: Pan
     given-names: Titusz
     email: tp@iscc.io
-title: "iscc-sum: High-performance ISCC Data-Code and Instance-Code hashing"
+title: "iscc-sum: BIO-CODES - Bioimaging data identification with ISCC ISO 24138:2024 - "
 version: 0.1.0
 date-released: 2025-07-28
 url: "https://github.com/bio-codes/iscc-sum"
