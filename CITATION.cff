@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: Pan
+    given-names: Titusz
+    email: tp@iscc.io
+title: "iscc-sum: High-performance ISCC Data-Code and Instance-Code hashing"
+version: 0.1.0
+date-released: 2025-07-28
+url: "https://github.com/bio-codes/iscc-sum"
+repository-code: "https://github.com/bio-codes/iscc-sum"
+abstract: >-
+  A high-performance ISCC Data-Code and Instance-Code hashing tool built with Python including a rust extension.
+  Delivers 50-130x faster performance than reference implementations, processing data at over 1 GB/s.
+  Originally created to handle massive microscopic imaging datasets where existing tools were too slow.
+keywords:
+  - iscc
+  - identifier
+  - provenance
+  - hash
+  - checksum
+  - content-hash
+  - similarity-hash
+  - deduplication
+license: Apache-2.0
+preferred-citation:
+  type: software
+  authors:
+    - family-names: Pan
+      given-names: Titusz
+      email: titusz.pan@gmail.com
+  title: "iscc-sum: High-performance ISCC Data-Code and Instance-Code hashing"
+  version: 0.1.0
+  date-released: 2025-07-28
+  url: "https://github.com/bio-codes/iscc-sum"
