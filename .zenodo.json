@@ -55,7 +55,7 @@
     },
     {
       "identifier": "https://sum.iscc.codes",
-      "relation": "hasDocumentation",
+      "relation": "isDocumentedBy",
       "scheme": "url"
     }
   ],
