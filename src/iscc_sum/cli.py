@@ -147,6 +147,11 @@ def output_file_context(output_path):
     is_flag=True,
     help="Process directory as a single unit with combined checksum",
 )
+@click.option(
+    "--walk",
+    is_flag=True,
+    help="List files in processing order (same as --tree but without checksum computation)",
+)
 @click.argument("files", nargs=-1, type=click.Path())
 def cli(
     check,
@@ -162,9 +167,10 @@ def cli(
     similar,
     threshold,
     tree,
+    walk,
     files,
 ):
-    # type: (bool, bool, str | None, bool, bool, bool, bool, bool, bool, bool, bool, int, bool, tuple) -> None
+    # type: (bool, bool, str | None, bool, bool, bool, bool, bool, bool, bool, bool, int, bool, bool, tuple) -> None
     """Compute ISCC (International Standard Content Code) checksums for files.
 
     Each checksum consists of a 2-byte self-describing header followed by a
@@ -205,6 +211,18 @@ def cli(
         click.echo("iscc-sum: --tree cannot be used with --similar", err=True)
         sys.exit(EXIT_ERROR)
 
+    if walk and check:
+        click.echo("iscc-sum: --walk cannot be used with -c/--check", err=True)
+        sys.exit(EXIT_ERROR)
+
+    if walk and similar:
+        click.echo("iscc-sum: --walk cannot be used with --similar", err=True)
+        sys.exit(EXIT_ERROR)
+
+    if walk and tree:
+        click.echo("iscc-sum: --walk cannot be used with --tree", err=True)
+        sys.exit(EXIT_ERROR)
+
     if similar and len(files) < 2:
         click.echo("iscc-sum: --similar requires at least 2 files to compare", err=True)
         sys.exit(EXIT_ERROR)
@@ -213,12 +231,17 @@ def cli(
         click.echo("iscc-sum: --tree requires exactly one directory argument", err=True)
         sys.exit(EXIT_ERROR)
 
-    if tree:
+    if walk and len(files) != 1:
+        click.echo("iscc-sum: --walk requires exactly one directory argument", err=True)
+        sys.exit(EXIT_ERROR)
+
+    if tree or walk:
         # Validate that the argument is a directory
         from pathlib import Path
 
         if not Path(files[0]).is_dir():
-            click.echo(f"iscc-sum: --tree requires a directory, not a file: '{files[0]}'", err=True)
+            mode_name = "--tree" if tree else "--walk"
+            click.echo(f"iscc-sum: {mode_name} requires a directory, not a file: '{files[0]}'", err=True)
             sys.exit(EXIT_ERROR)
 
     try:
@@ -234,6 +257,9 @@ def cli(
                 elif tree:
                     # Tree mode - process directory as single unit
                     _handle_tree_mode(files[0], narrow, units, tag, zero, output_file)
+                elif walk:
+                    # Walk mode - list files in processing order
+                    _handle_tree_mode(files[0], narrow, units, tag, zero, output_file, list_only=True)
                 else:
                     # Normal checksum generation mode
                     _handle_checksum_generation(files, narrow, units, tag, zero, output_file)
@@ -288,61 +314,77 @@ def _expand_paths(paths):
             raise IOError(f"Not a regular file or directory: '{path}'")
 
 
-def _handle_tree_mode(directory, narrow, units, tag, zero, output_file=None):
-    # type: (str, bool, bool, bool, bool, IO[Any] | None) -> None
-    """Handle tree mode - process directory as single unit."""
+def _handle_tree_mode(directory, narrow, units, tag, zero, output_file=None, list_only=False):
+    # type: (str, bool, bool, bool, bool, IO[Any] | None, bool) -> None
+    """Handle tree mode - process directory as single unit or list files."""
     from pathlib import Path
 
     from iscc_sum import IsccSumProcessor
     from iscc_sum.treewalk import treewalk_iscc
 
     try:
-        # Create a single processor for the entire directory
-        processor = IsccSumProcessor()
+        # Create a single processor for the entire directory (unless list_only)
+        if not list_only:
+            processor = IsccSumProcessor()
 
         # Process all files in the directory in deterministic order
         file_count = 0
+        dir_path = Path(directory).resolve()
+
         for file_path in treewalk_iscc(Path(directory)):
             file_count += 1
-            try:
-                with open(file_path, "rb") as f:
-                    while True:
-                        chunk = f.read(IO_READ_SIZE)
-                        if not chunk:
-                            break
-                        processor.update(chunk)
-            except IOError as e:
-                # Report but continue processing other files
-                click.echo(f"iscc-sum: {file_path}: {e}", err=True)
-                continue
+
+            if list_only:
+                # Just output the file path relative to the directory
+                relative_path = file_path.relative_to(dir_path)
+                display_path = _normalize_path_display(str(relative_path))
+
+                terminator = "\0" if zero else "\n"
+                click.echo(display_path, nl=False, file=output_file)
+                click.echo(terminator, nl=False, file=output_file)
+            else:
+                # Process file for checksum computation
+                try:
+                    with open(file_path, "rb") as f:
+                        while True:
+                            chunk = f.read(IO_READ_SIZE)
+                            if not chunk:
+                                break
+                            processor.update(chunk)
+                except IOError as e:
+                    # Report but continue processing other files
+                    click.echo(f"iscc-sum: {file_path}: {e}", err=True)
+                    continue
 
         if file_count == 0:
             click.echo(f"iscc-sum: {directory}: no files found", err=True)
             sys.exit(EXIT_ERROR)
 
-        # Get result
-        result = processor.result(wide=not narrow, add_units=units)
+        # Only compute and output checksum if not in list_only mode
+        if not list_only:
+            # Get result
+            result = processor.result(wide=not narrow, add_units=units)
 
-        # Format output with trailing slash to indicate tree mode
-        terminator = "\0" if zero else "\n"
-        display_name = _normalize_path_display(directory.rstrip("/") + "/")
+            # Format output with trailing slash to indicate tree mode
+            terminator = "\0" if zero else "\n"
+            display_name = _normalize_path_display(directory.rstrip("/") + "/")
 
-        if tag:
-            # BSD-style output
-            output = "ISCC-SUM ({}) = {}".format(display_name, result.iscc)
-        else:
-            # Default output format
-            output = "{} *{}".format(result.iscc, display_name)
+            if tag:
+                # BSD-style output
+                output = "ISCC-SUM ({}) = {}".format(display_name, result.iscc)
+            else:
+                # Default output format
+                output = "{} *{}".format(result.iscc, display_name)
 
-        click.echo(output, nl=False, file=output_file)
-        click.echo(terminator, nl=False, file=output_file)
+            click.echo(output, nl=False, file=output_file)
+            click.echo(terminator, nl=False, file=output_file)
 
-        # Display units if requested
-        if units and result.units:
-            for unit in result.units:
-                unit_output = "  {}".format(unit)
-                click.echo(unit_output, nl=False, file=output_file)
-                click.echo(terminator, nl=False, file=output_file)
+            # Display units if requested
+            if units and result.units:
+                for unit in result.units:
+                    unit_output = "  {}".format(unit)
+                    click.echo(unit_output, nl=False, file=output_file)
+                    click.echo(terminator, nl=False, file=output_file)
 
     except Exception as e:
         error_msg = "iscc-sum: {}: unexpected error: {}".format(directory, str(e))

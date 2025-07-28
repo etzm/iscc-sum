@@ -104,31 +104,42 @@ def treewalk_ignore(path, ignore_file_name, root_path=None, ignore_spec=None):
     dirs = [d for d in entries if d.is_dir()]
     files = [f for f in entries if f.is_file()]
 
-    def should_ignore(fp):
+    def should_ignore(fp, is_dir=False):
         if ignore_spec is None:
             return False
         rel_path = fp.relative_to(root_path)
-        # Check file pattern match or any parent directory match
-        return ignore_spec.match_file(rel_path) or ignore_spec.match_file(str(rel_path) + "/")
+
+        if is_dir:
+            # For directories, check with trailing slash first (more specific)
+            # If the directory with trailing slash is not ignored, don't ignore it
+            # This allows patterns like "!subdir/" to override "*"
+            dir_with_slash = str(rel_path) + "/"
+            if not ignore_spec.match_file(dir_with_slash):
+                return False
+            # If dir with slash would be ignored, also check without slash
+            return ignore_spec.match_file(rel_path)
+        else:
+            # For files, only check the file pattern
+            return ignore_spec.match_file(rel_path)
 
     # First yield ignore files including the current one
     for file_entry in files:
         file_path = Path(file_entry.path)
         if file_entry.name.startswith(".") and file_entry.name.endswith("ignore"):
-            if not should_ignore(file_path):
+            if not should_ignore(file_path, is_dir=False):
                 yield file_path
 
     # Then yield non-ignore files
     for file_entry in files:
         file_path = Path(file_entry.path)
         if not (file_entry.name.startswith(".") and file_entry.name.endswith("ignore")):
-            if not should_ignore(file_path):
+            if not should_ignore(file_path, is_dir=False):
                 yield file_path
 
     # Then recurse into directories
     for dir_entry in dirs:
         dir_path = Path(dir_entry.path)
-        if not should_ignore(dir_path):
+        if not should_ignore(dir_path, is_dir=True):
             yield from treewalk_ignore(dir_path, ignore_file_name, root_path, ignore_spec)
 
 
