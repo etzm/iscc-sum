@@ -214,11 +214,11 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
-# Claude Code
-CLAUDE.local.md
-.claude
+# Custom venv
 .venv-wsl
 
-# Aider
+# AI
+CLAUDE.local.md
+.claude
 .aider*
-
+notes/
