@@ -1,0 +1,98 @@
+{
+  "title": "BIO-CODES/ISCC-SUM: High-Performance ISCC Generation for Bioimaging Data - OSCARS Project",
+  "description": "High-performance ISCC (ISO 24138:2024) implementation for bioimaging data integrity and AI-readiness. Includes software and TREEWALK specification for deterministic file system traversal. This work was supported through the Open Science Clusters' Action for Research and Society (OSCARS) European project under grant agreement Nº101129751.",
+  "creators": [
+    {
+      "name": "Pan, Titusz",
+      "affiliation": "ISCC Foundation",
+      "orcid": "0000-0002-0521-4214"
+    }
+  ],
+  "keywords": [
+    "OSCARS",
+    "bioimaging",
+    "ISCC",
+    "ISO 24138",
+    "data integrity",
+    "content identifiers",
+    "TREEWALK"
+  ],
+  "license": "Apache-2.0",
+  "upload_type": "software",
+  "access_right": "open",
+  "funding": [
+    {
+      "funder": {
+        "name": "European Commission"
+      },
+      "award": {
+        "number": "101129751",
+        "title": "OSCARS - Open Science Clusters' Action for Research and Society"
+      }
+    }
+  ],
+  "communities": [
+    {
+      "identifier": "oscars"
+    },
+    {
+      "identifier": "eu"
+    },
+    {
+      "identifier": "panosc"
+    },
+    {
+      "identifier": "erinha"
+    },
+    {
+      "identifier": "rda-pds-ig"
+    }
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://oscars-project.eu/projects/bio-codes-enhancing-ai-readiness-bioimaging-data-content-based-identifiers",
+      "relation": "isDescribedBy",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://iscc.io",
+      "relation": "references",
+      "resource_type": "website",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://sum.iscc.codes",
+      "relation": "hasDocumentation",
+      "scheme": "url"
+    }
+  ],
+  "notes": "This software and specifications are part of the BIO-CODES project funded by OSCARS (Open Science Clusters' Action for Research and Society) under European Commission grant agreement Nº101129751.\n\nThe repository includes:\n- iscc-sum: High-performance ISCC implementation (Rust/Python)\n- TREEWALK: Specification for deterministic file system traversal\n- SUBTYPE WIDE: Extended ISCC format specification\n- Reference implementations for algorithm validation\n\nFor more information about the BIO-CODES project, visit: https://oscars-project.eu/projects/bio-codes-enhancing-ai-readiness-bioimaging-data-content-based-identifiers\n\nFor technical documentation and usage examples, visit: https://sum.iscc.codes",
+  "subjects": [
+    {
+      "term": "Bioimaging",
+      "scheme": "gnd",
+      "identifier": "https://d-nb.info/gnd/4006617-4"
+    },
+    {
+      "term": "Research data management",
+      "scheme": "gnd",
+      "identifier": "https://d-nb.info/gnd/1135962553"
+    },
+    {
+      "term": "Digital preservation",
+      "scheme": "gnd",
+      "identifier": "https://d-nb.info/gnd/4787040-0"
+    },
+    {
+      "term": "Standardization",
+      "scheme": "gnd",
+      "identifier": "https://d-nb.info/gnd/4056914-7"
+    }
+  ],
+  "version": "0.1.0",
+  "language": "eng",
+  "resource_type": {
+    "type": "software",
+    "subtype": "software"
+  }
+}

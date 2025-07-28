@@ -24,13 +24,4 @@ keywords:
   - similarity-hash
   - deduplication
 license: Apache-2.0
-preferred-citation:
-  type: software
-  authors:
-    - family-names: Pan
-      given-names: Titusz
-      email: titusz.pan@gmail.com
-  title: "iscc-sum: High-performance ISCC Data-Code and Instance-Code hashing"
-  version: 0.1.0
-  date-released: 2025-07-28
-  url: "https://github.com/bio-codes/iscc-sum"
+
