@@ -326,6 +326,13 @@ which ignore file to process:
 
     Each traversal processes only one type of ignore file as specified by the implementation or caller
 
+!!! warning "Git Compatibility Note"
+
+    Git implicitly excludes `.git/` directories from all operations, even when not specified in `.gitignore`.
+    TREEWALK-IGNORE processes **all** directories unless explicitly ignored. To replicate Git's behavior when using
+    `.isccignore` files, explicitly add `.git/` to your ignore patterns. This design keeps TREEWALK generic and
+    avoids hardcoding VCS-specific assumptions.
+
 ## 9. Test Vectors
 
 Implementations **MUST** produce identical ordering for these test cases:
