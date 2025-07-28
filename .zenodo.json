@@ -20,15 +20,9 @@
   "license": "Apache-2.0",
   "upload_type": "software",
   "access_right": "open",
-  "funding": [
+  "grants": [
     {
-      "funder": {
-        "name": "European Commission"
-      },
-      "award": {
-        "number": "101129751",
-        "title": "OSCARS - Open Science Clusters' Action for Research and Society"
-      }
+      "id": "10.13039/501100000780::101129751"
     }
   ],
   "communities": [
@@ -57,7 +51,6 @@
     {
       "identifier": "https://iscc.io",
       "relation": "references",
-      "resource_type": "website",
       "scheme": "url"
     },
     {
@@ -90,9 +83,5 @@
     }
   ],
   "version": "0.1.0",
-  "language": "eng",
-  "resource_type": {
-    "type": "software",
-    "subtype": "software"
-  }
+  "language": "eng"
 }
