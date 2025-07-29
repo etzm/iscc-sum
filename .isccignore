@@ -223,3 +223,4 @@ CLAUDE.local.md
 .aider*
 .git/
 notes/
+.mcp.json
