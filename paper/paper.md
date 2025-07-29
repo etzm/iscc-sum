@@ -12,9 +12,12 @@ authors:
   - name: Titusz Pan
     orcid: 0000-0002-0521-4214
     affiliation: 1
+  - name: Martin Etzrodt
+    orcid: 0000-0003-1928-3904
+    affiliation: 1
 affiliations:
- - name: ISCC Foundation
-   index: 1
+  - name: ISCC Foundation
+    index: 1
 date: 29 July 2025
 bibliography: paper.bib
 ---
