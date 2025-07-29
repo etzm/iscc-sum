@@ -6,6 +6,10 @@ authors:
     given-names: Titusz
     email: tp@iscc.io
     orcid: https://orcid.org/0000-0002-0521-4214
+    family-names: Etzrodt
+    given-names: Martin
+    email: etzrodt.martin@gmail.com
+    orcid: https://orcid.org/0000-0003-1928-3904
 title: "BIO-CODES/ISCC-SUM: High-Performance ISCC Generation for Bioimaging Data - OSCARS Project"
 doi: 10.5281/zenodo.16541262
 version: 0.1.0
