@@ -29,7 +29,7 @@ To facilitate sharing and reuse scientific data management needs effective techn
 
 # Statement of Need
 
-Modern scientific instruments routinely generate datasets exceeding hundreds of gigabytes. A manual identification, tracking, and integrity verification of such large amounts of data is impossible, yet essential for achievement of FAIR [@aksenova2024data] [@chen2022fair] [@murray2021accessible] data use. A performant automated and standardized approach across various scientific domains with potential for easy workflow integration is lacking.
+Modern scientific instruments routinely generate datasets exceeding hundreds of gigabytes. A manual identification, tracking, and integrity verification of such large amounts of data is impossible, yet essential for achievement of FAIR data use[@aksenova2024data] [@chen2022fair] [@murray2021accessible] . A performant automated and standardized approach across various scientific domains with potential for easy workflow integration is lacking.
 
 ISCC-SUM directly addresses these requirements through a high-performance implementation of ISCC Data-Code and Instance-Code generation, the two fundamental components for media-agnostic content identification. While the reference implementation of the ISCC can process 7-8 MB/s for pure Python implementations [@iscccore2024], the Rust based ISCC-SUM implementation achieved 950-1050 MB/s reducing processing time from hours to minutes.
 
