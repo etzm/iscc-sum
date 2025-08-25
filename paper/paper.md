@@ -9,12 +9,12 @@ tags:
   - ISCC
   - ISO 24138
 authors:
-  - name: Pan
+    corresponding-author: true
+- name: Pan
     given-names: Titusz
     email: tp@iscc.io
     orcid: 0000-0002-0521-4214
     affiliation: 1
-    corresponding-author: true
   - name: Etzrodt
     given-names: Martin
     orcid: 0000-0003-1928-3904
