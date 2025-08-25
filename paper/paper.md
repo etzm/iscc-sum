@@ -9,15 +9,26 @@ tags:
   - ISCC
   - ISO 24138
 authors:
-  - name: Titusz Pan
+  - name: Pan
+    given-names: Titusz
+    email: tp@iscc.io
     orcid: 0000-0002-0521-4214
     affiliation: 1
-  - name: Martin Etzrodt
+    corresponding-author: true
+  - name: Etzrodt
+    given-names: Martin
     orcid: 0000-0003-1928-3904
     affiliation: 1
+  - name: Le Dévédec
+    given-names: Sylvia
+    email: s.e.ledevedec@lacdr.leidenuniv.nl
+    orcid: 0000-0002-0615-9616
+    affiliation: 2
 affiliations:
   - name: ISCC Foundation
     index: 1
+  - name: Leiden Academic Centre for Drug Research, Leiden University
+    index: 2
 date: 29 July 2025
 bibliography: paper.bib
 ---
